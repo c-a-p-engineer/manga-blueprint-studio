@@ -115,10 +115,13 @@ No project data is transmitted over the network by application code.
 
 1. checks out `master`;
 2. configures GitHub Pages;
-3. uploads `web/`;
-4. deploys the artifact.
+3. creates `_site/` from `web/`;
+4. copies canonical `schema/` and `examples/` resources into `_site/`;
+5. uploads and deploys `_site/`.
 
-The deployed root is therefore the contents of `web/`, not the repository root.
+The browser application remains rooted in `web/`, while the deployed site additionally exposes `/schema/` and `/examples/` without duplicating their source files in the repository.
+
+`.github/workflows/validate.yml` runs `node --check web/app.js` plus `scripts/validate.mjs` to catch syntax, missing-file, fixture, and basic contract regressions without third-party dependencies.
 
 ## Future boundaries
 
