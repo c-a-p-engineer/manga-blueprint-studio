@@ -93,7 +93,8 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/
 ## GitHub Pages
 
 Pages is deployed through `.github/workflows/pages.yml`.
-The workflow uploads `web/` as the Pages artifact and deploys it with the official Pages actions.
+The workflow stages `web/` as the site root and also publishes canonical `schema/` and `examples/` resources into the Pages artifact before deploying with the official Pages actions.
+`.github/workflows/validate.yml` performs dependency-free syntax and repository-contract checks.
 Do not add a second deployment mechanism unless there is a documented migration.
 
 ## Change rules
