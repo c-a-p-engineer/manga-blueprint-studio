@@ -1,0 +1,96 @@
+{
+  "format": "manga-blueprint/0.1",
+  "meta": {
+    "title": "Action 3-panel example",
+    "readingDirection": "rtl",
+    "pageWidth": 800,
+    "pageHeight": 1130
+  },
+  "pages": [
+    {
+      "id": "page_1",
+      "panels": [
+        {
+          "id": "panel_1",
+          "order": 1,
+          "rect": { "x": 410, "y": 35, "w": 355, "h": 350 },
+          "camera": {
+            "distance": "long",
+            "angle": "low-angle",
+            "focus": "Hero descends from above; keep the whole airborne silhouette readable."
+          },
+          "characters": [
+            {
+              "id": "hero_p1",
+              "characterId": "hero",
+              "name": "Hero",
+              "referenceKey": "hero-sheet",
+              "x": 585,
+              "y": 220,
+              "scale": 0.9,
+              "rotation": -8,
+              "poseId": "jump"
+            }
+          ]
+        },
+        {
+          "id": "panel_2",
+          "order": 2,
+          "rect": { "x": 35, "y": 35, "w": 355, "h": 350 },
+          "camera": {
+            "distance": "close",
+            "angle": "eye-level",
+            "focus": "Compress the body low before the attack; emphasize stored force."
+          },
+          "characters": [
+            {
+              "id": "hero_p2",
+              "characterId": "hero",
+              "name": "Hero",
+              "referenceKey": "hero-sheet",
+              "x": 215,
+              "y": 225,
+              "scale": 1.05,
+              "rotation": 0,
+              "poseId": "crouch"
+            }
+          ]
+        },
+        {
+          "id": "panel_3",
+          "order": 3,
+          "rect": { "x": 35, "y": 405, "w": 730, "h": 690 },
+          "camera": {
+            "distance": "extreme-close",
+            "angle": "low-angle",
+            "focus": "Climax panel. Put the punching fist in extreme foreground with strong foreshortening."
+          },
+          "characters": [
+            {
+              "id": "hero_p3",
+              "characterId": "hero",
+              "name": "Hero",
+              "referenceKey": "hero-sheet",
+              "x": 330,
+              "y": 760,
+              "scale": 1.25,
+              "rotation": -3,
+              "poseId": "punch"
+            },
+            {
+              "id": "opponent_p3",
+              "characterId": "opponent",
+              "name": "Opponent",
+              "referenceKey": "opponent-sheet",
+              "x": 620,
+              "y": 760,
+              "scale": 0.95,
+              "rotation": 4,
+              "poseId": "stand"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
