@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#111827" />
+  <title>Manga Blueprint Studio</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="brand">Manga Blueprint Studio</div>
+      <div class="tagline">人間が演出を決め、AIへ正確に渡す漫画ネーム設計ツール</div>
+    </div>
+    <div class="top-actions">
+      <button id="exportPng">Blueprint PNG</button>
+      <button id="exportJson">.manga.json</button>
+      <label class="button-like" for="importJson">JSON読込</label>
+      <input id="importJson" type="file" accept="application/json,.json" hidden />
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="left-panel panel-ui">
+      <section>
+        <h2>ページ</h2>
+        <label>テンプレート
+          <select id="templateSelect">
+            <option value="action3">アクション3コマ</option>
+            <option value="four">4コマ</option>
+            <option value="single">1コマ</option>
+          </select>
+        </label>
+        <div class="button-grid">
+          <button id="splitVertical">左右に分割</button>
+          <button id="splitHorizontal">上下に分割</button>
+        </div>
+        <button id="renumber">読み順で番号振り直し</button>
+      </section>
+
+      <section>
+        <h2>選択中のコマ</h2>
+        <div id="panelStatus" class="status-box"></div>
+        <label>カメラ距離
+          <select id="cameraDistance">
+            <option value="long">Long</option>
+            <option value="medium">Medium</option>
+            <option value="close">Close</option>
+            <option value="extreme-close">Extreme close</option>
+          </select>
+        </label>
+        <label>カメラ角度
+          <select id="cameraAngle">
+            <option value="eye-level">Eye level</option>
+            <option value="low-angle">Low angle / 煽り</option>
+            <option value="high-angle">High angle / 俯瞰</option>
+            <option value="over-shoulder">Over shoulder</option>
+          </select>
+        </label>
+        <label>フォーカス / 構図メモ
+          <textarea id="cameraFocus" rows="3" placeholder="例: 拳を極端な前景へ。胸付近から見る。"></textarea>
+        </label>
+      </section>
+
+      <section>
+        <h2>キャラクター</h2>
+        <button id="addCharacter" class="primary">＋ 選択コマへ追加</button>
+        <div id="characterList" class="character-list"></div>
+      </section>
+    </aside>
+
+    <section class="canvas-column">
+      <div class="canvas-toolbar">
+        <span>白いページ内のコマ/棒人間をタップ。棒人間はドラッグ移動できます。</span>
+        <span id="saveStatus">local autosave</span>
+      </div>
+      <div class="page-stage">
+        <svg id="blueprintSvg" viewBox="0 0 800 1130" role="img" aria-label="Manga blueprint page"></svg>
+      </div>
+    </section>
+
+    <aside class="right-panel panel-ui">
+      <section>
+        <h2>選択中のキャラ</h2>
+        <div id="noCharacter" class="status-box">棒人間を選択してください。</div>
+        <div id="characterInspector" hidden>
+          <label>表示名
+            <input id="characterName" type="text" />
+          </label>
+          <label>Character ID
+            <input id="characterId" type="text" />
+          </label>
+          <label>Character Sheet参照キー
+            <input id="referenceKey" type="text" placeholder="例: tsuzuri-sheet" />
+          </label>
+          <label>ポーズ
+            <select id="poseSelect"></select>
+          </label>
+          <label>スケール <output id="scaleOut"></output>
+            <input id="characterScale" type="range" min="0.55" max="1.8" step="0.05" />
+          </label>
+          <label>回転 <output id="rotationOut"></output>
+            <input id="characterRotation" type="range" min="-45" max="45" step="1" />
+          </label>
+          <button id="deleteCharacter" class="danger">キャラを削除</button>
+        </div>
+      </section>
+
+      <section class="prompt-section">
+        <div class="section-title-row">
+          <h2>生成プロンプト</h2>
+          <button id="copyPrompt">コピー</button>
+        </div>
+        <textarea id="promptOutput" rows="18" readonly></textarea>
+      </section>
+
+      <section class="legend">
+        <h2>Blueprintの意味</h2>
+        <p><strong>枠</strong> = コマ</p>
+        <p><strong>番号</strong> = Promptとの対応用。完成絵には描かない。</p>
+        <p><strong>棒人間</strong> = 位置・ポーズ参照。外見はCharacter Sheetを使用。</p>
+      </section>
+    </aside>
+  </main>
+
+  <footer>Prototype 0.1 — client-side only / no upload / provider-independent</footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
