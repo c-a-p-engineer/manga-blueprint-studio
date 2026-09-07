@@ -13,8 +13,8 @@ const posePresets = {
 };
 
 const templates = {
-  action3: [{ x:35,y:35,w:355,h:350 },{ x:410,y:35,w:355,h:350 },{ x:35,y:405,w:730,h:690 }],
-  four: [{ x:35,y:35,w:355,h:520 },{ x:410,y:35,w:355,h:520 },{ x:35,y:575,w:355,h:520 },{ x:410,y:575,w:355,h:520 }],
+  action3: [{ x:410,y:35,w:355,h:350 },{ x:35,y:35,w:355,h:350 },{ x:35,y:405,w:730,h:690 }],
+  four: [{ x:410,y:35,w:355,h:520 },{ x:35,y:35,w:355,h:520 },{ x:410,y:575,w:355,h:520 },{ x:35,y:575,w:355,h:520 }],
   single: [{ x:35,y:35,w:730,h:1060 }]
 };
 
@@ -76,7 +76,12 @@ function splitPanel(axis){
   const p=selectedPanel(); if(!p)return; const idx=currentPage().panels.findIndex(x=>x.id===p.id); if(idx<0)return; const minSize=150; let r1,r2;
   if(axis==='vertical'){ if(p.rect.w<minSize*2+GUTTER)return alert('このコマはこれ以上左右分割できません。'); const w=(p.rect.w-GUTTER)/2; r1={x:p.rect.x,y:p.rect.y,w,h:p.rect.h}; r2={x:p.rect.x+w+GUTTER,y:p.rect.y,w,h:p.rect.h}; }
   else { if(p.rect.h<minSize*2+GUTTER)return alert('このコマはこれ以上上下分割できません。'); const h=(p.rect.h-GUTTER)/2; r1={x:p.rect.x,y:p.rect.y,w:p.rect.w,h}; r2={x:p.rect.x,y:p.rect.y+h+GUTTER,w:p.rect.w,h}; }
-  const first=makePanel(r1,p.order); const second=makePanel(r2,p.order+1); first.camera=structuredClone(p.camera); first.characters=p.characters.map(c=>({...structuredClone(c),id:uid('char'),x:Math.min(r1.x+r1.w-50,Math.max(r1.x+50,c.x)),y:Math.min(r1.y+r1.h-60,Math.max(r1.y+60,c.y))})); currentPage().panels.splice(idx,1,first,second); selectedPanelId=first.id; selectedCharacterId=first.characters[0]?.id||null; renumberPanels(); renderUi();
+  const first=makePanel(r1,p.order); const second=makePanel(r2,p.order+1); first.camera=structuredClone(p.camera); second.camera=structuredClone(p.camera);
+  for(const c of p.characters){
+    const useSecond=axis==='vertical'?c.x>=r2.x:c.y>=r2.y; const target=useSecond?second:first; const r=target.rect; const clone={...structuredClone(c),id:uid('char')};
+    clone.x=Math.min(r.x+r.w-50,Math.max(r.x+50,c.x)); clone.y=Math.min(r.y+r.h-60,Math.max(r.y+60,c.y)); target.characters.push(clone);
+  }
+  currentPage().panels.splice(idx,1,first,second); selectedPanelId=first.id; selectedCharacterId=first.characters[0]?.id||null; renumberPanels(); renderUi();
 }
 
 function applyTemplate(name){
