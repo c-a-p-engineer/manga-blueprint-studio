@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json",
+  "title": "Manga Blueprint",
+  "description": "Provider-independent semantic blueprint for manga panel layout, pose references, and camera intent.",
+  "type": "object",
+  "required": ["format", "meta", "pages"],
+  "properties": {
+    "format": { "type": "string", "const": "manga-blueprint/0.1" },
+    "meta": {
+      "type": "object",
+      "required": ["title", "readingDirection", "pageWidth", "pageHeight"],
+      "properties": {
+        "title": { "type": "string" },
+        "readingDirection": { "enum": ["rtl", "ltr"] },
+        "pageWidth": { "type": "number", "exclusiveMinimum": 0 },
+        "pageHeight": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "pages": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/page" } }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "rect": {
+      "type": "object",
+      "required": ["x", "y", "w", "h"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number", "exclusiveMinimum": 0 },
+        "h": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "camera": {
+      "type": "object",
+      "required": ["distance", "angle", "focus"],
+      "properties": {
+        "distance": { "enum": ["long", "medium", "close", "extreme-close"] },
+        "angle": { "enum": ["eye-level", "low-angle", "high-angle", "over-shoulder"] },
+        "focus": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "characterInstance": {
+      "type": "object",
+      "required": ["id", "characterId", "name", "referenceKey", "x", "y", "scale", "rotation", "poseId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "characterId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "referenceKey": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "scale": { "type": "number", "exclusiveMinimum": 0 },
+        "rotation": { "type": "number" },
+        "poseId": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "panel": {
+      "type": "object",
+      "required": ["id", "order", "rect", "camera", "characters"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "order": { "type": "integer", "minimum": 1 },
+        "rect": { "$ref": "#/$defs/rect" },
+        "camera": { "$ref": "#/$defs/camera" },
+        "characters": { "type": "array", "items": { "$ref": "#/$defs/characterInstance" } }
+      },
+      "additionalProperties": true
+    },
+    "page": {
+      "type": "object",
+      "required": ["id", "panels"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "panels": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/panel" } }
+      },
+      "additionalProperties": true
+    }
+  }
+}
