@@ -71,7 +71,9 @@ The visual image communicates **space**. The JSON communicates **meaning**. Char
 - [`docs/PRODUCT.md`](docs/PRODUCT.md) — product contract and MVP acceptance
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — architecture and data flow
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — planned development stages
+- [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff contract
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — blueprint JSON Schema
+- [`examples/action-3panel.manga.json`](examples/action-3panel.manga.json) — example project fixture
 
 ## Current status
 
