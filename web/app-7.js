@@ -42,6 +42,7 @@ const getExportIdentity06Unsafe=getExportIdentity06;
 getExportIdentity06=async function(){
   const identity=await getExportIdentity06Unsafe();
   identity.projectText=JSON.stringify(project);
+  renderExportIdentity06();
   return identity;
 };
 renderExportIdentity06=function(){
