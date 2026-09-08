@@ -2,7 +2,7 @@
 
 ## Runtime
 
-The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-14.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior; `app-12.js` contains Smart Manga action-intent alignment plus mobile Panel Peek hardening; `app-13.js` owns Prototype 0.9 Scene Template Studio; `app-14.js` provides 0.9 localization/feedback hardening. GitHub Pages serves exact static assets; no server, build step, external runtime script, analytics, or API is required.
+The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-16.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior; `app-12.js` contains Smart Manga action-intent alignment plus mobile Panel Peek hardening; `app-13.js` owns Prototype 0.9 Scene Template Studio; `app-14.js` provides 0.9 localization/feedback hardening; `app-15.js` adds Prototype 0.10 balloon writing direction; `app-16.js` synchronizes panel order with selected reading direction. GitHub Pages serves exact static assets; no server, build step, external runtime script, analytics, or API is required.
 
 ## State
 
@@ -13,6 +13,7 @@ Project
 ├─ meta
 │  ├─ pageWidth / pageHeight
 │  ├─ readingDirection (rtl | ltr)
+│  ├─ defaultWritingMode (vertical-rl | horizontal-tb)
 │  ├─ canvasPreset / layoutPreset
 │  ├─ storyTemplate
 │  ├─ randomPurpose / randomSeed
@@ -30,10 +31,11 @@ Project
       ├─ style / camera / background / effects
       ├─ characters (pose / expression / gaze / placement)
       ├─ balloons
+      │  └─ writingMode (inherit | vertical-rl | horizontal-tb)
       └─ assistSeed
 ```
 
-`storyTemplate` and `actionIntent` remain optional compatible additions. Prototype 0.9 does not change the project schema version. Template definitions are authoring helpers; only applied project state is serialized.
+`storyTemplate`, `actionIntent`, `defaultWritingMode`, and balloon `writingMode` are compatible optional additions. Prototype 0.10 does not change the project schema version. Legacy projects normalize missing writing-mode state to vertical-first behavior.
 
 ## Story action model
 
@@ -49,58 +51,23 @@ Project
 
 ### Discovery views
 
-Template Studio adds:
-
-- category filter;
-- free-text search;
-- visual card gallery;
-- layout thumbnail;
-- panel count and category;
-- description and intended use;
-- selected-template beat-flow preview.
+Template Studio adds category filtering, free-text search, visual cards, layout thumbnails, panel count/category, description/use case, and selected-template beat-flow preview.
 
 Browsing/searching/selecting changes only transient authoring UI state. It does not mutate the manga page.
 
 ### Apply path
 
-Prototype 0.9 replaces the original template-apply button listener with an apply path that supports both shipped and custom geometry.
-
-Apply behavior:
-
-1. resolve selected template;
-2. if authored page content exists, require confirmation;
-3. derive panel rectangles from a shipped layout or normalized custom geometry;
-4. create ordinary `Panel` state;
-5. copy role/action/camera/background/effects;
-6. optionally copy sample dialogue/SFX;
-7. place the selected/project reusable base character when available using beat pose/expression/gaze;
-8. renumber according to reading direction;
-9. record `meta.storyTemplate` as provenance;
-10. after apply, no continuing template authority remains.
+Template apply resolves shipped/custom geometry, confirms destructive replacement when authored content exists, creates ordinary panel state, copies beat semantics, optionally copies sample dialogue/SFX, places a reusable base character when available, renumbers by selected reading direction, and records `meta.storyTemplate` as provenance. No continuing template authority remains after apply.
 
 ### Bounded derivation
 
 `deriveTemplate13()` clones the selected recipe into one temporary derived recipe. It intentionally preserves action/beat sequence while varying a bounded subset of camera distance/angle and emphasis/effect choices. The variation is preview-only until explicit apply.
 
-This is separate from Smart Manga: derivation starts from a known scene script; Smart Manga starts from purpose/panel-count/seed and proposes three broader candidates.
-
 ### Browser-local custom templates
 
 Custom templates use `manga-blueprint-studio/custom-story-templates/0.9` in `localStorage`.
 
-A custom template stores:
-
-- normalized panel rectangles (`x/y/w/h` as canvas ratios);
-- panel role and action intent;
-- pose / expression / gaze (without character identity);
-- camera;
-- background;
-- optional dialogue/SFX;
-- selected line/breakout effects.
-
-Character-specific visual identity, Character Sheet data, reusable base-character definitions, and remote assets are deliberately excluded. On reapply, normalized rectangles scale to the current canvas and the current reusable base character is placed if available.
-
-Custom-template storage is local authoring convenience, not part of `.manga.json` until applied state is exported.
+A custom template stores normalized panel rectangles, panel role/action intent, pose/expression/gaze without character identity, camera, background, optional dialogue/SFX, and selected effects. Character-specific visual identity and Character Sheet data are excluded. On reapply, geometry scales to current canvas and current reusable base character is used when available.
 
 ## Character identity boundary
 
@@ -125,9 +92,28 @@ Use separately attached Character Sheets only for characters whose identity mode
 
 `CHARACTER IDENTITY GUIDANCE` remains appended from reusable base-character state.
 
-## Reading direction
+## Reading direction and panel order
 
-`meta.readingDirection` is explicit. RTL is Japanese default; LTR is supported. Renumbering, layout thumbnails, Smart Manga previews, Panel List order, and generated prompt direction use the same value.
+`meta.readingDirection` is explicit. RTL is Japanese default; LTR is supported.
+
+Prototype 0.10 treats panel `order` as synchronized semantic state derived from current geometry plus reading direction before committed renders. `readingOrderedPanels16()` groups panels into horizontal reading rows using page-relative Y tolerance, then orders X descending for RTL or ascending for LTR. `renumberPanels()` assigns sequential `order` values.
+
+The synchronized order is shared by canvas badges, Panel Peek/List, generated prompt, manifest-derived semantics, and exports. Changing text writing direction does not participate in this algorithm.
+
+## Balloon writing direction
+
+`app-15.js` adds a separate lettering model:
+
+```text
+meta.defaultWritingMode = vertical-rl | horizontal-tb
+balloon.writingMode = inherit | vertical-rl | horizontal-tb
+```
+
+`vertical-rl` is the default. `inherit` resolves against `meta.defaultWritingMode`.
+
+Editor and annotated review rendering use an authoring-only text preview. Horizontal preview wraps into centered lines; vertical preview lays glyphs top-to-bottom and columns right-to-left. This preview is explanatory rather than a deterministic final typesetter.
+
+Clean AI render still removes balloon text entirely. The prompt adds a `LETTERING DIRECTION` section describing project default plus effective mode for each non-empty balloon. The exact visible strings remain exclusively under `TEXT TO RENDER`.
 
 ## Dynamic coordinate system
 
@@ -164,18 +150,18 @@ Scene Template Studio and Smart Manga intentionally solve different problems: te
 
 ## AI-safe render modes
 
-- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, and authoring labels;
+- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, authoring labels, and writing-direction text previews;
 - canonical annotated export contains normal authoring metadata defined by the exporter;
-- clean AI export removes authoring text/anatomy colors while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
+- clean AI export removes authoring text/anatomy colors/balloon text while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
 - dynamic editor overlays and Template Studio UI are never part of canonical export serialization;
 - AI-generation ZIP excludes annotated PNG entirely.
 
 ## Prompt compiler and manifest
 
-The compiler remains deterministic from current project state. It preserves clean-reference rule, strict `TEXT TO RENDER` allowlist, panel semantics, `STORY ACTION INTENT`, and mode-aware `CHARACTER IDENTITY GUIDANCE`.
+The compiler remains deterministic from current project state. It preserves clean-reference rule, strict `TEXT TO RENDER` allowlist, panel semantics, `STORY ACTION INTENT`, mode-aware `CHARACTER IDENTITY GUIDANCE`, and Prototype 0.10 `LETTERING DIRECTION` guidance.
 
-Manifest v3 remains the read-first authority and may record `storyTemplate` provenance plus `panelIntentIndex`. A custom or derived template affects manifest only through the applied project provenance/state; browser-local template library contents are never exported automatically.
+Manifest v3 remains the read-first authority and may record `storyTemplate` provenance plus `panelIntentIndex`. The included semantic `.manga.json` and prompt carry writing-direction state. Browser-local template library contents are never exported automatically.
 
 ## Persistence / privacy / deployment
 
-`localStorage` stores autosave state and Prototype 0.9 custom templates; `.manga.json` is the portable project artifact. All templates, search, derivation, lint, hashing, ZIP generation, appearance guidance, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.
+`localStorage` stores autosave state and Prototype 0.9 custom templates; `.manga.json` is the portable project artifact. All templates, search, derivation, lettering preview, reading-order synchronization, lint, hashing, ZIP generation, appearance guidance, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.
