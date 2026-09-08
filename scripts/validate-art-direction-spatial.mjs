@@ -20,7 +20,7 @@ for (const phrase of [
   'cinematic',
   'Generation readiness',
   'readinessIdentityEmpty',
-  'characterGuidance'
+  'usedBaseCharacters09'
 ]) {
   if (!art.includes(phrase)) throw new Error(`Missing Prototype 0.11 art-direction contract: ${phrase}`);
 }
