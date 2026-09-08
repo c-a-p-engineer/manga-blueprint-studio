@@ -38,6 +38,19 @@ function renderBasePoseOptions07(){
   if(posePresets[value])select.value=value;
 }
 
+const getExportIdentity06Unsafe=getExportIdentity06;
+getExportIdentity06=async function(){
+  const identity=await getExportIdentity06Unsafe();
+  identity.projectText=JSON.stringify(project);
+  return identity;
+};
+renderExportIdentity06=function(){
+  const box=$('exportIdentityStatus')?.querySelector('[data-export-identity]');if(!box)return;
+  const currentText=JSON.stringify(project);
+  if(!exportIdentityCache06||exportIdentityCache06.projectText!==currentText){box.textContent=t('exportSetPending');return}
+  box.textContent=`${t('exportSetReady')}: ${exportIdentityCache06.exportId} · SHA-256 ${exportIdentityCache06.shortHash} · ${exportIdentityCache06.prefix}`;
+};
+
 const buildPngBlob06Unsafe=buildPngBlob06;
 buildPngBlob06=async function(annotated){
   const blob=await buildPngBlob06Unsafe(annotated);
