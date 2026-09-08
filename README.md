@@ -4,7 +4,7 @@ Visual manga storyboard editor for designing manuscript size, reading direction,
 
 **The human remains the director.** AI, Smart Manga, and templates propose; the user chooses and edits.
 
-## Prototype 0.8
+## Prototype 0.9
 
 Current prototype supports:
 
@@ -12,10 +12,16 @@ Current prototype supports:
 - RTL Japanese reading by default plus LTR, with geometry-based renumbering;
 - 1–6 panel layouts, action/conversation/climax patterns, 4-koma 1×4 / 2×2 / 4×1;
 - visual layout thumbnails;
-- **Story Templates** that seed layout + panel role + action intent + camera + pose/expression/gaze + background and optionally editable sample dialogue/SFX;
-- shipped Story Templates: cute daily, rom-com blush, surprise, gag, action impact;
+- **Scene Template Studio** with category filters, search, card-style visual previews, use-case descriptions, panel count, and beat flow;
+- shipped scene templates across daily, romance, battle, emotion, comedy, suspense, and character-introduction categories;
+- romance templates including confession, before-kiss, after-kiss, holding hands, and misunderstanding;
+- battle templates including opening standoff, decisive blow, counterattack, aerial attack, throw technique, and awakening/reversal;
+- additional crying, anger, resolve, presence-behind, classroom-talk, smug-failure, and character-introduction templates;
+- optional editable sample dialogue/SFX in Story Templates;
+- **bounded template derivation** that preserves story flow while varying some camera/emphasis choices;
+- **local custom templates** saved from the current page; character-specific appearance is not stored, while layout/action/camera/pose/expression/background/dialogue/SFX can be reused and scaled to the current canvas;
 - **per-panel `actionIntent`** (“what actually happens in this panel?”) stored in `.manga.json` and forwarded as semantic guidance;
-- **Panel Peek** by long-press or discoverable `ⓘ`, with quick action/character/camera/background/dialogue/effect summary;
+- **Panel Peek** by long-press or discoverable `ⓘ`, with compact opaque mobile bottom-sheet UI;
 - **Panel List / Shot List** in detailed or compact mode, plus authoring-only Panel Chips on the editor canvas;
 - **Camera consistency check** that detects likely conflicts between semantic camera distance and stick-figure scale;
 - authoring-only **Crop Guide** and an explicit “fit character size to camera” action;
@@ -42,22 +48,31 @@ Current prototype supports:
 
 ## Recommended workflow
 
-1. Start with **Story Template**, Smart Manga, or a visual layout template.
-2. Create/select a reusable base character and choose its appearance source.
-3. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` when a panel needs inspection.
-4. Fill/refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, and effects only where needed.
-5. Resolve useful Manga Check / camera-framing warnings when they match your intent.
-6. Download **AI generation ZIP**.
-7. Press **AIへ渡す文をコピー** and send the short message with the ZIP.
-8. Attach Character Sheets separately only for characters the manifest marks as requiring them.
+1. Start with **Scene Template Studio**, Smart Manga, or a visual layout template.
+2. Filter by scene category or search for an intent such as “告白”, “キス”, “反撃”, or “泣く”.
+3. Read the template description / use case / beat flow before applying; optionally derive a bounded variation.
+4. Create/select a reusable base character and choose its appearance source.
+5. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` when a panel needs inspection.
+6. Fill/refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, and effects only where needed.
+7. Resolve useful Manga Check / camera-framing warnings when they match your intent.
+8. Optionally save the finished page pattern as a local custom template for reuse.
+9. Download **AI generation ZIP**.
+10. Press **AIへ渡す文をコピー** and send the short message with the ZIP.
+11. Attach Character Sheets separately only for characters the manifest marks as requiring them.
 
-## Story Template vs Smart Manga
+## Scene Template Studio vs Smart Manga
 
-**Story Template** is a recognizable editable rough name with concrete beats and optional sample text. Use it when you want a quick starting manga such as “cute daily 4-panel” or “action impact 3-panel”.
+**Scene Template Studio** is a recognizable editable rough name with concrete story beats and optional sample text. Prototype 0.9 adds category/search discovery, visual cards, descriptions/use cases, bounded derivation, and local custom-template reuse.
 
 **Smart Manga** creates three bounded alternatives from purpose / panel count / seed / intensity and does not mutate the page until you choose one.
 
 Both are starting proposals, never continuing authorities after you edit the page.
+
+## Custom templates
+
+Custom templates are stored only in the current browser via `localStorage`.
+
+They intentionally do **not** store character-specific visual identity. They reuse normalized panel geometry plus panel role/action intent, camera, pose/expression/gaze, background, dialogue/SFX, and selected manga effects. Reapplying scales geometry to the current canvas and places the currently selected/project base character when available.
 
 ## Panel Peek / Panel List
 
@@ -66,6 +81,7 @@ A panel should be understandable without opening every editing tab.
 - tap a panel to select it;
 - long-press the panel, or tap its `ⓘ`, to open Panel Peek;
 - Panel Peek shows action, characters, camera, background, dialogue, effects, and framing status;
+- mobile Panel Peek uses an opaque viewport-bounded bottom sheet with fixed header/actions and a scrollable summary body;
 - Page tab can switch between detailed and one-line Panel List views;
 - small Panel Chips are editor-only labels and are never exported to clean AI PNG.
 
@@ -127,7 +143,7 @@ Open `http://localhost:4173/web/`.
 
 Visual image communicates **space**. `.manga.json` communicates **meaning**. Character Sheets or text appearance guidance communicate **identity**.
 
-Current project format remains `manga-blueprint/0.2`; Prototype 0.8 adds optional `meta.storyTemplate` and per-panel `actionIntent` while preserving older 0.2 compatibility.
+Current project format remains `manga-blueprint/0.2`; Prototype 0.9 does not require a project-format bump. Shipped/custom template definitions are authoring helpers; applied results become ordinary 0.2 project state.
 
 Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
 
