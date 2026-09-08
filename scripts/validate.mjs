@@ -30,7 +30,7 @@ for(const phrase of ['square:{','four-vertical','four-grid','four-horizontal','s
 for(const phrase of ['HELP_SEEN_KEY_05','800×1130 縦長（標準）','readingDirectionSelect','characterLibrary','baseCharacterSelect','placeBaseCharacter06','skel-head','backgroundLocations06','exportZip06','zipStore06','manga-blueprint-export-manifest/1','sha256Hex06','contentHash','randomUUID','guideExtremeCloseBody','guideHighBody','PNG encoding failed'])if(!js.includes(phrase))throw new Error(`Missing 0.5 feature contract: ${phrase}`);
 
 for(const phrase of ['HELP_SEEN_KEY_06','smartCandidates08','randomSeed08','randomVariant','data-smart-apply','randomizePanel08','REFERENCE IMAGE RULE:','exportPackage08','ai-generation','review-archive','manga-blueprint-export-manifest/2','randomPlaceBase08','workflowHint08'])if(!app8.includes(phrase))throw new Error(`Missing 0.6 feature contract: ${phrase}`);
-if(!app8.includes("const annotatedName=isReview?`${prefix}_annotated.png`:null"))throw new Error('Annotated filename must be review-package-only');
+if(!app8.includes("annotatedName=isReview?`${prefix}_annotated.png`:null"))throw new Error('Annotated filename must be review-package-only');
 if(!app8.includes("if(isReview){annotated=await buildPngBlob06(true)"))throw new Error('Annotated PNG encoding must be conditional on review package');
 if(!app8.includes("aiGenerationSafe:packageType==='ai-generation'"))throw new Error('Manifest must identify AI-generation package safety boundary');
 if(!app8.includes("fresh.addEventListener('click',async()=>{try{await exportPackage08('ai-generation')"))throw new Error('Primary ZIP action must export AI-generation package');
