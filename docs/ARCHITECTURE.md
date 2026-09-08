@@ -2,7 +2,7 @@
 
 ## Runtime
 
-The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-14.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior; `app-12.js` contains Smart Manga action-intent alignment plus mobile Panel Peek hardening; `app-13.js` owns Prototype 0.9 Scene Template Studio; `app-14.js` provides 0.9 localization/feedback hardening. GitHub Pages serves exact static assets; no server, build step, external runtime script, analytics, or API is required.
+The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-15.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior; `app-12.js` contains Smart Manga action-intent alignment plus mobile Panel Peek hardening; `app-13.js` owns Prototype 0.9 Scene Template Studio; `app-14.js` provides 0.9 localization/feedback hardening; `app-15.js` owns Prototype 0.10 vertical-first lettering plus reading-order/panel-number synchronization. GitHub Pages serves exact static assets; no server, build step, external runtime script, analytics, or API is required.
 
 ## State
 
@@ -13,6 +13,7 @@ Project
 ├─ meta
 │  ├─ pageWidth / pageHeight
 │  ├─ readingDirection (rtl | ltr)
+│  ├─ textDirectionDefault (vertical | horizontal; default vertical)
 │  ├─ canvasPreset / layoutPreset
 │  ├─ storyTemplate
 │  ├─ randomPurpose / randomSeed
@@ -27,80 +28,79 @@ Project
    └─ Panel
       ├─ rect / order / role
       ├─ actionIntent
-      ├─ style / camera / background / effects
+      ├─ style / camera / background
+      ├─ effects
+      │  ├─ sfxText / sfxStyle
+      │  └─ sfxWritingDirection (vertical | horizontal)
       ├─ characters (pose / expression / gaze / placement)
       ├─ balloons
+      │  └─ writingDirection (vertical | horizontal)
       └─ assistSeed
 ```
 
-`storyTemplate` and `actionIntent` remain optional compatible additions. Prototype 0.9 does not change the project schema version. Template definitions are authoring helpers; only applied project state is serialized.
+The project schema version does not change. Legacy text-direction fields normalize to vertical.
+
+## Reading-order model
+
+`meta.readingDirection` is authoritative. Geometry is sorted top-to-bottom, then same-row panels are sorted right-to-left for `rtl` or left-to-right for `ltr`.
+
+The same ordering function drives:
+
+- editor panel numbers;
+- Panel List / authoring summaries;
+- layout and Smart Manga previews;
+- Scene Template thumbnail numbers;
+- Scene Template beat-to-panel assignment;
+- generated prompt panel numbering;
+- manifest `readingOrderContract`.
+
+Prototype 0.10 intentionally re-synchronizes panel `order` before rendering so stale imported or previously generated numbering cannot disagree with current geometry/direction.
+
+## Text-layout model
+
+Prototype 0.10 separates project default from authored overrides.
+
+- `meta.textDirectionDefault` defaults to `vertical`;
+- new balloons and Story Template sample text inherit the default;
+- `Balloon.writingDirection` records the actual balloon choice;
+- `Panel.effects.sfxWritingDirection` records the onomatopoeia choice;
+- changing the default does not rewrite existing explicit choices;
+- annotated/review SVG preview reflects writing mode where practical;
+- clean AI PNG removes exact text and relies on semantic handoff;
+- Prompt emits a `TEXT WRITING DIRECTION CONTRACT`;
+- manifest v4 emits `textLayout` with default and per-text overrides.
+
+Vertical handoff means `vertical-rl`; horizontal means `horizontal-tb`.
 
 ## Story action model
 
-`Panel.actionIntent` captures the event/meaning that cannot reliably be inferred from pose alone. It is intentionally short free text. It is consumed by Panel Peek / Panel List / Panel Chips, generation prompt under `STORY ACTION INTENT`, and manifest `panelIntentIndex`. It is not visible manga text and never enters `TEXT TO RENDER`.
+`Panel.actionIntent` captures the event/meaning that cannot reliably be inferred from pose alone. It is intentionally short free text. It is consumed by Panel Peek / Panel List / Panel Chips, generation prompt under story-action guidance, and manifest panel intent index. It is not visible manga text and never enters `TEXT TO RENDER`.
 
 ## Scene Template Studio
 
-### Built-in registry
-
-`storyTemplates11` remains the canonical in-memory recipe registry created by Prototype 0.8. Prototype 0.9 extends that mutable registry with additional romance, battle, emotion, daily, comedy, suspense, and character-introduction recipes.
-
-`meta13` is derived authoring metadata for template discovery: category, localized description, localized use case, and search tags. It does not become project state.
-
-### Discovery views
-
-Template Studio adds:
-
-- category filter;
-- free-text search;
-- visual card gallery;
-- layout thumbnail;
-- panel count and category;
-- description and intended use;
-- selected-template beat-flow preview.
-
-Browsing/searching/selecting changes only transient authoring UI state. It does not mutate the manga page.
+`storyTemplates11` remains the canonical in-memory recipe registry. Prototype 0.9 extends it with romance, battle, emotion, daily, comedy, suspense, and character-introduction recipes. `meta13` is derived authoring metadata for template discovery and never becomes project state.
 
 ### Apply path
 
-Prototype 0.9 replaces the original template-apply button listener with an apply path that supports both shipped and custom geometry.
-
-Apply behavior:
+Prototype 0.10 uses a reading-aware apply path:
 
 1. resolve selected template;
-2. if authored page content exists, require confirmation;
-3. derive panel rectangles from a shipped layout or normalized custom geometry;
+2. require confirmation if authored content exists;
+3. derive rectangles from shipped layout or normalized custom geometry;
 4. create ordinary `Panel` state;
-5. copy role/action/camera/background/effects;
-6. optionally copy sample dialogue/SFX;
-7. place the selected/project reusable base character when available using beat pose/expression/gaze;
-8. renumber according to reading direction;
-9. record `meta.storyTemplate` as provenance;
-10. after apply, no continuing template authority remains.
+5. renumber geometry using current `meta.readingDirection`;
+6. sort panels by resulting order;
+7. assign beat 1 to panel 1, beat 2 to panel 2, etc.;
+8. copy role/action/camera/background/effects;
+9. optionally copy sample dialogue/SFX with current text-direction default;
+10. place the selected/project reusable base character when available;
+11. record `meta.storyTemplate` as provenance only.
 
-### Bounded derivation
+This closes the prior ambiguity where a template could visually number one direction while beat data followed raw rectangle-array order.
 
-`deriveTemplate13()` clones the selected recipe into one temporary derived recipe. It intentionally preserves action/beat sequence while varying a bounded subset of camera distance/angle and emphasis/effect choices. The variation is preview-only until explicit apply.
+### Bounded derivation and custom templates
 
-This is separate from Smart Manga: derivation starts from a known scene script; Smart Manga starts from purpose/panel-count/seed and proposes three broader candidates.
-
-### Browser-local custom templates
-
-Custom templates use `manga-blueprint-studio/custom-story-templates/0.9` in `localStorage`.
-
-A custom template stores:
-
-- normalized panel rectangles (`x/y/w/h` as canvas ratios);
-- panel role and action intent;
-- pose / expression / gaze (without character identity);
-- camera;
-- background;
-- optional dialogue/SFX;
-- selected line/breakout effects.
-
-Character-specific visual identity, Character Sheet data, reusable base-character definitions, and remote assets are deliberately excluded. On reapply, normalized rectangles scale to the current canvas and the current reusable base character is placed if available.
-
-Custom-template storage is local authoring convenience, not part of `.manga.json` until applied state is exported.
+Derived templates preserve action flow while varying a bounded subset of camera/emphasis choices. Custom templates live in browser `localStorage`, store normalized geometry plus reusable direction, and exclude character-specific visual identity.
 
 ## Character identity boundary
 
@@ -110,72 +110,49 @@ Character identity remains project-level and separate from pose instances.
 - `description`: no sheet; appearance text becomes identity contract.
 - `free`: no sheet; model may choose a simple consistent appearance.
 
-Old bases with a reference key normalize to `sheet`; those without one normalize to `description`. In `free` mode appearance-detail controls are disabled so inactive values do not look authoritative.
-
-The Output UI derives actual Character Sheet requirements from used base characters and writes the same map into manifest v3.
-
-## Prompt identity contract
-
-The compiler states:
-
-```text
-Character visual identity follows CHARACTER IDENTITY GUIDANCE.
-Use separately attached Character Sheets only for characters whose identity mode requires them.
-```
-
-`CHARACTER IDENTITY GUIDANCE` remains appended from reusable base-character state.
-
-## Reading direction
-
-`meta.readingDirection` is explicit. RTL is Japanese default; LTR is supported. Renumbering, layout thumbnails, Smart Manga previews, Panel List order, and generated prompt direction use the same value.
+Output derives actual Character Sheet requirements from used characters and writes the same map into manifest.
 
 ## Dynamic coordinate system
 
-SVG viewBox, PNG export, layout generation, pointer bounds, character placement, balloon bounds, Story Template geometry, custom-template normalized geometry, and Crop Guide use `meta.pageWidth` / `meta.pageHeight` rather than assuming 800×1130.
+SVG viewBox, PNG export, layout generation, pointer bounds, character placement, balloon bounds, Scene Template geometry, custom-template normalized geometry, and Crop Guide use `meta.pageWidth` / `meta.pageHeight` rather than assuming 800×1130.
 
 ## Panel Peek / Panel List architecture
 
-Panel Peek and Panel List are **derived authoring views**, not additional project models.
+Panel Peek and Panel List are derived authoring views, not additional project models. Long-press and visible `ⓘ` open the same semantic view. On narrow screens Panel Peek is an opaque viewport-bounded bottom sheet with fixed header/actions and a scrollable semantic body. Panel Chips and info buttons are editor overlays only.
 
-- Panel Peek reads current panel semantic state and shows action, characters, camera, background, dialogue, effects, and framing status;
-- long-press uses pointer events with movement cancellation;
-- a visible SVG `ⓘ` invokes the same dialog;
-- on narrow screens the dialog is an opaque viewport-bounded bottom sheet with fixed header/actions and scrollable semantic body;
-- detailed Panel List provides Shot-List-style semantic rows; compact mode uses the derived summary;
-- selecting a row changes editor selection only.
+## Camera framing diagnostic and Manga Check
 
-Panel Chips and info buttons are inserted into the live editor SVG after canonical render. They do not exist in clean AI serialization.
+The semantic camera model remains the source of truth. Figure-to-panel heuristics may warn about contradictions and offer an explicit fit action. Manga Check may flag missing action intent, repeated camera distance/expression, unspecified backgrounds, or framing conflicts. Warnings never mutate state automatically or block export.
 
-## Camera framing diagnostic and Crop Guide
+## Smart Manga
 
-The semantic camera model remains the source of truth. The runtime estimates a figure-to-panel fill ratio and warns about strong contradictions. Warnings never mutate state automatically. Explicit **fit character size to camera** adjusts only the selected/primary figure scale through normal undoable mutation. Crop Guide remains authoring-only.
-
-## Manga Check
-
-Manga Check derives advisory issues from current page state: missing `actionIntent`, camera/figure-scale conflict, repeated camera distance, all background locations unspecified on a multi-panel page, and repeated primary expression. Lint may navigate to a panel but never blocks export or rewrites content.
-
-## Smart Manga and selected-panel dice
-
-Smart Manga remains bounded to shipped layouts/direction profiles, with three non-mutating candidates, reproducible seed, balanced/dynamic/emotion variants, stable/standard/bold intensity, optional base-character placement, and expanded purposes.
-
-The selected-panel dice preserves panel geometry, role, entered background content, and balloons/dialogue while re-proposing camera/effects/breakout plus placed-character pose/expression/gaze.
-
-Scene Template Studio and Smart Manga intentionally solve different problems: templates provide recognizable scene scripts and local reusable patterns; Smart Manga provides bounded alternative proposals from a purpose.
+Smart Manga remains bounded to shipped layouts/direction profiles, with three non-mutating candidates, reproducible seed, balanced/dynamic/emotion variants, stable/standard/bold intensity, optional base-character placement, and expanded purposes. Candidate numbering uses current reading direction.
 
 ## AI-safe render modes
 
-- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, and authoring labels;
-- canonical annotated export contains normal authoring metadata defined by the exporter;
+- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, vertical/horizontal text preview, and authoring labels;
 - clean AI export removes authoring text/anatomy colors while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
-- dynamic editor overlays and Template Studio UI are never part of canonical export serialization;
+- exact dialogue/SFX and their writing directions are carried semantically;
 - AI-generation ZIP excludes annotated PNG entirely.
 
 ## Prompt compiler and manifest
 
-The compiler remains deterministic from current project state. It preserves clean-reference rule, strict `TEXT TO RENDER` allowlist, panel semantics, `STORY ACTION INTENT`, and mode-aware `CHARACTER IDENTITY GUIDANCE`.
+The compiler is deterministic from current project state. It preserves clean-reference rule, strict `TEXT TO RENDER` allowlist, panel semantics, story action intent, mode-aware character identity guidance, and text-writing-direction contract.
 
-Manifest v3 remains the read-first authority and may record `storyTemplate` provenance plus `panelIntentIndex`. A custom or derived template affects manifest only through the applied project provenance/state; browser-local template library contents are never exported automatically.
+Manifest v4 is the read-first authority. It extends prior file/character/panel guidance with:
+
+```text
+readingOrderContract
+  direction
+  panelNumbersFollowReadingDirection = true
+  storyBeatsFollowPanelNumbers = true
+
+textLayout
+  defaultWritingDirection
+  balloons[] -> panelOrder / balloonId / writingDirection
+  onomatopoeia[] -> panelOrder / writingDirection
+```
 
 ## Persistence / privacy / deployment
 
-`localStorage` stores autosave state and Prototype 0.9 custom templates; `.manga.json` is the portable project artifact. All templates, search, derivation, lint, hashing, ZIP generation, appearance guidance, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.
+`localStorage` stores autosave state and custom templates; `.manga.json` is the portable project artifact. All templates, search, derivation, lint, hashing, ZIP generation, appearance guidance, text-direction handling, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.

@@ -4,12 +4,16 @@ Visual manga storyboard editor for designing manuscript size, reading direction,
 
 **The human remains the director.** AI, Smart Manga, and templates propose; the user chooses and edits.
 
-## Prototype 0.9
+## Prototype 0.10
 
 Current prototype supports:
 
 - manuscript presets: `800×1130 Portrait` (default), 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, custom;
-- RTL Japanese reading by default plus LTR, with geometry-based renumbering;
+- RTL Japanese reading by default plus LTR;
+- **reading-order synchronization**: visible panel numbers, layout/Smart previews, Scene Template preview numbers, and Scene Template beat assignment all follow the selected RTL/LTR direction;
+- **vertical manga text by default**, with horizontal override per balloon and per onomatopoeia;
+- text direction persisted in `.manga.json`, generation prompt, and manifest v4;
+- annotated/review balloon text preview reflects vertical vs horizontal direction, while clean AI PNG still removes lettering and sends exact text semantically;
 - 1–6 panel layouts, action/conversation/climax patterns, 4-koma 1×4 / 2×2 / 4×1;
 - visual layout thumbnails;
 - **Scene Template Studio** with category filters, search, card-style visual previews, use-case descriptions, panel count, and beat flow;
@@ -41,28 +45,52 @@ Current prototype supports:
 - **prompt identity contract is mode-aware**: Character Sheets are used only when `CHARACTER IDENTITY GUIDANCE` requires them;
 - AI generation ZIP containing clean PNG + `.manga.json` + prompt + manifest, with annotated PNG excluded;
 - Review / archive ZIP adding annotated PNG under the same export identity;
-- manifest v3 as the read-first handoff authority, including file roles, Character Sheet requirements, story-template provenance, and panel intent index;
+- **manifest v4** as the read-first handoff authority, including file roles, Character Sheet requirements, story-template provenance, panel intent index, reading-order contract, and text-layout contract;
 - one-click AI handoff message copy (“extract ZIP, read manifest first”);
 - coordinated filenames `<title>_YYYYMMDD_HHMMSS_<short-sha256>_*` and export UUID/full state hash;
 - browser-local autosave, Undo/Redo, Japanese-first mobile UI with English translation.
 
+## Reading order and numbering
+
+`meta.readingDirection` is authoritative.
+
+```text
+rtl -> top row is numbered from right to left
+ltr -> top row is numbered from left to right
+```
+
+The same rule is used for the editor canvas, layout thumbnails, Smart Manga previews, Scene Template thumbnails, Panel List order, prompt panel numbering, and the story beat assigned to each panel. Changing direction renumbers the existing page from its geometry.
+
+## Text direction
+
+Japanese manga lettering defaults to vertical writing.
+
+```text
+meta.textDirectionDefault = "vertical"
+balloon.writingDirection = "vertical" | "horizontal"
+panel.effects.sfxWritingDirection = "vertical" | "horizontal"
+```
+
+New balloons and Story Template sample text inherit the project default. Existing/legacy projects without these fields normalize to vertical. Each balloon and each onomatopoeia can then be switched independently.
+
 ## Recommended workflow
 
 1. Start with **Scene Template Studio**, Smart Manga, or a visual layout template.
-2. Filter by scene category or search for an intent such as “告白”, “キス”, “反撃”, or “泣く”.
-3. Read the template description / use case / beat flow before applying; optionally derive a bounded variation.
-4. Create/select a reusable base character and choose its appearance source.
-5. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` when a panel needs inspection.
-6. Fill/refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, and effects only where needed.
-7. Resolve useful Manga Check / camera-framing warnings when they match your intent.
-8. Optionally save the finished page pattern as a local custom template for reuse.
-9. Download **AI generation ZIP**.
-10. Press **AIへ渡す文をコピー** and send the short message with the ZIP.
-11. Attach Character Sheets separately only for characters the manifest marks as requiring them.
+2. Choose reading direction; panel numbers and story-beat order follow it automatically.
+3. Filter by scene category or search for an intent such as “告白”, “キス”, “反撃”, or “泣く”.
+4. Read the template description / use case / beat flow before applying; optionally derive a bounded variation.
+5. Create/select a reusable base character and choose its appearance source.
+6. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` when a panel needs inspection.
+7. Fill/refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, text direction, and effects only where needed.
+8. Resolve useful Manga Check / camera-framing warnings when they match your intent.
+9. Optionally save the finished page pattern as a local custom template for reuse.
+10. Download **AI generation ZIP**.
+11. Press **AIへ渡す文をコピー** and send the short message with the ZIP.
+12. Attach Character Sheets separately only for characters the manifest marks as requiring them.
 
 ## Scene Template Studio vs Smart Manga
 
-**Scene Template Studio** is a recognizable editable rough name with concrete story beats and optional sample text. Prototype 0.9 adds category/search discovery, visual cards, descriptions/use cases, bounded derivation, and local custom-template reuse.
+**Scene Template Studio** is a recognizable editable rough name with concrete story beats and optional sample text. Category/search discovery, visual cards, descriptions/use cases, bounded derivation, and local custom-template reuse are available.
 
 **Smart Manga** creates three bounded alternatives from purpose / panel count / seed / intensity and does not mutate the page until you choose one.
 
@@ -108,7 +136,7 @@ The AI generation ZIP contains:
 <prefix>_manifest.json
 ```
 
-Manifest v3 identifies file roles, clean visual reference, semantic JSON, prompt, character identity requirements, selected Story Template provenance (if any), and a panel intent index.
+Manifest v4 identifies file roles, clean visual reference, semantic JSON, prompt, character identity requirements, selected Story Template provenance, panel intent, reading-order synchronization, and exact text writing directions.
 
 A short handoff message is enough:
 
@@ -119,7 +147,7 @@ Character Sheet が必要と書かれているキャラクターは、別途添�
 
 ## AI-safe export
 
-Clean AI PNG removes authoring text such as character names, panel numbers, camera metadata, Panel Chips, Crop Guide, summaries, balloon text, and SFX labels. Exact dialogue/onomatopoeia are passed only under `TEXT TO RENDER`.
+Clean AI PNG removes authoring text such as character names, panel numbers, camera metadata, Panel Chips, Crop Guide, summaries, balloon text, and SFX labels. Exact dialogue/onomatopoeia and their writing directions are passed semantically.
 
 `actionIntent` is semantic direction and must never be treated as visible manga text.
 
@@ -143,7 +171,7 @@ Open `http://localhost:4173/web/`.
 
 Visual image communicates **space**. `.manga.json` communicates **meaning**. Character Sheets or text appearance guidance communicate **identity**.
 
-Current project format remains `manga-blueprint/0.2`; Prototype 0.9 does not require a project-format bump. Shipped/custom template definitions are authoring helpers; applied results become ordinary 0.2 project state.
+Current project format remains `manga-blueprint/0.2`; Prototype 0.10 does not require a project-format bump. Legacy files normalize missing text-direction data to vertical.
 
 Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
 
