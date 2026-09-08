@@ -1,10 +1,12 @@
 # Roadmap
 
-## Shipped through Prototype 0.9
+## Shipped through Prototype 0.10
 
 ### Page and layout
 - named manuscript/canvas presets: 800×1130 default, 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, custom;
-- explicit RTL/LTR reading direction with geometry-based renumbering;
+- explicit RTL/LTR reading direction;
+- **automatic geometry-based panel numbering synchronization** so selected reading direction, canvas numbers, layout/Smart/Scene Template previews, Panel List/Peek, prompt, and export semantics stay aligned;
+- Scene Template beat assignment follows the same numbered reading order;
 - dynamic layout generation across aspect ratios;
 - 4-koma 1×4, 2×2, and 4×1 variants plus common 1–6 panel, conversation, action, and climax layouts;
 - visual layout thumbnail strip with explicit apply.
@@ -18,7 +20,7 @@
 - Manga Check advisory lint;
 - camera-distance vs stick-figure-scale consistency check and Crop Guide.
 
-### Scene Template Studio — Prototype 0.9
+### Scene Template Studio — Prototype 0.9+
 - category filters and free-text search;
 - visual template cards with layout thumbnail, category, panel count, description, use case, and beat flow;
 - original cute-daily / rom-com / surprise / gag / action templates preserved;
@@ -29,7 +31,8 @@
 - bounded “derive from this template” variation that preserves story beat/action flow;
 - browser-local custom templates saved from current page;
 - custom geometry normalized to canvas size for reuse across manuscript dimensions;
-- custom templates deliberately exclude character-specific visual identity and reuse the current base character on apply.
+- custom templates deliberately exclude character-specific visual identity and reuse the current base character on apply;
+- Prototype 0.10 template thumbnails and beat application both obey current RTL/LTR numbering.
 
 ### Smart Manga and direction assistance
 - three non-mutating candidates per request;
@@ -37,7 +40,8 @@
 - stable / standard / bold intensity;
 - purposes covering action, conversation, gag, daily, climax, 4-koma, rom-com, cute, suspense, and character introduction;
 - optional reusable base-character placement;
-- per-panel direction dice preserving geometry/background/dialogue/role while re-proposing camera/effects/pose/expression/gaze.
+- per-panel direction dice preserving geometry/background/dialogue/role while re-proposing camera/effects/pose/expression/gaze;
+- Smart Manga preview numbering follows current reading direction.
 
 ### Character identity
 - reusable project-level base-character library;
@@ -47,17 +51,24 @@
 - Output-tab Character Sheet requirement map and missing-reference-key warning;
 - free identity mode disables inactive appearance-detail controls.
 
-### Background, text, effects
+### Background, text, effects — Prototype 0.10
 - guided free-text location/weather/mood;
 - localized editable background scene presets;
 - balloon presets for speech/thought/shout/whisper/narration/off-screen placements;
+- **vertical manga writing as the project default** via `meta.textDirectionDefault = vertical`;
+- per-balloon `writingDirection: vertical | horizontal`;
+- per-SFX `effects.sfxWritingDirection: vertical | horizontal`;
+- legacy/unset projects normalize to vertical-first lettering;
+- editor/review balloon preview reflects vertical vs horizontal direction while clean AI PNG remains text-free;
+- generation prompt carries exact effective writing direction independently from panel reading direction;
+- Scene Template sample dialogue/SFX inherit the current text default;
 - background semantics, balloons, onomatopoeia, effects, borderless/bleed/breakout, expression/gaze.
 
 ### AI handoff and export
 - timestamp + project-state-hash coordinated filenames;
 - AI generation ZIP containing clean PNG, `.manga.json`, prompt, manifest — annotated PNG excluded;
 - Review/archive ZIP adding annotated PNG under same export identity;
-- manifest v3 as read-first authority with file roles, character identity guidance, Character Sheet requirements, Story Template provenance, and panel intent index;
+- **manifest v4** as read-first authority with file roles, character identity guidance, Character Sheet requirements, Story Template provenance, panel intent index, reading-order contract, and text-layout contract;
 - short JA/EN “extract ZIP and read manifest first” message with copy action;
 - strict text allowlist keeps action intent / authoring labels out of visible manga text;
 - export UUID, full state SHA-256, JSON import/export, local autosave, Undo/Redo, mobile tabs.
@@ -99,12 +110,14 @@
 - drag panel boundaries;
 - shared-boundary editing that moves adjacent panels together;
 - irregular / diagonal frame shapes;
-- safer overlap/bleed visualization.
+- safer overlap/bleed visualization;
+- extend reading-order grouping rules for arbitrary irregular/overlapping future frame geometry.
 
 ### Text production
 - balloon tail target / speaker visual connection;
-- vertical Japanese text layout;
-- deterministic post-render lettering composition;
+- deterministic post-render lettering composition for final-quality Japanese vertical typesetting;
+- punctuation/kenten/ruby/tate-chu-yoko handling beyond the current authoring preview;
+- SFX rotation / path / transform controls in addition to the shipped vertical/horizontal direction;
 - reusable dialogue/SFX presets beyond Scene Template samples.
 
 ### Manga direction
@@ -117,7 +130,7 @@
 
 ### Generated-result review
 - upload generated manga and compare against Blueprint intent;
-- panel-by-panel checks for camera, character consistency, dialogue/SFX, background continuity, breakout, reading order;
+- panel-by-panel checks for camera, character consistency, dialogue/SFX, background continuity, breakout, reading order, and writing direction;
 - record useful regression examples without collecting private artwork remotely.
 
 ### Export integrity
@@ -126,9 +139,9 @@
 - package compatibility checks across future project/manifest versions.
 
 ### Usability validation
-- representative mobile Scene Template / Panel Peek / custom-template walkthroughs;
+- representative mobile Scene Template / Panel Peek / custom-template / lettering walkthroughs;
 - keyboard/focus/accessibility audit;
-- actual-user feedback on template discovery, camera warnings, and character identity modes;
+- actual-user feedback on template discovery, camera warnings, character identity modes, reading-order synchronization, and vertical/horizontal lettering controls;
 - no analytics by default; any feedback collection needs an explicit privacy boundary.
 
 ### Integration
