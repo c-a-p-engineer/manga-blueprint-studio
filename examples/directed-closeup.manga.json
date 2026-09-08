@@ -6,15 +6,24 @@
     "pageWidth": 800,
     "pageHeight": 1130,
     "canvasPreset": "standard",
-    "layoutPreset": "single"
+    "layoutPreset": "single",
+    "randomIntensity": "standard"
   },
   "characterLibrary": [
     {
       "characterId": "hero",
       "name": "Display name is editor-only",
-      "referenceKey": "hero-sheet",
+      "referenceKey": "",
       "poseId": "lookback",
-      "notes": "Reusable base definition; panel instances may override pose/expression/gaze."
+      "identityMode": "description",
+      "appearance": {
+        "summary": "young adult with an approachable, slightly shy look",
+        "hair": "short blonde hair",
+        "eyes": "red eyes",
+        "outfit": "casual hoodie",
+        "features": "red glasses"
+      },
+      "notes": "Character Sheet is optional; this example uses text appearance guidance."
     }
   ],
   "pages": [
@@ -55,7 +64,7 @@
               "id": "hero_p1",
               "characterId": "hero",
               "name": "Display name is editor-only",
-              "referenceKey": "hero-sheet",
+              "referenceKey": "",
               "x": 400,
               "y": 600,
               "scale": 1.8,
