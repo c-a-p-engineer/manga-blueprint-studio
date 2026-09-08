@@ -2,20 +2,22 @@
 
 ## Problem
 
-Image-generation assistants can render manga-style images, but users should not need cinematography vocabulary, manual coordinates, repeated character entry, or a Character Sheet for every character just to communicate manga direction. They also need to understand **what happens in each panel** without opening every editor field.
+Image-generation assistants can render manga-style images, but users should not need cinematography vocabulary, manual coordinates, repeated character entry, or a Character Sheet for every character just to communicate manga direction. They also need to understand **what happens in each panel** without opening every editor field, and they should be able to begin from a recognizable scene such as a confession, a kiss beat, a counterattack, or a reaction without manually inventing every camera/pose choice.
 
 Manga Blueprint Studio lets a human choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the whole page quickly, and export an AI-safe visual reference plus semantic instructions.
 
 ## Primary user flow
 
 1. Choose manuscript size and reading direction (`rtl` or `ltr`).
-2. Start from **Story Template**, Smart Manga, or a visual panel layout.
-3. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
-4. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
-5. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, frame/effects.
-6. Review advisory Manga Check / camera-framing warnings.
-7. Export AI generation ZIP and copy the short manifest-first handoff message.
-8. Attach Character Sheets separately only where manifest says they are required.
+2. Start from **Scene Template Studio**, Smart Manga, or a visual panel layout.
+3. If using Scene Template Studio, filter/search by scene intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
+4. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
+5. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
+6. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, frame/effects.
+7. Review advisory Manga Check / camera-framing warnings.
+8. Optionally save the current page pattern as a browser-local custom template.
+9. Export AI generation ZIP and copy the short manifest-first handoff message.
+10. Attach Character Sheets separately only where manifest says they are required.
 
 ## Story action intent
 
@@ -29,28 +31,65 @@ Examples:
 
 `actionIntent` exists because pose labels alone do not explain cause, target, or event meaning. It is persisted in `.manga.json`, shown in authoring summaries, indexed in manifest, and added to generated semantic instructions. It is **never** part of `TEXT TO RENDER`.
 
-## Story Templates
+## Scene Template Studio
 
-Prototype 0.8 ships editable rough-name templates:
+Prototype 0.9 expands Story Templates into a scene-first Template Studio.
 
-- Cute daily 4-panel;
-- Rom-com blush 4-panel;
-- Surprise 3-panel;
-- Gag 4-panel;
-- Action impact 3-panel.
+### Discovery
 
-A Story Template can seed:
+Templates are discoverable by:
 
-- valid shipped panel layout;
-- narrative role per panel;
-- action intent;
-- pose / expression / gaze;
-- camera distance / angle / viewpoint;
-- background starting state;
-- manga line effect / breakout where useful;
-- optional sample dialogue and onomatopoeia.
+- category;
+- free-text search over title, description, use case, tags, and beat actions;
+- visual cards that show layout thumbnail, panel count, category, and a short description;
+- selected-template preview with recommended use case and beat flow.
 
-The user explicitly chooses whether sample dialogue/SFX is included. Applying over authored content requires confirmation. After apply, every field is ordinary editable project state; `meta.storyTemplate` is provenance only.
+Categories include romance, battle, emotion, daily, comedy, suspense, character introduction, and custom.
+
+### Shipped scene packs
+
+The built-in set includes the existing cute-daily / rom-com / surprise / gag / action templates plus scene-oriented additions such as:
+
+- confession;
+- before-kiss;
+- after-kiss afterglow;
+- holding hands;
+- rom-com misunderstanding;
+- battle opening / standoff;
+- decisive blow;
+- counterattack;
+- aerial attack;
+- throw technique;
+- awakening / reversal;
+- crying;
+- anger burst;
+- resolve;
+- presence-behind suspense;
+- classroom talk;
+- smug failure;
+- character introduction.
+
+A template may seed valid panel geometry, narrative role, action intent, pose/expression/gaze, camera, background, effects, and optional sample dialogue/SFX.
+
+### Apply behavior
+
+Browsing/filtering/searching never mutates the current page. Applying over authored content requires confirmation. The user explicitly chooses whether sample dialogue/SFX is included. After apply, every field is ordinary editable project state; `meta.storyTemplate` is provenance only.
+
+The selected/project reusable base character may be placed when one exists. Template definitions do not become continuing authorities after apply.
+
+### Bounded derivation
+
+**Derive from this template** creates a temporary variation that keeps the same story beats/actions while varying a limited subset of camera distance/angle and emphasis/effect choices. Derivation does not mutate the page until the user explicitly applies it.
+
+The goal is variation without turning a recognizable scene into unconstrained random generation.
+
+### Custom templates
+
+The user can save the current page as a browser-local custom template.
+
+Custom template storage deliberately excludes character-specific visual identity. It stores normalized panel geometry and reusable direction such as role, action intent, camera, pose/expression/gaze, background, dialogue/SFX, and selected effects. Reapply scales geometry to the current canvas and uses the current reusable base character when available.
+
+Custom templates are stored in `localStorage`; they are not uploaded, synchronized, or included in `.manga.json` unless the user applies one and exports the resulting ordinary project state.
 
 ## Panel Peek and Panel List
 
@@ -64,7 +103,7 @@ The editor must expose panel meaning without forcing tab-by-tab inspection.
 - Panel Peek shows action, character direction, camera, background, dialogue, effects, and framing status;
 - quick actions jump to panel editing, text editing, or selected-panel direction re-roll.
 
-On mobile, Panel Peek behaves as a bottom-sheet style dialog.
+On mobile, Panel Peek is an opaque viewport-bounded bottom sheet. Header/actions remain reachable while only the semantic summary body scrolls.
 
 ### Panel List / Shot List
 
@@ -76,7 +115,7 @@ Compact editor-only chips appear inside panels so page meaning can be scanned di
 
 ## Camera consistency and Crop Guide
 
-Semantic camera distance and visual stick-figure size can contradict each other. Prototype 0.8 derives an advisory figure-to-panel fill check.
+Semantic camera distance and visual stick-figure size can contradict each other. Prototype 0.8+ derives an advisory figure-to-panel fill check.
 
 Examples:
 
@@ -89,7 +128,7 @@ A dotted Crop Guide visualizes an approximate intended framing region. It is aut
 
 ## Manga Check
 
-Prototype 0.8 provides non-blocking lint for common authoring problems:
+The product provides non-blocking lint for common authoring problems:
 
 - panel has no action intent;
 - camera/figure scale likely conflicts;
@@ -101,7 +140,7 @@ Warnings are advisory and never block export or rewrite the page automatically.
 
 ## Help and beginner terminology
 
-The header **Help / 使い方** window is maintained and localized. It covers workflow, reading direction, reusable characters, Character-Sheet-free identity, stick-figure colors, Story Templates, Panel Peek/List, camera aids, background input, and export handoff.
+The header **Help / 使い方** window is maintained and localized. It covers workflow, reading direction, reusable characters, Character-Sheet-free identity, stick-figure colors, Scene Templates, Panel Peek/List, camera aids, background input, and export handoff.
 
 Professional terms remain available for interoperability, but Japanese UI pairs them with plain language and explanation, e.g. `Extreme close / 超寄り`, `Long / 引き`, `Low angle / あおり`, `High angle / ふかん`.
 
@@ -129,7 +168,7 @@ The Output tab derives Character Sheet requirements from characters actually use
 
 ## Smart Manga
 
-Smart Manga remains a bounded proposal system distinct from Story Templates.
+Smart Manga remains a bounded proposal system distinct from Scene Template Studio.
 
 Inputs include purpose, optional panel count, canvas-size preservation, optional base-character placement, reproducible seed, and intensity (`stable | standard | bold`). One request returns three non-mutating candidates with balanced/dynamic/emotion emphasis. Apply is explicit.
 
@@ -153,19 +192,21 @@ Character identity follows `CHARACTER IDENTITY GUIDANCE`. Character Sheets are u
 
 ## Manifest-first handoff
 
-Manifest v3 remains the read-first authority and contains package identity, file roles, generation inputs, character guidance, Character Sheet requirements, compact user handoff text, plus in Prototype 0.8:
-
-- `storyTemplate` provenance when present;
-- `panelIntentIndex` with panel id/order/role/action intent.
+Manifest v3 remains the read-first authority and contains package identity, file roles, generation inputs, character guidance, Character Sheet requirements, compact user handoff text, Story Template provenance, and `panelIntentIndex`.
 
 AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it under the same export identity.
 
 ## Acceptance criteria
 
+- template browsing/filter/search never mutates current project state;
+- template cards expose category, panel count, description, use case, and beat flow;
+- shipped romance/battle/emotion/daily/comedy/suspense/character-introduction scene templates are available in both JA and EN UI;
+- derived template variation preserves story action flow and requires explicit apply;
+- custom templates are browser-local, scale normalized geometry to the current canvas, and never store character-specific visual identity;
 - Story Templates seed valid layout/action/camera and optional editable dialogue/SFX;
 - existing authored content is not silently destroyed by template browsing/apply;
 - `actionIntent` persists through JSON export/import and old projects normalize missing values safely;
-- Panel Peek works through long-press and visible `ⓘ`;
+- Panel Peek works through long-press and visible `ⓘ`, with mobile viewport-bounded opaque presentation;
 - detailed/compact Panel List is reading-order aware and selects panels;
 - Panel Chips/Crop Guide never enter clean AI output;
 - camera-framing warnings are advisory and explicit fit is user-triggered;
