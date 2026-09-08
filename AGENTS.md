@@ -29,22 +29,24 @@ The visual blueprint communicates space. `.manga.json` communicates meaning. Pro
 
 ### Reading direction is explicit
 
-Japanese right-to-left (`rtl`) is default; left-to-right (`ltr`) is supported. Panel numbering, layout/Smart previews, Panel List order, and generated prompt use `meta.readingDirection`.
+Japanese right-to-left (`rtl`) is default; left-to-right (`ltr`) is supported. Panel numbering, layout/Smart previews, Scene Template thumbnails, Panel List order, generated prompt, and applied Scene Template beat assignment use `meta.readingDirection`.
 
-Panel `order` must stay synchronized with current panel geometry and selected reading direction. For a normal two-column row, RTL numbers the right panel before the left panel; LTR does the opposite. Committed render paths renumber from geometry so canvas numbers, Panel Peek/List, prompt, manifest, and exported semantic order cannot silently disagree after template apply, Smart Manga apply, split, import, or direction changes.
+Panel `order` must stay synchronized with current panel geometry and selected reading direction. For a normal two-column row, RTL numbers the right panel before the left panel; LTR does the opposite. Committed render paths renumber from geometry so canvas numbers, Scene Template preview numbers, Scene Template beat placement, Panel Peek/List, prompt, manifest, and exported semantic order cannot silently disagree after template apply, Smart Manga apply, split, import, or direction changes.
 
 ### Lettering direction is explicit
 
 Prototype 0.10 separates **page reading direction** from **text writing direction**.
 
-- project default balloon writing mode is `vertical-rl` (Japanese vertical writing);
+- project default writing mode is `vertical-rl` (Japanese vertical writing);
 - `horizontal-tb` is available;
 - each balloon may use `inherit`, `vertical-rl`, or `horizontal-tb`;
-- `inherit` follows `meta.defaultWritingMode`;
+- each panel's onomatopoeia/SFX may use `effects.sfxWritingMode: inherit | vertical-rl | horizontal-tb`;
+- `inherit` follows `meta.defaultWritingMode` for both balloons and SFX;
 - changing lettering direction must not change panel reading order;
-- editor/review may preview the chosen writing direction, while clean AI PNG remains free of balloon text;
-- prompt carries effective lettering direction alongside exact `TEXT TO RENDER` strings;
-- legacy projects without these fields normalize to vertical-first behavior without a format bump.
+- editor/review may preview balloon writing direction, while clean AI PNG remains free of balloon/SFX text;
+- prompt carries effective balloon and SFX lettering direction alongside exact `TEXT TO RENDER` strings;
+- manifest v3 may carry derived lettering metadata for balloons and onomatopoeia without changing its schema identifier;
+- legacy projects without these fields normalize to vertical-first behavior without a project-format bump.
 
 ### Story action intent
 
@@ -58,16 +60,19 @@ Each panel may store `actionIntent`: a short description of what happens when po
 
 ### Scene Template Studio
 
-Prototype 0.9 extends Story Templates into a scene-first authoring studio.
+Prototype 0.9 extends Story Templates into a scene-first authoring studio; Prototype 0.10 aligns its numbering and beat placement with the selected page reading direction.
 
 Shipped categories include romance, battle, emotion, daily, comedy, suspense, character introduction, plus browser-local custom templates. The built-in set includes the original cute-daily / rom-com / surprise / gag / action recipes and additional confession, kiss, holding-hands, misunderstanding, battle, counterattack, aerial, throw, awakening, crying, anger, resolve, suspense, classroom, failure-gag, and character-introduction scenes.
 
 Discovery is authoring-only and may use category filters, search, visual cards, description/use-case text, panel count, and beat-flow preview.
 
 - browsing/filtering/searching/preview does not mutate project;
+- template thumbnail numbering follows `meta.readingDirection`;
+- template beat 1 is applied to panel order 1, beat 2 to panel order 2, and so on after geometry-based renumbering;
 - applying over authored content requires confirmation;
 - user can disable sample dialogue/SFX before apply;
 - sample text becomes normal editable dialogue/SFX after apply;
+- template-created balloons and SFX inherit the project writing-mode default unless later overridden;
 - selected/first reusable base character may be placed when available;
 - `meta.storyTemplate` records provenance only, not continuing authority.
 
@@ -187,11 +192,11 @@ Canvas/layout/background/balloon/scene presets remain editable starting points.
 
 Editor/review may show names, panel numbers, camera metadata, summaries, action notes, background notes, Panel Chips/Crop Guide, SFX metadata, and balloon text preview in its selected writing direction. These are authoring information.
 
-Clean AI PNG omits authoring labels and balloon text. Prompt permits visible text only under exact `TEXT TO RENDER` entries and carries lettering direction separately. Action intent is semantic guidance, never lettering.
+Clean AI PNG omits authoring labels and balloon/SFX text. Prompt permits visible text only under exact `TEXT TO RENDER` entries and carries balloon/SFX lettering direction separately. Action intent is semantic guidance, never lettering.
 
 ### Manifest-first handoff
 
-`manga-blueprint-export-manifest/3` remains read-first authority. It records export/package identity, file roles, clean primary visual, semantic JSON, generation prompt, `annotatedReviewAllowedForGeneration: false`, character guidance/Sheet requirements, Story Template provenance, panel intent index, and compact user message.
+`manga-blueprint-export-manifest/3` remains read-first authority. It records export/package identity, file roles, clean primary visual, semantic JSON, generation prompt, `annotatedReviewAllowedForGeneration: false`, character guidance/Sheet requirements, Story Template provenance, panel intent index, lettering metadata, and compact user message.
 
 ### Export package separation
 
@@ -215,7 +220,7 @@ Core data is provider-independent. Provider adapters belong only at export bound
 - 0.7: identityMode/appearance, randomIntensity, manifest v3;
 - 0.8: optional `meta.storyTemplate`, panel `actionIntent`, story-readable authoring views;
 - 0.9: scene-template discovery/derivation and local custom-template library;
-- 0.10: `meta.defaultWritingMode`, optional balloon `writingMode`, and automatic geometry-based panel-order synchronization; no project-format bump;
+- 0.10: `meta.defaultWritingMode`, optional balloon `writingMode`, optional `effects.sfxWritingMode`, automatic geometry-based panel-order synchronization, and Scene Template numbering/beat alignment; no project-format or manifest-schema bump;
 - legacy 0.1 / older 0.2 normalize without losing core layout/character/camera/text data.
 
 ## Mobile-first UI
@@ -234,7 +239,7 @@ Primary hierarchy:
 
 ## Runtime
 
-`web/app.js` loads `web/app-1.js` through `web/app-16.js` as static classic scripts. `app-10.js` owns 0.7 localization/state hardening; `app-11.js` owns 0.8 Story Template / Panel Peek/List / framing UX; `app-12.js` aligns Smart Manga with action-intent semantics and hardens mobile Panel Peek; `app-13.js` owns 0.9 Scene Template Studio; `app-14.js` owns 0.9 localization/feedback hardening; `app-15.js` owns 0.10 balloon writing direction; `app-16.js` owns 0.10 reading-order synchronization. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
+`web/app.js` loads `web/app-1.js` through `web/app-17.js` as static classic scripts. `app-10.js` owns 0.7 localization/state hardening; `app-11.js` owns 0.8 Story Template / Panel Peek/List / framing UX; `app-12.js` aligns Smart Manga with action-intent semantics and hardens mobile Panel Peek; `app-13.js` owns 0.9 Scene Template Studio; `app-14.js` owns 0.9 localization/feedback hardening; `app-15.js` owns 0.10 balloon writing direction; `app-16.js` owns 0.10 reading-order synchronization; `app-17.js` integrates Scene Template numbering/beat placement with that reading order and adds per-panel SFX writing-direction overrides plus handoff metadata. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
 
 ## Definition of done
 
@@ -244,8 +249,10 @@ Relevant changes preserve:
 - repository-contract validation and legacy normalization;
 - dynamic canvas and RTL/LTR;
 - panel numbers automatically align with selected RTL/LTR geometry order across canvas, Panel Peek/List, prompt, manifest, and exports;
-- vertical Japanese (`vertical-rl`) is the default balloon writing direction, horizontal is selectable, and per-balloon override is persisted;
+- Scene Template thumbnails use the same RTL/LTR numbering and template beat N is applied to panel order N;
+- vertical Japanese (`vertical-rl`) is the default writing direction, horizontal is selectable, and per-balloon/per-SFX overrides are persisted;
 - lettering direction remains independent from page reading direction;
+- generated prompt and manifest preserve effective balloon/SFX writing direction without promoting metadata to visible manga text;
 - bounded three-candidate Smart Manga with purpose/seed/variant/intensity provenance and story-readable action intent after apply;
 - Scene Template browsing/search/category filtering without project mutation;
 - scene-template visual cards with description/use case/panel count/beat flow;
@@ -263,7 +270,7 @@ Relevant changes preserve:
 - prompt wording never universally requires Character Sheets;
 - anatomy-readable review figures and monochrome clean figures;
 - guided background and balloon presets;
-- clean AI PNG with authoring metadata and balloon text removed;
+- clean AI PNG with authoring metadata and balloon/SFX text removed;
 - AI ZIP excludes annotated PNG; Review ZIP includes it under same export identity;
 - manifest v3 includes file roles, character guidance and panel intent index;
 - compact JA/EN handoff message;
