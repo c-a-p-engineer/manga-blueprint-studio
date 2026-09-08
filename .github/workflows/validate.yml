@@ -41,6 +41,8 @@ jobs:
           node --check web/app-15.js
           node --check web/app-16.js
           node --check web/app-17.js
+          node --check web/app-18.js
+          node --check web/app-19.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -59,3 +61,6 @@ jobs:
 
       - name: Validate lettering / reading integration
         run: node scripts/validate-lettering-reading-integration.mjs
+
+      - name: Validate art direction / spatial semantics
+        run: node scripts/validate-art-direction-spatial.mjs
