@@ -47,7 +47,7 @@ The editor and annotated review PNG may color-code anatomy for readability. The 
 
 Professional terms remain in the data/model boundary, but beginner-facing Japanese UI must not present unexplained jargon as the only label. Pair terms such as `Extreme close` and `Low angle` with plain labels such as `超寄り` and `あおり`, plus a short usage explanation. Plain language is a bridge to the canonical term, not a second semantic model.
 
-The help dialog is a maintained product surface, not a temporary onboarding note. All help sections must follow the selected UI language.
+The Help dialog is a maintained product surface, not a temporary onboarding note. All help sections and camera-reference descriptions must follow the selected UI language.
 
 ### Presets are patterns, not rules
 
@@ -78,9 +78,11 @@ Files produced from the same serialized project state must be traceable as one s
 - individual exports and ZIP contents use a shared filename prefix containing local `YYYYMMDD_HHMMSS` and a short SHA-256;
 - the short hash derives from serialized project state, not from the file bytes;
 - repeated individual exports without project changes reuse the same in-session export identity;
+- the UI must not display an old export identity as current after project state changes;
 - a ZIP includes clean PNG, annotated PNG, `.manga.json`, prompt text, and manifest;
 - the manifest records an export UUID, full SHA-256, short hash, timestamp, canvas, reading direction, and filenames;
-- identical content hash means the same serialized Manga Blueprint state. It does not claim that PNG byte hashes are identical across browsers.
+- identical content hash means the same serialized Manga Blueprint state. It does not claim that PNG byte hashes are identical across browsers;
+- failed/empty PNG encoding must fail the export rather than silently packaging an invalid member.
 
 ### Provider independence
 
@@ -105,7 +107,7 @@ ZIP packaging, hashing, UUID generation, and filename creation execute locally i
 
 ## Runtime
 
-`web/app.js` loads `web/app-1.js` through `web/app-6.js` as plain static assets. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
+`web/app.js` loads `web/app-1.js` through `web/app-7.js` as plain static assets. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
 
 ## Definition of done
 
@@ -125,6 +127,7 @@ Relevant changes preserve:
 - clean AI PNG with authoring text and summaries removed;
 - annotated review PNG, prompt safety, JSON import/export;
 - traceable individual filenames and one-click ZIP + manifest;
+- export identity display invalidates when project state changes;
 - usable mobile layout and GitHub Pages deployment.
 
 Visual review and deterministic validation are separate evidence. Do not call a UI visually verified based only on syntax/CI.
