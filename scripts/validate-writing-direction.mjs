@@ -10,7 +10,7 @@ const must=[
   "vertical-rl",
   "horizontal-tb",
   'LETTERING DIRECTION:',
-  'writing direction controls lettering layout only',
+  'Writing direction controls lettering layout only',
   'balloonWritingMode15',
   'defaultWritingMode15'
 ];
