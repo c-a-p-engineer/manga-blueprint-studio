@@ -1,23 +1,17 @@
 # Roadmap
 
-## Shipped in prototype 0.3
+## Shipped in prototype 0.4
 
-- page templates / splitting / reading order;
-- stick-figure placement and pose presets;
-- camera explanations and expanded camera vocabulary;
-- per-panel background direction;
-- borderless / inset / impact frames;
-- bleed / 断ち切り semantics;
-- breakout / ブチ抜き semantics;
-- expression and gaze;
-- speech / thought / shout / narration balloons;
-- manga effects and onomatopoeia;
-- panel narrative roles;
-- clean AI PNG vs annotated review PNG;
-- strict text-render allowlist in prompt;
-- legacy 0.1 import;
-- Japanese-first mobile tab UI;
-- Undo / Redo.
+- manuscript/canvas presets: current, 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, custom;
+- dynamic layout generation for different aspect ratios;
+- 4-koma 1×4, 2×2, and 4×1 variants;
+- common 1–6 panel, conversation, action, and climax layouts;
+- Smart Random by purpose and optional panel count;
+- panel overview and deterministic at-a-glance summaries;
+- beginner camera labels (`Extreme close / 超寄り`, `Low angle / あおり`, etc.) with explanations;
+- quick camera presets;
+- first-use / reopenable usage dialog;
+- all prototype 0.3 direction features: background, balloons, effects, borderless/bleed/breakout, expression/gaze, clean AI export, annotated export, prompt safety, mobile tabs, Undo/Redo.
 
 ## Next
 
@@ -39,15 +33,20 @@
 ### Text production
 - balloon tail target;
 - vertical Japanese text layout;
-- deterministic post-render text composition to avoid AI glyph errors.
+- deterministic post-render text composition.
 
 ### Manga direction
 - multi-page / spread support;
-- richer inset / cross-panel object editing;
-- memory / dream / flashback visual modes;
+- memory / dream / flashback modes;
 - page-turn / reveal planning;
 - eye-flow visualization;
-- camera crop/framing guides tied to distance settings.
+- camera crop/framing guide tied to distance settings.
+
+### Template evolution
+- user-saved layout presets;
+- weighted/random seed controls;
+- preview thumbnails for layout/camera choices;
+- template recommendation from intended beat count without replacing human direction.
 
 ### Integration
 - optional provider adapters at the export boundary only.
