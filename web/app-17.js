@@ -56,10 +56,10 @@ renderUi=function(){
   if(select){select.disabled=!panel;select.value=panel?.effects?.sfxWritingMode||'inherit';}
 };
 
-// Template thumbnails use the same geometry + reading-direction ordering as the actual page.
+// Template thumbnails use page-scale geometry for ordering, then draw the same numbers into thumbnail-scale geometry.
 templateThumb13=function(tpl){
-  const size={w:100,h:132},rects=templateRects13(tpl,size),order=previewOrder08(rects);
-  return `<div class="template-thumb13">${rects.map(r=>`<span style="left:${r.x}%;top:${r.y/1.32}%;width:${r.w}%;height:${r.h/1.32}%">${order.get(r)}</span>`).join('')}</div>`;
+  const logicalRects=templateRects13(tpl,pageSize04()),order=previewOrder08(logicalRects),thumbRects=templateRects13(tpl,{w:100,h:132});
+  return `<div class="template-thumb13">${thumbRects.map((r,i)=>`<span style="left:${r.x}%;top:${r.y/1.32}%;width:${r.w}%;height:${r.h/1.32}%">${order.get(logicalRects[i])}</span>`).join('')}</div>`;
 };
 
 function applyTemplateReadingAware17(){
