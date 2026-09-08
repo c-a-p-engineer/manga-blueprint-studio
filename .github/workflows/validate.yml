@@ -33,6 +33,7 @@ jobs:
           node --check web/app-7.js
           node --check web/app-8.js
           node --check web/app-9.js
+          node --check web/app-10.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
