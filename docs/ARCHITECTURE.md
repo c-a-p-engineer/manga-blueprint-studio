@@ -2,7 +2,7 @@
 
 ## Runtime
 
-The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-10.js` as classic scripts. `app-10.js` is a small Prototype 0.7 hardening layer for localized background preset values and appearance-control state. GitHub Pages serves the exact static assets; no server, build step, external script, analytics, or runtime API is required.
+The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-11.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior. GitHub Pages serves the exact static assets; no server, build step, external runtime script, analytics, or API is required.
 
 ## State
 
@@ -13,182 +13,200 @@ Project
 ├─ meta
 │  ├─ pageWidth / pageHeight
 │  ├─ readingDirection (rtl | ltr)
-│  ├─ canvasPreset
-│  ├─ layoutPreset
-│  ├─ randomPurpose
-│  ├─ randomSeed
+│  ├─ canvasPreset / layoutPreset
+│  ├─ storyTemplate
+│  ├─ randomPurpose / randomSeed
 │  ├─ randomVariant (balanced | dynamic | emotion)
 │  └─ randomIntensity (stable | standard | bold)
 ├─ characterLibrary
 │  └─ BaseCharacter
-│     ├─ characterId / name
-│     ├─ referenceKey
-│     ├─ default pose
+│     ├─ characterId / name / referenceKey / default pose
 │     ├─ identityMode (sheet | description | free)
-│     └─ appearance
-│        ├─ summary
-│        ├─ hair
-│        ├─ eyes
-│        ├─ outfit
-│        └─ features
+│     └─ appearance (summary / hair / eyes / outfit / features)
 └─ Page
    └─ Panel
-      ├─ rect / order / narrative role
+      ├─ rect / order / role
+      ├─ actionIntent
       ├─ style / camera / background / effects
-      ├─ characters (placed instances: pose / expression / gaze)
+      ├─ characters (pose / expression / gaze / placement)
       ├─ balloons
       └─ assistSeed
 ```
 
-These remain compatible additions to the 0.2 project format. Legacy projects normalize without requiring migration files.
+`storyTemplate` and `actionIntent` are compatible optional additions. Legacy projects normalize missing values without migration files.
+
+## Story action model
+
+`Panel.actionIntent` captures the event/meaning that cannot reliably be inferred from pose alone. It is intentionally short free text. It is consumed by:
+
+- Panel Peek / Panel List / Panel Chips;
+- generation prompt under `STORY ACTION INTENT`;
+- manifest `panelIntentIndex`.
+
+It is not visible manga text and never enters `TEXT TO RENDER`.
+
+## Story Template engine
+
+`storyTemplates11` contains bounded editable rough-name recipes. A recipe selects one shipped `layoutRects04()` geometry and a beat per resulting panel. Beats can set role, localized action intent, pose, expression, gaze, camera, optional line effect/breakout, optional sample dialogue, and optional SFX.
+
+Apply behavior:
+
+1. preview template beat list without mutation;
+2. user chooses whether sample dialogue/SFX is included;
+3. if current page already contains authored content, request confirmation;
+4. create panels from canonical layout geometry;
+5. copy one reusable base character into beats when a base exists;
+6. fit initial instance scale roughly to camera distance;
+7. store `meta.storyTemplate` as provenance;
+8. after apply, all state is ordinary editable project data.
+
+No continuing template authority exists after apply.
 
 ## Character identity boundary
 
-Character identity is project-level and separate from pose instances.
+Character identity remains project-level and separate from pose instances.
 
-`identityMode` controls the downstream visual identity source:
+- `sheet`: external Character Sheet required; `referenceKey` maps it.
+- `description`: no sheet; appearance text becomes identity contract.
+- `free`: no sheet; model may choose a simple consistent appearance.
 
-- `sheet`: external Character Sheet is required. `referenceKey` is the matching key.
-- `description`: Character Sheet is not required. Structured/free-text appearance guidance becomes the identity contract.
-- `free`: Character Sheet is not required. The model may choose a simple appearance, but must maintain consistency across panels.
+Old bases with a reference key normalize to `sheet`; those without one normalize to `description`. In `free` mode appearance-detail controls are disabled so inactive values do not look authoritative.
 
-The runtime normalizer assigns old bases with a non-empty `referenceKey` to `sheet`; old bases without one become `description`. Appearance fields are normalized to empty strings when absent.
+The Output UI derives actual Character Sheet requirements from used base characters and writes the same map into manifest v3.
 
-Placed character instances do not duplicate appearance guidance. They retain `characterId`; the library remains the identity source while the instance owns panel-specific pose/expression/gaze/placement.
+## Prompt identity contract
 
-In `free` mode, appearance-detail fields are disabled in the UI so inactive data does not look authoritative. Description/sheet modes can retain appearance notes as applicable.
+The older generic sentence that said character identity comes only from Character Sheets is overridden by Prototype 0.8. The compiler now states:
 
-## Character diagnostics
+```text
+Character visual identity follows CHARACTER IDENTITY GUIDANCE.
+Use separately attached Character Sheets only for characters whose identity mode requires them.
+```
 
-The Output UI derives an identity map from character IDs actually used on the current page. It identifies:
-
-- external Character Sheets that must be attached separately;
-- missing sheet reference keys;
-- description-driven characters that need no sheet;
-- intentionally open/free characters.
-
-The same derived guidance is written into manifest v3.
+`CHARACTER IDENTITY GUIDANCE` remains appended from reusable base-character state.
 
 ## Reading direction
 
-`meta.readingDirection` is explicit. RTL is the Japanese default; LTR is supported. Renumbering, visual layout thumbnails, Smart Manga previews, and generated prompt direction use the same value.
+`meta.readingDirection` is explicit. RTL is Japanese default; LTR is supported. Renumbering, layout thumbnails, Smart Manga previews, Panel List order, and generated prompt direction use the same value.
 
 ## Dynamic coordinate system
 
-SVG viewBox, PNG export, layout generation, pointer bounds, character placement, and balloon bounds use `meta.pageWidth` / `meta.pageHeight` rather than fixed 800×1130 coordinates.
+SVG viewBox, PNG export, layout generation, pointer bounds, character placement, balloon bounds, Story Template geometry, and Crop Guide use `meta.pageWidth` / `meta.pageHeight` rather than assuming 800×1130.
 
-## Layout preset generator and thumbnail gallery
+## Panel Peek / Panel List architecture
 
-Preset geometry is generated from current page dimensions. The select box remains the canonical preset selector. Prototype 0.7 adds a derived thumbnail gallery that renders the same `layoutRects04()` geometry and reading-order numbering.
+Panel Peek and Panel List are **derived authoring views**, not additional project models.
 
-Thumbnail selection only changes the selected preset/help state; explicit apply invokes the existing layout-reset path so authored content is never discarded merely by browsing thumbnails.
+- `Panel Peek` reads current panel semantic state and shows action, characters, camera, background, dialogue, effects, and framing status;
+- long-press is implemented through pointer events with movement cancellation;
+- a visible SVG `ⓘ` overlay invokes the same dialog;
+- on narrow screens the dialog is styled as a bottom sheet;
+- detailed Panel List provides Shot-List-style semantic rows; compact mode uses the derived summary;
+- selecting a row changes editor selection only.
 
-## Smart Manga candidate engine
+Panel Chips and info buttons are inserted into the live editor SVG **after** canonical `renderSvg(true)` runs. They therefore do not exist in clean or annotated export serialization unless intentionally added later.
 
-Smart Manga remains bounded to shipped layouts and direction profiles.
+## Camera framing diagnostic and Crop Guide
 
-Prototype 0.7 expands purpose profiles with:
+The semantic camera model remains the source of truth. Prototype 0.8 adds heuristic authoring assistance to catch strong visual contradictions.
 
-- romance / rom-com;
-- cute;
-- suspense;
-- character introduction.
+### Figure fill
 
-It also adds `randomIntensity`:
+The runtime estimates a figure's vertical pose extent from preset joint coordinates, multiplies it by instance scale, and compares it with panel height. Each camera distance has a broad acceptable range.
 
-- `stable`: backs away from extreme close/dutch-angle choices and suppresses breakout proposals;
-- `standard`: uses the baseline profile;
-- `bold`: strengthens climax framing/effects and may propose breakout.
+The diagnostic can return:
 
-This intensity composes with the existing balanced/dynamic/emotion candidate variant. Candidate preview still does not mutate project state. Applying a candidate records purpose, seed, variant, and intensity.
+- `none` — no character to evaluate;
+- `good` — broadly compatible;
+- `small` — figure appears too small for selected camera distance;
+- `large` — figure appears too large.
 
-## Selected-panel direction dice
+### Explicit fit
 
-The panel dice uses the expanded profile catalog and current project intensity while preserving panel geometry, role, entered background content, and balloons. It updates camera/effects/breakout and placed-character pose/expression/gaze, and remains undoable.
+The user can press **fit character size to camera**. This adjusts only the selected/primary figure scale through normal undoable mutation. Warnings never mutate state automatically.
 
-## Derived panel summaries
+### Crop Guide
 
-Panel summaries remain authoring-only derived artifacts. Prototype 0.7 adds primary expression, gaze, background/time, and a short dialogue snippet to the existing role/pose/camera/effect/breakout summary.
+A dotted authoring-only rectangle is derived from camera distance and current primary character position. Close distances center it closer to the pose head; wider distances center nearer the character anchor. It is explanatory, not a second camera semantic contract and not exported to clean AI PNG.
 
-Because summaries are derived, they may change when UI language or source fields change without modifying `.manga.json`.
+## Manga Check
 
-## Camera visual aid
+`mangaLint11()` derives advisory issues from current page state:
 
-The camera diagram is a lightweight SVG derived from selected camera distance and angle. It is explanatory UI, not a second camera model and not exported into the clean AI reference.
+- missing `actionIntent`;
+- camera/figure-scale conflict;
+- repeated camera distance across three or more panels;
+- all background locations unspecified on a multi-panel page;
+- repeated primary expression across three or more panels.
 
-## Guided background presets
+Lint items may navigate to a panel but never block export or rewrite content.
 
-Background location/weather/mood remain free text with datalist suggestions. Scene presets simply write a coordinated starting set into the existing background fields. Once applied, every field remains independently editable.
+## Smart Manga and selected-panel dice
 
-Preset labels and written semantic values follow the selected UI language. The hardening layer owns localized data sets rather than displaying an English label while silently writing Japanese semantic text.
+Smart Manga remains bounded to shipped layouts/direction profiles, with three non-mutating candidates, reproducible seed, balanced/dynamic/emotion variants, stable/standard/bold intensity, optional base-character placement, and expanded purposes.
 
-## Balloon presets
+The selected-panel dice remains narrower: it preserves panel geometry, role, entered background content, and balloons/dialogue while re-proposing camera/effects/breakout plus placed-character pose/expression/gaze.
 
-Balloon presets operate on the existing balloon model. They choose type/size/relative placement. If no balloon is selected, a new balloon is created; if one is selected, its text/speaker are preserved while layout/type are updated.
+Story Templates and Smart Manga intentionally solve different problems: templates provide recognizable beat scripts; Smart Manga provides bounded alternative proposals.
+
+## Layout / background / balloon presets
+
+Layout thumbnails derive from the canonical layout geometry and require explicit apply.
+
+Background location/weather/mood remain guided free text. Scene preset values follow selected UI language and remain independently editable after apply.
+
+Balloon presets choose type/size/relative position. Applying to an existing selected balloon preserves its text and speaker.
 
 ## AI-safe render modes
 
-- annotated/editor render may contain authoring metadata and anatomy colors;
-- clean AI render removes authoring text/anatomy colors while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines.
+- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, and authoring labels;
+- canonical annotated export comes from `renderSvg(true)` and contains normal authoring metadata defined by the exporter;
+- clean AI export removes authoring text/anatomy colors while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
+- Prototype 0.8 dynamic editor overlays are not part of canonical export serialization.
 
-AI generation ZIP continues to exclude the annotated PNG entirely.
+AI-generation ZIP continues to exclude annotated PNG entirely.
 
 ## Prompt compiler
 
-The compiler remains deterministic from project state and preserves the strict `TEXT TO RENDER` allowlist plus clean-reference rules.
+The compiler remains deterministic from current project state.
 
-Prototype 0.7 appends `CHARACTER IDENTITY GUIDANCE` for used base characters:
+It preserves:
 
-- sheet mode tells the assistant to use the separately attached sheet/reference key;
-- description mode supplies appearance text and says no sheet is required;
-- free mode explicitly leaves appearance open while requiring cross-panel consistency.
+- clean-reference rule;
+- strict `TEXT TO RENDER` allowlist;
+- panel role/frame/camera/background/character/effect semantics;
+- mode-aware `CHARACTER IDENTITY GUIDANCE`.
+
+Prototype 0.8 additionally inserts:
+
+```text
+STORY ACTION INTENT:
+- Panel 1: ...
+- Panel 2: ...
+```
+
+only when panels contain action intent. This section is semantic instruction, not renderable text.
 
 ## Handoff manifest v3
 
-Prototype 0.7 upgrades export manifests to `manga-blueprint-export-manifest/3`.
-
-The existing compatibility fields remain, then v3 adds:
+Manifest schema string remains `manga-blueprint-export-manifest/3` for compatibility. Existing fields/file roles remain unchanged. Prototype 0.8 appends:
 
 ```text
-fileEntries[]
-  name
+storyTemplate
+panelIntentIndex[]
+  panelId
+  order
   role
-  requiredForGeneration
-
-instructions
-  readFirst
-  primaryVisual
-  semanticContract
-  generationInstructions
-  annotatedReviewAllowedForGeneration
-  characterSheetPolicy
-
-characterGuidance[]
-  characterId / displayName
-  identityMode
-  referenceKey
-  appearance / appearanceText
-  characterSheet.required / included / status
-
-characterSheetsRequired[]
-userMessageTemplate
+  actionIntent
 ```
 
-The manifest is the read-first handoff authority. `fileEntries` distinguishes the clean spatial reference, semantic JSON, generation prompt, manifest itself, and optional human-review image.
+The manifest remains the read-first authority. Character Sheets remain separate attachments unless a future explicit packaging feature changes that boundary.
 
-Character Sheets are still external attachments; the ZIP does not claim they are included.
+## Export identity and package types
 
-## Short handoff message
+Project-state SHA-256, timestamp, UUID, and shared prefix behavior remain unchanged.
 
-The Output tab derives one short message from current page character requirements. It instructs the assistant to extract the ZIP, read `*_manifest.json` first, and use separately attached Character Sheets only where the manifest marks them required.
-
-The message is copyable but the manifest remains authoritative if the message and package ever disagree.
-
-## Export identity and ZIP package types
-
-Project-state SHA-256, timestamp, export UUID, and shared prefix behavior remain unchanged.
-
-### AI generation ZIP
+AI generation ZIP:
 
 ```text
 <prefix>_clean.png
@@ -197,30 +215,19 @@ Project-state SHA-256, timestamp, export UUID, and shared prefix behavior remain
 <prefix>_manifest.json
 ```
 
-### Review / archive ZIP
-
-```text
-<prefix>_clean.png
-<prefix>_annotated.png
-<prefix>.manga.json
-<prefix>_prompt.txt
-<prefix>_manifest.json
-```
-
-Both package types share the same export identity for the same unchanged project state. The annotated PNG remains prohibited from the AI-generation package.
+Review/archive ZIP adds `<prefix>_annotated.png`. Both package types share export identity for unchanged project state.
 
 ## UI hierarchy
 
-Prototype 0.7 keeps the task-first hierarchy:
+Prototype 0.8 task hierarchy:
 
-1. Page: Smart Manga or visual layout selection.
-2. Character: reusable identity plus Sheet / description / free appearance source.
-3. Panel: inspect stronger summary, camera explanation/diagram, optional panel dice.
-4. Background/Text: presets provide quick starts while preserving free editing.
-5. Output: AI-generation ZIP primary, short handoff copy, character identity map, Review ZIP secondary.
+1. Page: Story Template / Smart Manga / visual layout.
+2. Character: reusable identity source.
+3. Panel Peek / Panel List: understand page quickly.
+4. Panel editor: action intent + camera/framing + detailed refinement.
+5. Background/Text/Effects: preset or free editing.
+6. Output: AI-generation ZIP primary + short handoff copy; Review ZIP secondary.
 
-On narrow screens horizontal thumbnail strips remain scrollable and all action groups collapse to one-column layouts where necessary.
+## Persistence / privacy / deployment
 
-## Persistence and deployment
-
-`localStorage` stores autosave state; `.manga.json` is the portable project artifact. GitHub Pages publishes `web/`, schema, and examples. Validation remains dependency-free.
+`localStorage` stores autosave state; `.manga.json` is the portable artifact. All templates, lint, hashing, ZIP generation, appearance guidance, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.
