@@ -1,6 +1,6 @@
 # Roadmap
 
-## Shipped in Prototype 0.8
+## Shipped through Prototype 0.9
 
 ### Page and layout
 - named manuscript/canvas presets: 800×1130 default, 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, custom;
@@ -10,21 +10,26 @@
 - visual layout thumbnail strip with explicit apply.
 
 ### Story-readable authoring
-- **Story Templates**: cute daily, rom-com blush, surprise, gag, and action impact;
-- templates seed layout, panel role, action intent, camera, pose/expression/gaze, background, optional dialogue/SFX, and selected effects;
-- sample dialogue/SFX can be disabled before apply and remains fully editable afterward;
-- optional per-panel **`actionIntent`** semantic field;
-- **Panel Peek** via long-press plus discoverable `ⓘ` fallback;
-- detailed/compact **Panel List / Shot List**;
-- editor-only **Panel Chips** for at-a-glance panel meaning;
-- **Manga Check** advisory lint for missing event meaning, repeated camera/expression, missing backgrounds, and framing conflicts.
+- per-panel `actionIntent` semantic field;
+- Panel Peek via long-press plus visible `ⓘ` fallback;
+- compact opaque mobile bottom-sheet Panel Peek;
+- detailed/compact Panel List / Shot List;
+- editor-only Panel Chips;
+- Manga Check advisory lint;
+- camera-distance vs stick-figure-scale consistency check and Crop Guide.
 
-### Camera readability
-- beginner camera labels/explanations;
-- simple distance/angle camera diagram;
-- **camera-distance vs stick-figure-scale consistency check**;
-- authoring-only dotted **Crop Guide**;
-- explicit “fit character size to camera” action rather than silent mutation.
+### Scene Template Studio — Prototype 0.9
+- category filters and free-text search;
+- visual template cards with layout thumbnail, category, panel count, description, use case, and beat flow;
+- original cute-daily / rom-com / surprise / gag / action templates preserved;
+- romance pack: confession, before-kiss, after-kiss, holding hands, misunderstanding;
+- battle pack: standoff/opening, decisive blow, counterattack, aerial attack, throw technique, awakening/reversal;
+- emotion/daily/comedy/suspense/character-introduction additions;
+- optional editable sample dialogue/SFX;
+- bounded “derive from this template” variation that preserves story beat/action flow;
+- browser-local custom templates saved from current page;
+- custom geometry normalized to canvas size for reuse across manuscript dimensions;
+- custom templates deliberately exclude character-specific visual identity and reuse the current base character on apply.
 
 ### Smart Manga and direction assistance
 - three non-mutating candidates per request;
@@ -52,15 +57,12 @@
 - timestamp + project-state-hash coordinated filenames;
 - AI generation ZIP containing clean PNG, `.manga.json`, prompt, manifest — annotated PNG excluded;
 - Review/archive ZIP adding annotated PNG under same export identity;
-- manifest v3 as read-first authority with file roles, character identity guidance, Character Sheet requirements;
-- Prototype 0.8 manifest adds Story Template provenance and `panelIntentIndex`;
+- manifest v3 as read-first authority with file roles, character identity guidance, Character Sheet requirements, Story Template provenance, and panel intent index;
 - short JA/EN “extract ZIP and read manifest first” message with copy action;
-- **prompt identity contract fixed** so Character Sheets are used only where identity guidance requires them;
 - strict text allowlist keeps action intent / authoring labels out of visible manga text;
-- export UUID, full state SHA-256, canvas, reading direction, package mapping;
-- JSON import/export, local autosave, Undo/Redo, mobile tabs.
+- export UUID, full state SHA-256, JSON import/export, local autosave, Undo/Redo, mobile tabs.
 
-## Next — Prototype 0.9 candidates
+## Next candidates
 
 ### Pose Studio — highest priority
 - direct joint dragging for head / shoulders / elbows / hands / hip / knees / feet;
@@ -77,12 +79,21 @@
 - explicit optional inclusion of registered sheets in AI package;
 - safe mapping for multiple characters / multiple sheets.
 
+### Template evolution
+- favorites / recently used templates;
+- import/export template packs without provider dependency;
+- named reusable template collections;
+- reusable character/location/prop placeholders;
+- stronger scene variants based on generated-result comparisons;
+- template recommendation from story goal / beat count / desired ending emotion;
+- optional deterministic seed for template derivation.
+
 ### Scene / Location / Prop library
 - reusable location definitions such as `bedroom-A`, `classroom-A`;
 - `same scene as previous panel` / inherited scene intent;
 - reusable props such as phone, bag, cup, weapon, key;
 - prop state/continuity tracking across panels;
-- optional Story Template bindings to named locations/props.
+- optional Scene Template bindings to named locations/props.
 
 ### Panel geometry
 - drag panel boundaries;
@@ -94,23 +105,15 @@
 - balloon tail target / speaker visual connection;
 - vertical Japanese text layout;
 - deterministic post-render lettering composition;
-- reusable dialogue/SFX presets beyond Story Template samples.
+- reusable dialogue/SFX presets beyond Scene Template samples.
 
 ### Manga direction
 - multi-page / spread support;
 - memory / dream / flashback modes;
 - page-turn / reveal planning;
 - eye-flow visualization;
-- richer camera crop/framing model tied to target body region, not only heuristic scale;
-- causal beat tools (`cause → perception → reaction → effect`) for event-heavy pages;
-- additional profiles informed by generated-result comparisons.
-
-### Template evolution
-- user-saved Story Templates / layout-direction presets;
-- named custom Smart Manga profiles;
-- template recommendation from intended beat count / story goal;
-- reusable Story Template character/location placeholders;
-- import/export template packs without provider dependency.
+- richer camera crop/framing model tied to target body region;
+- causal beat tools (`cause → perception → reaction → effect`) for event-heavy pages.
 
 ### Generated-result review
 - upload generated manga and compare against Blueprint intent;
@@ -123,9 +126,9 @@
 - package compatibility checks across future project/manifest versions.
 
 ### Usability validation
-- representative mobile long-press / Panel Peek / Story Template walkthroughs;
+- representative mobile Scene Template / Panel Peek / custom-template walkthroughs;
 - keyboard/focus/accessibility audit;
-- actual-user feedback on Story Templates, Panel List, camera warnings, and character identity modes;
+- actual-user feedback on template discovery, camera warnings, and character identity modes;
 - no analytics by default; any feedback collection needs an explicit privacy boundary.
 
 ### Integration
