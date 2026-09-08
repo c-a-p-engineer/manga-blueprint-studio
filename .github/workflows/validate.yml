@@ -36,6 +36,10 @@ jobs:
           node --check web/app-10.js
           node --check web/app-11.js
           node --check web/app-12.js
+          node --check web/app-13.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
+
+      - name: Validate Panel Peek mobile contract
+        run: node scripts/validate-panel-peek.mjs
