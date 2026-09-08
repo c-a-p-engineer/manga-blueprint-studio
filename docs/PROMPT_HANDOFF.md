@@ -23,57 +23,64 @@ The AI package deliberately excludes annotated review PNG.
 
 Review/archive ZIP contains the same state-linked materials plus `<prefix>_annotated.png`. It is for human checking/storage, not the default image-generation input.
 
-If annotated review is separately shown to an assistant, its labels remain authoring metadata and must not become visible final-art text.
+If annotated review is separately shown to an assistant, its labels and lettering preview remain authoring metadata and must not become visible final-art text unless the exact string is separately allowlisted under `TEXT TO RENDER`.
 
-## Manifest v3
+## Manifest v4
 
-Prototype 0.8 continues:
+Prototype 0.10 uses:
 
 ```text
-manga-blueprint-export-manifest/3
+manga-blueprint-export-manifest/4
 ```
 
-The manifest retains export/package identity, file roles, instructions, and character guidance, and additionally carries Story Template provenance and panel action-intent indexing where available.
+The manifest retains export/package identity, file roles, instructions, character guidance, Story Template provenance, and panel action-intent indexing, then adds explicit reading-order and text-layout contracts.
+
+### Reading-order contract
+
+```json
+{
+  "readingOrderContract": {
+    "direction": "rtl",
+    "panelNumbersFollowReadingDirection": true,
+    "storyBeatsFollowPanelNumbers": true
+  }
+}
+```
+
+This means the page number shown on a panel, the order used by Panel List/Prompt, and the Scene Template beat assigned to that panel all share the same geometry + reading-direction rule.
+
+### Text-layout contract
+
+```json
+{
+  "textLayout": {
+    "defaultWritingDirection": "vertical",
+    "balloons": [
+      {
+        "panelOrder": 1,
+        "balloonId": "balloon_xxx",
+        "writingDirection": "vertical"
+      }
+    ],
+    "onomatopoeia": [
+      {
+        "panelOrder": 2,
+        "writingDirection": "horizontal"
+      }
+    ]
+  }
+}
+```
 
 ### File roles
 
-`fileEntries` identifies:
-
-- `visual-spatial-reference` — clean PNG;
-- `semantic-contract` — `.manga.json`;
-- `generation-instructions` — prompt text;
-- `handoff-manifest` — manifest itself;
-- `authoring-review` — annotated PNG, Review ZIP only.
-
-### Read-first instructions
-
-`instructions` identifies manifest itself as `readFirst`, clean PNG as `primaryVisual`, project JSON as `semanticContract`, prompt file as `generationInstructions`, and states `annotatedReviewAllowedForGeneration: false`.
+`fileEntries` identifies clean PNG, `.manga.json`, prompt text, manifest itself, and annotated review PNG when present.
 
 ### Character guidance
 
 `characterGuidance` is derived from reusable characters actually used on the page and contains identity mode, reference key, appearance guidance, and Character Sheet requirement/status.
 
 `characterSheetsRequired` is the compact list for characters in `sheet` mode.
-
-### Story action index
-
-Prototype 0.8 may add:
-
-```json
-{
-  "storyTemplate": "cuteDaily",
-  "panelIntentIndex": [
-    {
-      "panelId": "panel_1",
-      "order": 1,
-      "role": "setup",
-      "actionIntent": "部屋でこちらに気づく"
-    }
-  ]
-}
-```
-
-`storyTemplate` is provenance only. `panelIntentIndex` is a convenient manifest index; `.manga.json` remains the semantic source of truth.
 
 ## Character identity modes
 
@@ -89,32 +96,66 @@ No Character Sheet is required. Structured/free-text appearance guidance from th
 
 No Character Sheet is required. The model may choose a simple appearance but must preserve it consistently across panels.
 
-## Critical prompt identity rule
-
-The generated prompt must **not** say that all visual identity comes only from Character Sheets.
-
-Prototype 0.8 uses this semantic rule:
-
-```text
-Character visual identity follows CHARACTER IDENTITY GUIDANCE.
-Use separately attached Character Sheets only for characters whose identity mode requires them.
-```
-
-The appended `CHARACTER IDENTITY GUIDANCE` section then states the correct mode for each used character.
-
 ## Story action intent
 
-Panel `actionIntent` expresses what happens in the panel when pose alone is insufficient.
+Panel `actionIntent` expresses what happens in the panel when pose alone is insufficient. It is semantic instruction, not manga lettering.
 
-When non-empty, the prompt adds a semantic section such as:
+## Reading order
+
+`meta.readingDirection` is authoritative:
+
+- `rtl` = Japanese manga, right-to-left;
+- `ltr` = left-to-right.
+
+Prototype 0.10 synchronizes panel `order` from current geometry plus this selected direction before render/export. The same order is used by canvas numbers, layout/Smart/Scene Template previews, Panel Peek/List, Scene Template beat assignment, generated prompt, and manifest.
+
+For a standard two-column row:
 
 ```text
-STORY ACTION INTENT:
-- Panel 1: notices the viewer in the room
-- Panel 2: turns back after being called
+RTL: right panel -> lower order number -> left panel
+LTR: left panel  -> lower order number -> right panel
 ```
 
-These strings are **instructions**, not manga lettering. They must never become visible text merely because they appear in the prompt.
+## Balloon and SFX writing direction
+
+Reading order and writing direction are separate contracts.
+
+Project default:
+
+```json
+{
+  "meta": {
+    "textDirectionDefault": "vertical"
+  }
+}
+```
+
+Per balloon:
+
+```json
+{
+  "writingDirection": "vertical"
+}
+```
+
+Per onomatopoeia:
+
+```json
+{
+  "effects": {
+    "sfxWritingDirection": "horizontal"
+  }
+}
+```
+
+Allowed values:
+
+- `vertical` — handed off as Japanese-manga-style `vertical-rl`;
+- `horizontal` — handed off as `horizontal-tb`.
+
+New and legacy-unset text defaults to `vertical`. Each balloon and each SFX may be changed independently. Writing direction does not change panel reading order.
+
+The generated prompt adds a `TEXT WRITING DIRECTION CONTRACT` with exact per-panel choices.
 
 ## Text allowlist
 
@@ -126,29 +167,17 @@ TEXT TO RENDER:
 
 may become visible manga text. This normally includes balloon dialogue and onomatopoeia.
 
-Forbidden as visible text includes:
-
-- character display names / Character IDs;
-- Character Sheet keys;
-- panel numbers;
-- camera terms;
-- Story Template names;
-- action intent;
-- Panel Peek/List/Chip summaries;
-- Crop Guide labels;
-- editor/UI text.
+Forbidden as visible text includes character display names/IDs, Character Sheet keys, panel numbers, camera terms, Story Template names, action intent, writing-direction labels, Panel Peek/List/Chip summaries, Crop Guide labels, and editor/UI text.
 
 ## Visual-reference boundary
 
 Clean PNG is the spatial reference. Stick figures communicate pose/placement, not appearance.
 
-Prototype 0.8 editor-only overlays such as Panel Chips, `ⓘ`, and Crop Guide do not enter clean PNG. Camera-framing diagnostics therefore improve authoring without polluting downstream image-generation input.
+Editor-only overlays and lettering previews do not enter clean PNG. Writing direction is communicated through `.manga.json`, generated prompt, and manifest.
 
 ## Story Templates and text
 
-A Story Template may seed sample dialogue/SFX only when the user enables that option before apply. Once applied, sample text becomes ordinary project dialogue/SFX and therefore appears under `TEXT TO RENDER` unless the user edits/removes it.
-
-Template action intent remains semantic and is never automatically promoted to renderable text.
+A Scene Template may seed sample dialogue/SFX only when enabled before apply. Template-created text inherits `meta.textDirectionDefault` at apply time. Scene Template beat assignment follows the selected page reading direction.
 
 ## Export-set identity
 
@@ -158,11 +187,7 @@ Template action intent remains semantic and is never automatically promoted to r
 <project-title>_YYYYMMDD_HHMMSS_<short-sha256>
 ```
 
-SHA-256 is calculated from serialized Manga Blueprint project state. Manifest records the full state hash and export UUID. Files created from the same unchanged state reuse the same in-session identity.
-
-## Reading direction
-
-`meta.readingDirection` remains authoritative. `rtl` means Japanese manga right-to-left; `ltr` means left-to-right.
+SHA-256 is calculated from serialized Manga Blueprint project state. Manifest records the full state hash and export UUID.
 
 ## Example
 
