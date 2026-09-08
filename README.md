@@ -1,47 +1,30 @@
 # Manga Blueprint Studio
 
-Visual manga storyboard editor for designing panels, character poses, camera direction, backgrounds, dialogue, and manga-specific effects, then handing that direction to image-generation assistants with minimal ambiguity.
+Visual manga storyboard editor for designing manuscript size, panel layout, character poses, camera direction, backgrounds, dialogue, and manga-specific effects, then handing that direction to image-generation assistants with minimal ambiguity.
 
-**The human remains the director.** The tool does not autonomously decide composition.
+**The human remains the director.** AI is a downstream renderer/assistant.
 
-## Prototype 0.3
+## Prototype 0.4
 
 Current prototype supports:
 
-- Japanese right-to-left manga page templates;
-- panel splitting and semantic panel order;
-- camera distance / angle / viewpoint with inline explanations;
-- named stick-figure characters and pose presets;
-- character placement, scale, rotation, expression, and gaze intent;
-- background location / time / weather / mood / detail treatment;
-- panel border styles, bleed (断ち切り), and breakout (ブチ抜き) semantics;
-- speech / thought / shout / narration balloons with exact text stored semantically;
-- manga effects such as speed lines, focus lines, impact lines, silence/beat, and onomatopoeia;
-- deterministic provider-neutral prompt compilation;
-- legacy `manga-blueprint/0.1` import with migration to `0.2`;
-- browser-local autosave and Undo / Redo;
-- Japanese-first mobile UI with English UI translation;
-- two PNG export modes:
-  - **AI clean PNG** — no character names, panel numbers, camera labels, or other authoring text;
-  - **annotated review PNG** — keeps authoring labels for human review;
-- `.manga.json` export/import.
+- **canvas/manuscript presets**: current 800×1130, 1:1 square, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, and custom size;
+- **layout presets**: 1 panel, 2-panel variants, 3-panel variants, action layouts, 4-koma 1×4 / 2×2 / 4×1, 5/6-panel patterns, conversation and climax patterns;
+- **Smart Random / おまかせ作成** using purpose and optional panel count rather than unconstrained random geometry;
+- **panel overview and per-panel summary** so pose, role, camera, background, dialogue count, and effects are visible at a glance;
+- beginner-facing camera vocabulary such as `Extreme close / 超寄り` and `Low angle / あおり`, plus plain-language descriptions and quick camera presets;
+- first-run **使い方** dialog that can be reopened at any time;
+- Japanese right-to-left reading order, panel splitting and renumbering;
+- character pose, placement, expression, gaze, background, balloons, borderless/bleed/breakout, effects and onomatopoeia;
+- AI-safe clean PNG, annotated review PNG, deterministic prompt, and `.manga.json` export/import;
+- legacy `manga-blueprint/0.1` import normalized to current `0.2` semantics;
+- browser-local autosave, Undo / Redo, Japanese-first mobile UI with English translation.
 
-## Why the clean AI export exists
+## AI-safe export
 
-A multimodal image model may interpret text visible in the blueprint as requested final artwork. For that reason, the AI handoff PNG deliberately removes:
-
-- character display names;
-- Character IDs and sheet keys;
-- panel numbers;
-- camera metadata;
-- editor/UI labels;
-- balloon text and SFX text.
-
-Exact dialogue and onomatopoeia are passed in the generated prompt under `TEXT TO RENDER`. The prompt explicitly forbids rendering any other metadata.
+The clean AI PNG deliberately removes authoring text such as character names, panel numbers, camera metadata, panel summaries, balloon text, and SFX labels. Exact dialogue and onomatopoeia are passed only under `TEXT TO RENDER` in the generated prompt.
 
 ## Try it
-
-GitHub Pages:
 
 https://c-a-p-engineer.github.io/manga-blueprint-studio/
 
@@ -53,37 +36,24 @@ No package installation or build is required.
 python3 -m http.server 4173
 ```
 
-Open:
-
-```text
-http://localhost:4173/web/
-```
+Open `http://localhost:4173/web/`.
 
 ## Data contract
 
-The visual image communicates **space**.  
-`.manga.json` communicates **meaning**.  
-Character Sheets communicate **identity**.
+The visual image communicates **space**. `.manga.json` communicates **meaning**. Character Sheets communicate **identity**.
 
-Current export format:
+Current export format remains `manga-blueprint/0.2`; prototype 0.4 adds optional `meta.canvasPreset`, `meta.layoutPreset`, and `meta.randomPurpose` without breaking existing 0.2 files.
 
-```text
-manga-blueprint/0.2
-```
-
-Canonical schema:
-
-https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
+Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
 
 ## Documents
 
-- [`AGENTS.md`](AGENTS.md) — repository rules and invariants
-- [`docs/PRODUCT.md`](docs/PRODUCT.md) — behavior contract
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — architecture and data flow
-- [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff contract
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — development roadmap
-- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — JSON Schema
-- [`examples/directed-closeup.manga.json`](examples/directed-closeup.manga.json) — example
+- [`AGENTS.md`](AGENTS.md)
+- [`docs/PRODUCT.md`](docs/PRODUCT.md)
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md)
+- [`docs/ROADMAP.md`](docs/ROADMAP.md)
+- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json)
 
 ## License
 
