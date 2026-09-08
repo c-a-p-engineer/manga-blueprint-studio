@@ -41,7 +41,7 @@ A base character has one visual identity mode:
 2. `description` — no Character Sheet is required; text appearance guidance is the identity contract.
 3. `free` — no Character Sheet is required; the downstream model may choose a simple appearance but must keep it consistent across panels.
 
-Optional appearance guidance may contain a free summary plus hair, eyes, outfit, and distinctive features. Suggestions must remain free text, not a closed character generator.
+Optional appearance guidance may contain a free summary plus hair, eyes, outfit, and distinctive features. Suggestions must remain free text, not a closed character generator. Localized presets/suggestions must write values in the selected UI language rather than mixing languages silently.
 
 Legacy bases with a non-empty reference key normalize to `sheet`; those without one normalize to `description`. Do not destroy placed instances while deriving/upgrading base definitions.
 
@@ -79,7 +79,7 @@ Canvas/layout/background/balloon presets are editable starting points. They neve
 - 4-koma distinguishes at least 1×4 and 2×2;
 - layout thumbnails derive from the same layout geometry as the canonical preset selector;
 - browsing a layout thumbnail must not discard authored content; explicit apply uses the normal reset/confirmation path;
-- background presets write existing semantic fields, after which each value remains editable;
+- background presets write existing semantic fields in the selected UI language, after which each value remains editable;
 - balloon presets set type/size/position and preserve existing text when modifying a selected balloon.
 
 ### Smart Manga remains bounded, previewable, reproducible, and editable
@@ -104,7 +104,7 @@ The per-panel dice is narrower. It preserves panel geometry, entered background 
 
 ### Guided free text
 
-Fields such as background location/weather/mood and character appearance details provide suggestions without becoming closed vocabularies. Native select-and-type patterns such as `<input list>` are preferred where the stored semantic value remains free text.
+Fields such as background location/weather/mood and character appearance details provide suggestions without becoming closed vocabularies. Native select-and-type patterns such as `<input list>` are preferred where the stored semantic value remains free text. When appearance mode is `free`, appearance-detail controls are disabled to make the active identity contract unambiguous.
 
 ### Panel summaries are derived authoring metadata
 
@@ -187,7 +187,7 @@ ZIP packaging, hashing, UUID generation, seeded proposal generation, filename cr
 
 ## Runtime
 
-`web/app.js` loads `web/app-1.js` through `web/app-9.js` as plain static assets. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
+`web/app.js` loads `web/app-1.js` through `web/app-10.js` as plain static assets. `app-10.js` is a small Prototype 0.7 localization/state hardening layer. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
 
 ## Definition of done
 
@@ -204,6 +204,8 @@ Relevant changes preserve:
 - Character-Sheet-free description/free workflows;
 - appearance guidance persisted to `.manga.json` and propagated to manifest/prompt;
 - visible Character Sheet requirement/missing-key diagnostics;
+- free appearance mode visibly disables inactive appearance-detail inputs;
+- localized background preset semantic values follow UI language;
 - anatomy-readable review figures with monochrome clean figures;
 - guided free-text background inputs plus editable scene presets;
 - balloon presets that do not erase existing dialogue;
