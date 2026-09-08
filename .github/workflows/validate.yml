@@ -38,6 +38,7 @@ jobs:
           node --check web/app-12.js
           node --check web/app-13.js
           node --check web/app-14.js
+          node --check web/app-15.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -47,3 +48,6 @@ jobs:
 
       - name: Validate Template Studio contract
         run: node scripts/validate-template-studio.mjs
+
+      - name: Validate text direction and reading order contract
+        run: node scripts/validate-text-direction.mjs
