@@ -13,8 +13,11 @@
       "properties": {
         "title": { "type": "string" },
         "readingDirection": { "enum": ["rtl", "ltr"] },
-        "pageWidth": { "type": "number", "exclusiveMinimum": 0 },
-        "pageHeight": { "type": "number", "exclusiveMinimum": 0 }
+        "pageWidth": { "type": "number", "minimum": 320, "maximum": 4000 },
+        "pageHeight": { "type": "number", "minimum": 320, "maximum": 6000 },
+        "canvasPreset": { "type": "string" },
+        "layoutPreset": { "type": "string" },
+        "randomPurpose": { "type": "string" }
       },
       "additionalProperties": true
     },
@@ -22,118 +25,16 @@
   },
   "additionalProperties": true,
   "$defs": {
-    "rect": {
-      "type": "object",
-      "required": ["x", "y", "w", "h"],
-      "properties": {
-        "x": { "type": "number" }, "y": { "type": "number" },
-        "w": { "type": "number", "exclusiveMinimum": 0 }, "h": { "type": "number", "exclusiveMinimum": 0 }
-      },
-      "additionalProperties": false
-    },
-    "camera": {
-      "type": "object",
-      "required": ["distance", "angle", "viewpoint", "focus", "intent"],
-      "properties": {
-        "distance": { "enum": ["extreme-long", "long", "medium", "close", "extreme-close"] },
-        "angle": { "enum": ["eye-level", "low-angle", "high-angle", "birds-eye", "worms-eye", "dutch-angle", "over-shoulder"] },
-        "viewpoint": { "enum": ["front", "three-quarter-front", "side", "three-quarter-back", "back", "pov", "near-object"] },
-        "focus": { "type": "string" },
-        "intent": { "type": "string" }
-      },
-      "additionalProperties": true
-    },
-    "panelStyle": {
-      "type": "object",
-      "required": ["border", "bleed", "breakout"],
-      "properties": {
-        "border": { "enum": ["normal", "borderless", "inset", "impact"] },
-        "bleed": { "enum": ["none", "top", "right", "bottom", "left", "all"] },
-        "breakout": { "enum": ["none", "character", "foreground", "cross-panel"] }
-      },
-      "additionalProperties": true
-    },
-    "background": {
-      "type": "object",
-      "required": ["location", "timeOfDay", "weather", "mood", "detailLevel", "renderMode", "notes"],
-      "properties": {
-        "location": { "type": "string" }, "timeOfDay": { "type": "string" }, "weather": { "type": "string" }, "mood": { "type": "string" },
-        "detailLevel": { "enum": ["none", "low", "medium", "high"] },
-        "renderMode": { "enum": ["normal", "selective-detail", "white", "blur", "speed-lines", "focus-lines", "black"] },
-        "notes": { "type": "string" }
-      },
-      "additionalProperties": true
-    },
-    "effects": {
-      "type": "object",
-      "required": ["lineEffect", "strength", "sfxText", "sfxStyle", "notes"],
-      "properties": {
-        "lineEffect": { "enum": ["none", "speed", "focus", "impact", "tension", "silence"] },
-        "strength": { "enum": ["low", "medium", "high"] },
-        "sfxText": { "type": "string" }, "sfxStyle": { "type": "string" }, "notes": { "type": "string" }
-      },
-      "additionalProperties": true
-    },
-    "expression": {
-      "type": "object",
-      "required": ["type", "intensity", "notes"],
-      "properties": {
-        "type": { "type": "string" },
-        "intensity": { "type": "number", "minimum": 0, "maximum": 1 },
-        "notes": { "type": "string" }
-      },
-      "additionalProperties": true
-    },
-    "gaze": {
-      "type": "object",
-      "required": ["target", "notes"],
-      "properties": { "target": { "type": "string" }, "notes": { "type": "string" } },
-      "additionalProperties": true
-    },
-    "characterInstance": {
-      "type": "object",
-      "required": ["id", "characterId", "name", "referenceKey", "x", "y", "scale", "rotation", "poseId", "expression", "gaze"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 }, "characterId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "minLength": 1 }, "referenceKey": { "type": "string" },
-        "x": { "type": "number" }, "y": { "type": "number" }, "scale": { "type": "number", "exclusiveMinimum": 0 },
-        "rotation": { "type": "number" }, "poseId": { "type": "string", "minLength": 1 },
-        "expression": { "$ref": "#/$defs/expression" }, "gaze": { "$ref": "#/$defs/gaze" }
-      },
-      "additionalProperties": true
-    },
-    "balloon": {
-      "type": "object",
-      "required": ["id", "type", "speakerId", "text", "x", "y", "size"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "enum": ["speech", "thought", "shout", "whisper", "narration", "offscreen"] },
-        "speakerId": { "type": "string" }, "text": { "type": "string" },
-        "x": { "type": "number" }, "y": { "type": "number" }, "size": { "type": "number", "exclusiveMinimum": 0 }
-      },
-      "additionalProperties": true
-    },
-    "panel": {
-      "type": "object",
-      "required": ["id", "order", "rect", "role", "style", "camera", "background", "effects", "characters", "balloons"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 }, "order": { "type": "integer", "minimum": 1 },
-        "rect": { "$ref": "#/$defs/rect" }, "role": { "type": "string" },
-        "style": { "$ref": "#/$defs/panelStyle" }, "camera": { "$ref": "#/$defs/camera" },
-        "background": { "$ref": "#/$defs/background" }, "effects": { "$ref": "#/$defs/effects" },
-        "characters": { "type": "array", "items": { "$ref": "#/$defs/characterInstance" } },
-        "balloons": { "type": "array", "items": { "$ref": "#/$defs/balloon" } }
-      },
-      "additionalProperties": true
-    },
-    "page": {
-      "type": "object",
-      "required": ["id", "panels"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "panels": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/panel" } }
-      },
-      "additionalProperties": true
-    }
+    "rect": { "type": "object", "required": ["x","y","w","h"], "properties": { "x":{"type":"number"},"y":{"type":"number"},"w":{"type":"number","exclusiveMinimum":0},"h":{"type":"number","exclusiveMinimum":0} }, "additionalProperties": false },
+    "camera": { "type": "object", "required": ["distance","angle","viewpoint","focus","intent"], "properties": { "distance":{"enum":["extreme-long","long","medium","close","extreme-close"]},"angle":{"enum":["eye-level","low-angle","high-angle","birds-eye","worms-eye","dutch-angle","over-shoulder"]},"viewpoint":{"enum":["front","three-quarter-front","side","three-quarter-back","back","pov","near-object"]},"focus":{"type":"string"},"intent":{"type":"string"} }, "additionalProperties": true },
+    "panelStyle": { "type":"object", "required":["border","bleed","breakout"], "properties": { "border":{"enum":["normal","borderless","inset","impact"]},"bleed":{"enum":["none","top","right","bottom","left","all"]},"breakout":{"enum":["none","character","foreground","cross-panel"]} }, "additionalProperties": true },
+    "background": { "type":"object", "required":["location","timeOfDay","weather","mood","detailLevel","renderMode","notes"], "properties": { "location":{"type":"string"},"timeOfDay":{"type":"string"},"weather":{"type":"string"},"mood":{"type":"string"},"detailLevel":{"enum":["none","low","medium","high"]},"renderMode":{"enum":["normal","selective-detail","white","blur","speed-lines","focus-lines","black"]},"notes":{"type":"string"} }, "additionalProperties": true },
+    "effects": { "type":"object", "required":["lineEffect","strength","sfxText","sfxStyle","notes"], "properties": { "lineEffect":{"enum":["none","speed","focus","impact","tension","silence"]},"strength":{"enum":["low","medium","high"]},"sfxText":{"type":"string"},"sfxStyle":{"type":"string"},"notes":{"type":"string"} }, "additionalProperties": true },
+    "expression": { "type":"object", "required":["type","intensity","notes"], "properties": { "type":{"type":"string"},"intensity":{"type":"number","minimum":0,"maximum":1},"notes":{"type":"string"} }, "additionalProperties": true },
+    "gaze": { "type":"object", "required":["target","notes"], "properties": { "target":{"type":"string"},"notes":{"type":"string"} }, "additionalProperties": true },
+    "characterInstance": { "type":"object", "required":["id","characterId","name","referenceKey","x","y","scale","rotation","poseId","expression","gaze"], "properties": { "id":{"type":"string","minLength":1},"characterId":{"type":"string","minLength":1},"name":{"type":"string","minLength":1},"referenceKey":{"type":"string"},"x":{"type":"number"},"y":{"type":"number"},"scale":{"type":"number","exclusiveMinimum":0},"rotation":{"type":"number"},"poseId":{"type":"string","minLength":1},"expression":{"$ref":"#/$defs/expression"},"gaze":{"$ref":"#/$defs/gaze"} }, "additionalProperties": true },
+    "balloon": { "type":"object", "required":["id","type","speakerId","text","x","y","size"], "properties": { "id":{"type":"string","minLength":1},"type":{"enum":["speech","thought","shout","whisper","narration","offscreen"]},"speakerId":{"type":"string"},"text":{"type":"string"},"x":{"type":"number"},"y":{"type":"number"},"size":{"type":"number","exclusiveMinimum":0} }, "additionalProperties": true },
+    "panel": { "type":"object", "required":["id","order","rect","role","style","camera","background","effects","characters","balloons"], "properties": { "id":{"type":"string","minLength":1},"order":{"type":"integer","minimum":1},"rect":{"$ref":"#/$defs/rect"},"role":{"type":"string"},"style":{"$ref":"#/$defs/panelStyle"},"camera":{"$ref":"#/$defs/camera"},"background":{"$ref":"#/$defs/background"},"effects":{"$ref":"#/$defs/effects"},"characters":{"type":"array","items":{"$ref":"#/$defs/characterInstance"}},"balloons":{"type":"array","items":{"$ref":"#/$defs/balloon"}} }, "additionalProperties": true },
+    "page": { "type":"object", "required":["id","panels"], "properties": { "id":{"type":"string","minLength":1},"panels":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/panel"}} }, "additionalProperties": true }
   }
 }
