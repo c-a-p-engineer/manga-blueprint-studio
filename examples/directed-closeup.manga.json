@@ -4,8 +4,19 @@
     "title": "Directed close-up example",
     "readingDirection": "rtl",
     "pageWidth": 800,
-    "pageHeight": 1130
+    "pageHeight": 1130,
+    "canvasPreset": "standard",
+    "layoutPreset": "single"
   },
+  "characterLibrary": [
+    {
+      "characterId": "hero",
+      "name": "Display name is editor-only",
+      "referenceKey": "hero-sheet",
+      "poseId": "lookback",
+      "notes": "Reusable base definition; panel instances may override pose/expression/gaze."
+    }
+  ],
   "pages": [
     {
       "id": "page_1",
