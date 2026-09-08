@@ -1,18 +1,29 @@
 # Prompt and Image Handoff Contract
 
-## Recommended handoff
+## Recommended handoff: AI generation ZIP
 
-Prefer the one-click export ZIP when moving a Manga Blueprint into ChatGPT or another assistant. It keeps the assets from one editor state together and gives them a shared identity.
+When moving a Manga Blueprint into ChatGPT or another image-generation assistant, use the **AI generation ZIP**. It keeps one editor state's machine-consumable assets together while deliberately excluding the annotated review image.
 
-The ZIP contains:
+The AI generation ZIP contains:
 
-1. `<prefix>_clean.png` — default spatial reference for image generation;
-2. `<prefix>_annotated.png` — human review reference, not the default generation image;
-3. `<prefix>.manga.json` — semantic blueprint;
-4. `<prefix>_prompt.txt` — generated semantic instructions;
-5. `<prefix>_manifest.json` — export-set identity and filenames.
+1. `<prefix>_clean.png` — the visual composition reference for image generation;
+2. `<prefix>.manga.json` — semantic blueprint;
+3. `<prefix>_prompt.txt` — generated semantic instructions;
+4. `<prefix>_manifest.json` — export-set identity, package type, and filenames.
+
+**It does not contain `<prefix>_annotated.png`.** This is intentional. If authoring labels are not needed by the image model, removing them from the input is safer than relying only on a negative prompt telling the model to ignore them.
 
 Character Sheet images remain separate until the user explicitly registers/provides them.
+
+## Review / archive ZIP
+
+Use the Review / archive ZIP for human review, troubleshooting, or storage. It contains the same state-linked materials plus:
+
+- `<prefix>_annotated.png` — human-readable review reference.
+
+The annotated PNG may contain character display names, panel numbers, camera labels, panel summaries, background notes, and anatomy guide colors. It is not a final-art text source.
+
+If the annotated PNG is separately supplied to an assistant for discussion, the prompt contract states that its labels are authoring metadata only and must not be rendered into the finished manga.
 
 ## Export-set identity
 
@@ -24,13 +35,25 @@ Character Sheet images remain separate until the user explicitly registers/provi
 
 The SHA-256 is calculated from the serialized Manga Blueprint project state. The manifest records the full state hash and an export UUID.
 
-When clean PNG, annotated PNG, JSON, prompt, and manifest share the same state hash, they represent the same editor state. This state hash is not a checksum of PNG bytes and does not imply byte-identical rasterization across browsers.
+Files/packages created from the same unchanged project state reuse the same in-session prefix and export UUID. This lets a clean PNG and later review PNG be recognized as belonging to the same design state even though they are delivered in different ZIP package types.
 
-## Do not use the annotated PNG as the default AI reference
+The state hash is not a checksum of PNG bytes and does not imply byte-identical rasterization across browsers.
 
-The annotated PNG is intentionally human-readable and may contain character display names, panel numbers, camera labels, panel summaries, background notes, and anatomy guide colors. Multimodal generators can copy those labels/colors into final artwork.
+## Manifest package type
 
-Use the `_clean.png` image for generation. Its stick figures are monochrome pose references.
+Prototype 0.6 uses `manga-blueprint-export-manifest/2`.
+
+`packageType` is one of:
+
+- `ai-generation` — safe direct handoff; no annotated PNG;
+- `review-archive` — human-review package; annotated PNG included.
+
+The manifest identifies:
+
+- `visualReference` — the clean PNG;
+- `authoringReview` — annotated PNG filename for review packages, otherwise `null`;
+- `aiGenerationSafe` — true only for the AI generation package;
+- `handoffRule` — use clean PNG for generation; authoring review labels are not final artwork.
 
 ## Reusable character identity
 
@@ -58,7 +81,10 @@ The following are always metadata unless the user explicitly includes them in `T
 - camera settings;
 - role names;
 - background annotations;
+- panel summaries;
 - editor labels.
+
+The prompt also contains a `REFERENCE IMAGE RULE` that names the clean PNG as the intended composition reference and explains the annotated/review boundary.
 
 ## Reading direction
 
@@ -68,16 +94,23 @@ The prompt reads `meta.readingDirection` from the same project state as the expo
 
 The clean blueprint includes balloon geometry/placement but not the dialogue glyphs. The semantic prompt contains exact dialogue. This separates spatial intent from text content and reduces accidental copying of authoring metadata.
 
-## Example handoff
+## Example AI handoff
+
+Upload the AI generation ZIP:
 
 ```text
-Upload:
-  My-Manga_20260908_131500_a1b2c3d4e5_clean.png
-  My-Manga_20260908_131500_a1b2c3d4e5.manga.json
-  hero-sheet.png
-
-Prompt:
-  contents of My-Manga_20260908_131500_a1b2c3d4e5_prompt.txt
+My-Manga_20260908_131500_a1b2c3d4e5_ai.zip
 ```
 
-When the assistant can inspect ZIP files directly, the complete ZIP is the preferred compact upload artifact.
+Inside:
+
+```text
+My-Manga_20260908_131500_a1b2c3d4e5_clean.png
+My-Manga_20260908_131500_a1b2c3d4e5.manga.json
+My-Manga_20260908_131500_a1b2c3d4e5_prompt.txt
+My-Manga_20260908_131500_a1b2c3d4e5_manifest.json
+```
+
+Attach Character Sheets separately when needed.
+
+For human inspection or archival comparison, export the matching `_review.zip`; its shared state hash/export identity links it back to the same design state.
