@@ -43,6 +43,7 @@ jobs:
           node --check web/app-17.js
           node --check web/app-18.js
           node --check web/app-19.js
+          node --check web/app-20.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -64,3 +65,6 @@ jobs:
 
       - name: Validate art direction / spatial semantics
         run: node scripts/validate-art-direction-spatial.mjs
+
+      - name: Validate cross-model handoff hardening
+        run: node scripts/validate-cross-model-handoff.mjs
