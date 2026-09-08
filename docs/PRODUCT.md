@@ -4,16 +4,16 @@
 
 Image-generation assistants can render manga-style images, but users should not need cinematography vocabulary, manual coordinates, repeated character entry, or a Character Sheet for every character just to communicate manga direction. They also need to understand **what happens in each panel** without opening every editor field, and they should be able to begin from a recognizable scene such as a confession, a kiss beat, a counterattack, or a reaction without manually inventing every camera/pose choice.
 
-Manga Blueprint Studio lets a human choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the whole page quickly, and export an AI-safe visual reference plus semantic instructions.
+Manga Blueprint Studio lets a human choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the whole page quickly, control manga lettering direction, and export an AI-safe visual reference plus semantic instructions.
 
 ## Primary user flow
 
-1. Choose manuscript size and reading direction (`rtl` or `ltr`).
+1. Choose manuscript size and panel reading direction (`rtl` or `ltr`).
 2. Start from **Scene Template Studio**, Smart Manga, or a visual panel layout.
 3. If using Scene Template Studio, filter/search by scene intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
 4. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
 5. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
-6. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, frame/effects.
+6. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, lettering direction, frame/effects.
 7. Review advisory Manga Check / camera-framing warnings.
 8. Optionally save the current page pattern as a browser-local custom template.
 9. Export AI generation ZIP and copy the short manifest-first handoff message.
@@ -148,7 +148,7 @@ Professional terms remain available for interoperability, but Japanese UI pairs 
 
 The product ships named manuscript presets: `800×1130 Portrait` (default), 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, and custom dimensions.
 
-Japanese right-to-left is default; left-to-right is supported. Changing reading direction preserves geometry and renumbers by current position.
+Japanese right-to-left is default; left-to-right is supported. Panel `order` is derived from current geometry plus selected reading direction on committed render paths. For ordinary rows, RTL numbers right-to-left and LTR numbers left-to-right. The same resulting order drives canvas badges, Panel Peek/List, prompt, manifest semantics, and exports.
 
 Common layouts include single, 2-panel, 3-panel, action, 4-koma 1×4 / 2×2 / 4×1, 5/6-panel, conversation, action, and climax patterns. Visual thumbnails require explicit apply rather than destructive browse-time replacement.
 
@@ -174,25 +174,40 @@ Inputs include purpose, optional panel count, canvas-size preservation, optional
 
 The selected-panel dice preserves geometry, background content, dialogue, and narrative role while re-proposing camera/effects/breakout plus pose/expression/gaze.
 
+## Balloon lettering direction
+
+Prototype 0.10 makes writing direction explicit and independent from panel reading direction.
+
+- `meta.defaultWritingMode` is the project default;
+- the default is `vertical-rl`, appropriate for Japanese manga balloons;
+- users can switch the default to `horizontal-tb`;
+- each balloon stores optional `writingMode: inherit | vertical-rl | horizontal-tb`;
+- `inherit` follows the project default;
+- existing projects without either field normalize to vertical-first behavior;
+- editor/review preview reflects the effective direction;
+- clean AI PNG still removes balloon text and keeps only balloon geometry;
+- the generation prompt includes a `LETTERING DIRECTION` section so the downstream image generator receives the effective direction for each non-empty balloon;
+- changing lettering direction never changes panel numbering or RTL/LTR reading order.
+
 ## Background / balloons / manga effects
 
 Background location/weather/mood remain unrestricted free text with suggestions; localized scene presets are editable after apply.
 
-Balloon presets can create or modify speech/thought/shout/whisper/narration/off-screen balloons without erasing existing dialogue.
+Balloon presets can create or modify speech/thought/shout/whisper/narration/off-screen balloons without erasing existing dialogue. Newly created/template balloons inherit the project writing direction unless explicitly overridden.
 
 Frame treatment includes borderless, bleed, and breakout. Effects support speed/focus/impact/tension/silence patterns plus SFX text/style.
 
 ## AI-safe boundary
 
-Clean AI PNG removes authoring labels, including character names, panel numbers, camera metadata, Panel Chips, Crop Guide, summaries, action notes, balloon glyphs, and SFX labels. It keeps spatial composition, monochrome pose figures, balloon geometry, and effect lines.
+Clean AI PNG removes authoring labels, including character names, panel numbers, camera metadata, Panel Chips, Crop Guide, summaries, action notes, balloon text, and SFX labels. It keeps spatial composition, monochrome pose figures, balloon geometry, and effect lines.
 
-The prompt uses strict `TEXT TO RENDER`. Only exact dialogue/SFX entries in that section may become visible manga text.
+The prompt uses strict `TEXT TO RENDER`. Only exact dialogue/SFX entries in that section may become visible manga text. Lettering direction is semantic layout guidance and does not create additional renderable strings.
 
 Character identity follows `CHARACTER IDENTITY GUIDANCE`. Character Sheets are used only for characters whose identity mode requires them; description/free modes must not be contradicted by generic prompt wording.
 
 ## Manifest-first handoff
 
-Manifest v3 remains the read-first authority and contains package identity, file roles, generation inputs, character guidance, Character Sheet requirements, compact user handoff text, Story Template provenance, and `panelIntentIndex`.
+Manifest v3 remains the read-first authority and contains package identity, file roles, generation inputs, character guidance, Character Sheet requirements, compact user handoff text, Story Template provenance, and `panelIntentIndex`. The semantic `.manga.json` and generation prompt carry explicit lettering direction.
 
 AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it under the same export identity.
 
@@ -208,6 +223,9 @@ AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it 
 - `actionIntent` persists through JSON export/import and old projects normalize missing values safely;
 - Panel Peek works through long-press and visible `ⓘ`, with mobile viewport-bounded opaque presentation;
 - detailed/compact Panel List is reading-order aware and selects panels;
+- selected RTL/LTR direction automatically matches persisted/displayed panel numbering from geometry;
+- vertical writing is the default, horizontal writing is selectable globally and per balloon, and the choice persists in JSON;
+- writing direction is forwarded to prompt but does not leak text into clean PNG;
 - Panel Chips/Crop Guide never enter clean AI output;
 - camera-framing warnings are advisory and explicit fit is user-triggered;
 - Manga Check never blocks export;
