@@ -2,54 +2,60 @@
 
 ## Runtime
 
-The prototype is a zero-dependency static web application. `web/app.js` is a tiny module bootstrap that loads `web/app-1.js` through `web/app-4.js` as classic scripts. This keeps GitHub Pages delivery build-free while keeping the prototype source manageable.
-
-No server, runtime API, database, package install, analytics, or external JavaScript is required.
+The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-5.js` as classic scripts. GitHub Pages serves the exact static assets; no server, build step, external script, analytics, or runtime API is required.
 
 ## State
 
-The canonical in-browser project state is normalized to `manga-blueprint/0.2`.
+Browser state normalizes to `manga-blueprint/0.2`.
 
 ```text
 Project
+├─ meta
+│  ├─ pageWidth / pageHeight
+│  ├─ canvasPreset
+│  ├─ layoutPreset
+│  └─ randomPurpose (optional provenance)
 └─ Page
    └─ Panel
       ├─ rect / order / narrative role
-      ├─ panel style (border / bleed / breakout)
-      ├─ camera
-      ├─ background
-      ├─ effects
-      ├─ characters
-      │  ├─ pose
-      │  ├─ expression
-      │  └─ gaze
+      ├─ style / camera / background / effects
+      ├─ characters (pose / expression / gaze)
       └─ balloons
 ```
 
-Legacy `0.1` projects are normalized in memory by supplying missing fields while preserving original core data.
+`canvasPreset`, `layoutPreset`, and `randomPurpose` are optional metadata; panel geometry remains canonical. A `custom` state is used when manual resize/splitting no longer matches a shipped preset.
 
-## Two render modes
+## Dynamic coordinate system
 
-### Editor / annotated render
+The coordinate system is no longer fixed to 800×1130. SVG viewBox, PNG export, panel layout generation, pointer bounds, character placement, and balloon bounds use `meta.pageWidth` / `meta.pageHeight`. The current legacy size remains the default.
 
-Used for humans. It may contain panel numbers, camera labels, character display names, background notes, and SFX notes.
+Canvas resizing scales existing panel rects and placed character/balloon coordinates proportionally. Layout preset selection intentionally rebuilds panel geometry after confirmation when authored content would be discarded.
 
-### Clean AI render
+## Layout preset generator
 
-Used as a multimodal image-generation reference. It excludes all authoring text while preserving graphical composition, character pose references, effect lines, and empty balloon placement. This split is a correctness boundary, not merely a cosmetic export option.
+Preset layouts are generated from page dimensions and gutters rather than storing pixel geometry for only one manuscript size. 4-koma 1×4, 2×2, action, conversation, climax, and grid layouts therefore adapt to square, portrait, landscape, print, and Webtoon canvases.
+
+## Smart Random
+
+Smart Random operates over the finite preset catalog. Purpose tags and optional panel count filter valid candidates; a small direction profile seeds role/camera values. It does not generate arbitrary overlapping rectangles. This keeps the result understandable and fully editable.
+
+## Beginner terminology layer
+
+Camera state remains provider-neutral enum values such as `extreme-close` or `low-angle`. The UI maps those enums to `professional term + plain Japanese/English label + explanation`. Quick camera presets only write the same canonical camera fields; they do not create a second camera model.
+
+## Panel summary
+
+Panel summaries are derived UI artifacts, not stored source-of-truth text. They are compiled from role, pose/expression, camera, background, balloons, effects, and breakout. Summaries are allowed in the annotated review render and excluded from the clean AI render.
+
+## AI-safe render modes
+
+- **Annotated/editor render**: may contain panel number, readable camera labels, character display names, background/SFX metadata, and panel summary.
+- **Clean AI render**: removes all authoring text while preserving spatial composition, stick figures, balloon shapes, and effect lines.
 
 ## Prompt compiler
 
-The prompt compiler is deterministic from project state. It emits a strict text rendering rule, reading direction, per-panel semantics, character identity references by `characterId` / sheet key, camera/background/frame/expression/gaze/effect instructions, and a `TEXT TO RENDER` allowlist. Display names are deliberately not needed for rendering.
+The compiler is deterministic from project state, includes canvas dimensions and layout metadata, and preserves the strict `TEXT TO RENDER` allowlist.
 
-## Persistence
+## Persistence and deployment
 
-`localStorage` stores project JSON. Explicit `.manga.json` export is the portable artifact.
-
-## Coordinate system
-
-Logical page coordinates are `800 x 1130`. Character and balloon placement use the same page coordinate system as SVG rendering.
-
-## Deployment
-
-GitHub Pages deploys the static web directory and publishes schema/examples as static resources. Validation remains dependency-free.
+`localStorage` stores autosave state; `.manga.json` is the portable artifact. GitHub Pages publishes `web/`, schema, and examples. Validation remains dependency-free.
