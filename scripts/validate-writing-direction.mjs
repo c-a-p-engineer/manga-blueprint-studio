@@ -12,7 +12,9 @@ const must=[
   'LETTERING DIRECTION:',
   'Writing direction controls lettering layout only',
   'balloonWritingMode15',
-  'defaultWritingMode15'
+  'defaultWritingMode15',
+  'manifest.lettering=letteringManifest15()',
+  'manifest.panelOrder='
 ];
 for(const token of must){if(!app.includes(token))throw new Error(`writing-direction contract missing: ${token}`);}
 if(!bootstrap.includes("'./app-15.js'"))throw new Error('app-15.js is not loaded by bootstrap');
