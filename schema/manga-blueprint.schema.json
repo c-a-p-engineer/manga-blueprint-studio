@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json",
   "title": "Manga Blueprint",
-  "description": "Provider-independent semantic blueprint for manga layout, reusable character identity, character direction, background, text, and manga effects.",
+  "description": "Provider-independent semantic blueprint for manga layout, reusable character identity, character direction, background, text, manga effects, and optional bounded-assistance provenance.",
   "type": "object",
   "required": ["format", "meta", "pages"],
   "properties": {
@@ -17,7 +17,9 @@
         "pageHeight": { "type": "number", "minimum": 320, "maximum": 6000 },
         "canvasPreset": { "type": "string" },
         "layoutPreset": { "type": "string" },
-        "randomPurpose": { "type": "string" }
+        "randomPurpose": { "type": "string" },
+        "randomSeed": { "type": "string" },
+        "randomVariant": { "enum": ["balanced", "dynamic", "emotion"] }
       },
       "additionalProperties": true
     },
@@ -36,7 +38,7 @@
     "baseCharacter": { "type":"object", "required":["characterId","name","referenceKey","poseId"], "properties": { "characterId":{"type":"string","minLength":1},"name":{"type":"string","minLength":1},"referenceKey":{"type":"string"},"poseId":{"type":"string","minLength":1},"notes":{"type":"string"} }, "additionalProperties": true },
     "characterInstance": { "type":"object", "required":["id","characterId","name","referenceKey","x","y","scale","rotation","poseId","expression","gaze"], "properties": { "id":{"type":"string","minLength":1},"characterId":{"type":"string","minLength":1},"name":{"type":"string","minLength":1},"referenceKey":{"type":"string"},"x":{"type":"number"},"y":{"type":"number"},"scale":{"type":"number","exclusiveMinimum":0},"rotation":{"type":"number"},"poseId":{"type":"string","minLength":1},"expression":{"$ref":"#/$defs/expression"},"gaze":{"$ref":"#/$defs/gaze"} }, "additionalProperties": true },
     "balloon": { "type":"object", "required":["id","type","speakerId","text","x","y","size"], "properties": { "id":{"type":"string","minLength":1},"type":{"enum":["speech","thought","shout","whisper","narration","offscreen"]},"speakerId":{"type":"string"},"text":{"type":"string"},"x":{"type":"number"},"y":{"type":"number"},"size":{"type":"number","exclusiveMinimum":0} }, "additionalProperties": true },
-    "panel": { "type":"object", "required":["id","order","rect","role","style","camera","background","effects","characters","balloons"], "properties": { "id":{"type":"string","minLength":1},"order":{"type":"integer","minimum":1},"rect":{"$ref":"#/$defs/rect"},"role":{"type":"string"},"style":{"$ref":"#/$defs/panelStyle"},"camera":{"$ref":"#/$defs/camera"},"background":{"$ref":"#/$defs/background"},"effects":{"$ref":"#/$defs/effects"},"characters":{"type":"array","items":{"$ref":"#/$defs/characterInstance"}},"balloons":{"type":"array","items":{"$ref":"#/$defs/balloon"}} }, "additionalProperties": true },
+    "panel": { "type":"object", "required":["id","order","rect","role","style","camera","background","effects","characters","balloons"], "properties": { "id":{"type":"string","minLength":1},"order":{"type":"integer","minimum":1},"rect":{"$ref":"#/$defs/rect"},"role":{"type":"string"},"style":{"$ref":"#/$defs/panelStyle"},"camera":{"$ref":"#/$defs/camera"},"background":{"$ref":"#/$defs/background"},"effects":{"$ref":"#/$defs/effects"},"characters":{"type":"array","items":{"$ref":"#/$defs/characterInstance"}},"balloons":{"type":"array","items":{"$ref":"#/$defs/balloon"}},"assistSeed":{"type":"string"} }, "additionalProperties": true },
     "page": { "type":"object", "required":["id","panels"], "properties": { "id":{"type":"string","minLength":1},"panels":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/panel"}} }, "additionalProperties": true }
   }
 }
