@@ -2,7 +2,7 @@
 
 ## Mission
 
-Manga Blueprint Studio is a human-directed manga planning tool. It records manuscript size, reading direction, panel layout, reusable character identity, character appearance policy, story action intent, pose/placement, camera intent, backgrounds, dialogue/SFX, and manga-specific effects, then exports a visual blueprint plus machine-readable semantics for downstream image-generation assistants.
+Manga Blueprint Studio is a human-directed manga planning tool. It records manuscript size, reading direction, panel layout, reusable character identity, character appearance policy, story action intent, pose/placement, camera intent, backgrounds, dialogue/SFX, text writing direction, and manga-specific effects, then exports a visual blueprint plus machine-readable semantics for downstream image-generation assistants.
 
 The human is the director. AI, Smart Manga, Scene Templates, bounded derivation, and other assistance are proposal/rendering tools.
 
@@ -21,15 +21,39 @@ When behavior and schema disagree, determine which contract is stale and update 
 
 ### Human direction first
 
-Assistance must not silently replace recorded panel layout, action intent, pose, character assignment, appearance policy, camera intent, background intent, dialogue, or manga effects. Candidate/template browsing never mutates current page. Explicitly applied Scene Template / Smart Manga output becomes ordinary editable project state.
+Assistance must not silently replace recorded panel layout, action intent, pose, character assignment, appearance policy, camera intent, background intent, dialogue, text direction, or manga effects. Candidate/template browsing never mutates current page. Explicitly applied Scene Template / Smart Manga output becomes ordinary editable project state.
 
 ### Visual + semantic blueprint
 
 The visual blueprint communicates space. `.manga.json` communicates meaning. Project-level character guidance and, only when required, separately attached Character Sheets communicate identity.
 
-### Reading direction is explicit
+### Reading direction is authoritative
 
-Japanese right-to-left (`rtl`) is default; left-to-right (`ltr`) is supported. Panel numbering, layout/Smart previews, Panel List order, and generated prompt use `meta.readingDirection`.
+Japanese right-to-left (`rtl`) is default; left-to-right (`ltr`) is supported. `meta.readingDirection` is the single source of truth for:
+
+- visible panel numbering on the editor canvas;
+- Panel List / Panel Peek reading order;
+- layout and Smart Manga preview numbering;
+- Scene Template preview numbering;
+- Scene Template story-beat assignment to physical panels;
+- generated prompt panel numbering;
+- manifest reading-order contract.
+
+For the same row, `rtl` numbers from right to left and `ltr` numbers from left to right. Changing direction renumbers current panels from geometry. A preview must never show numbering that disagrees with the page that will be applied.
+
+### Manga text is vertical by default
+
+Prototype 0.10 adds explicit lettering direction while keeping the project format at `manga-blueprint/0.2`.
+
+- `meta.textDirectionDefault` is `vertical` by default;
+- each balloon may override with `writingDirection: vertical | horizontal`;
+- onomatopoeia may override with `effects.sfxWritingDirection: vertical | horizontal`;
+- new balloons and Scene Template sample lettering inherit the current project default;
+- legacy files without these fields normalize to vertical;
+- editor/review preview should reflect the chosen direction where practical;
+- clean AI PNG still removes exact lettering;
+- exact strings plus writing directions are carried in JSON, Prompt, and manifest;
+- changing the project default does not silently rewrite already-authored per-balloon choices.
 
 ### Story action intent
 
@@ -43,9 +67,9 @@ Each panel may store `actionIntent`: a short description of what happens when po
 
 ### Scene Template Studio
 
-Prototype 0.9 extends Story Templates into a scene-first authoring studio.
+Prototype 0.9+ provides scene-first authoring.
 
-Shipped categories include romance, battle, emotion, daily, comedy, suspense, character introduction, plus browser-local custom templates. The built-in set includes the original cute-daily / rom-com / surprise / gag / action recipes and additional confession, kiss, holding-hands, misunderstanding, battle, counterattack, aerial, throw, awakening, crying, anger, resolve, suspense, classroom, failure-gag, and character-introduction scenes.
+Shipped categories include romance, battle, emotion, daily, comedy, suspense, character introduction, plus browser-local custom templates. The built-in set includes cute-daily / rom-com / surprise / gag / action recipes and confession, kiss, holding-hands, misunderstanding, battle, counterattack, aerial, throw, awakening, crying, anger, resolve, suspense, classroom, failure-gag, and character-introduction scenes.
 
 Discovery is authoring-only and may use category filters, search, visual cards, description/use-case text, panel count, and beat-flow preview.
 
@@ -53,12 +77,14 @@ Discovery is authoring-only and may use category filters, search, visual cards, 
 - applying over authored content requires confirmation;
 - user can disable sample dialogue/SFX before apply;
 - sample text becomes normal editable dialogue/SFX after apply;
+- sample text inherits `meta.textDirectionDefault`;
 - selected/first reusable base character may be placed when available;
+- Scene Template beat 1 is applied to physical panel number 1 according to current reading direction, beat 2 to panel 2, etc.;
 - `meta.storyTemplate` records provenance only, not continuing authority.
 
 ### Bounded template derivation
 
-Prototype 0.9 may derive one temporary variation from a selected scene template.
+A selected Scene Template may produce a temporary bounded variation.
 
 - derivation preserves scene action/beat flow;
 - it may vary a bounded subset of camera distance/angle and emphasis/effects;
@@ -78,7 +104,7 @@ Custom template storage may include normalized panel geometry, role, action inte
 - custom template library contents are not automatically embedded into `.manga.json`, prompt, manifest, or ZIP;
 - once applied, resulting ordinary project state may be exported normally.
 
-### Smart Manga is story-readable too
+### Smart Manga is bounded and story-readable
 
 Smart Manga remains bounded, previewable, reproducible, and editable.
 
@@ -87,10 +113,10 @@ Smart Manga remains bounded, previewable, reproducible, and editable.
 - seed is stored as `meta.randomSeed`;
 - emphasis is stored as `meta.randomVariant` (`balanced | dynamic | emotion`);
 - intensity is stored as `meta.randomIntensity` (`stable | standard | bold`);
-- numbering follows reading direction;
+- preview numbering follows reading direction;
 - optional base placement is explicit;
-- applied candidates receive a short purpose/beat-derived `actionIntent` for panels where action intent is still empty;
-- applying Smart Manga clears `meta.storyTemplate`, because Smart Manga becomes the current provenance source;
+- applied candidates receive a short purpose/beat-derived `actionIntent` where action intent is empty;
+- applying Smart Manga clears `meta.storyTemplate`;
 - every result remains editable.
 
 The selected-panel dice is narrower: preserve geometry, background content, balloons/dialogue, role, and existing action intent while re-proposing camera/effects/breakout plus pose/expression/gaze. It remains undoable.
@@ -164,19 +190,22 @@ Canvas/layout/background/balloon/scene presets remain editable starting points.
 
 - default 800×1130 preset has an unambiguous dimension/purpose label;
 - 4-koma distinguishes at least 1×4 and 2×2;
-- layout thumbnails derive from canonical geometry and require explicit apply;
+- layout thumbnails derive from canonical geometry and display numbering using current reading direction;
 - background presets write localized semantic values then remain free-editable;
-- balloon presets preserve existing text when modifying selected balloon.
+- balloon presets preserve existing text when modifying selected balloon;
+- newly created preset balloons normalize to current text-direction default.
 
 ### AI-safe text boundary
 
-Editor/review may show names, panel numbers, camera metadata, summaries, action notes, background notes, Panel Chips/Crop Guide, and SFX metadata. These are authoring information.
+Editor/review may show names, panel numbers, camera metadata, summaries, action notes, background notes, Panel Chips/Crop Guide, balloon text, and SFX metadata. These are authoring information.
 
-Clean AI PNG omits authoring labels. Prompt permits visible text only under exact `TEXT TO RENDER` entries. Action intent is semantic guidance, never lettering.
+Clean AI PNG omits authoring labels and exact lettering. Prompt permits visible text only under exact `TEXT TO RENDER` entries and separately records writing direction. Action intent is semantic guidance, never lettering.
 
 ### Manifest-first handoff
 
-`manga-blueprint-export-manifest/3` remains read-first authority. It records export/package identity, file roles, clean primary visual, semantic JSON, generation prompt, `annotatedReviewAllowedForGeneration: false`, character guidance/Sheet requirements, Story Template provenance, panel intent index, and compact user message.
+`manga-blueprint-export-manifest/4` is the read-first authority. It records export/package identity, file roles, clean primary visual, semantic JSON, generation prompt, `annotatedReviewAllowedForGeneration: false`, character guidance/Sheet requirements, Story Template provenance, panel intent index, reading-order contract, text-layout contract, and compact user message.
+
+The reading-order contract states that panel numbers and story beats follow `meta.readingDirection`. The text-layout contract records the project default plus exact balloon/SFX overrides.
 
 ### Export package separation
 
@@ -199,8 +228,9 @@ Core data is provider-independent. Provider adapters belong only at export bound
 - 0.6: random seed/variant and panel assist provenance;
 - 0.7: identityMode/appearance, randomIntensity, manifest v3;
 - 0.8: optional `meta.storyTemplate`, panel `actionIntent`, story-readable authoring views;
-- 0.9: scene-template discovery/derivation and local custom-template library; no project-format bump;
-- legacy 0.1 / older 0.2 normalize without losing core layout/character/camera data.
+- 0.9: scene-template discovery/derivation and local custom-template library;
+- 0.10: `meta.textDirectionDefault`, balloon `writingDirection`, SFX `sfxWritingDirection`, manifest v4, and strict reading-order/panel-number/template-beat synchronization;
+- legacy 0.1 / older 0.2 normalize without losing core layout/character/camera data; missing text direction normalizes to vertical.
 
 ## Mobile-first UI
 
@@ -212,13 +242,13 @@ Primary hierarchy:
 2. reusable character + identity source;
 3. Panel Peek / Panel List quick understanding;
 4. selected-panel refinement;
-5. background/text/effects;
+5. background/text/effects, including vertical/horizontal writing choice;
 6. AI generation ZIP + short handoff copy;
 7. Review/archive secondary.
 
 ## Runtime
 
-`web/app.js` loads `web/app-1.js` through `web/app-14.js` as static classic scripts. `app-10.js` owns 0.7 localization/state hardening; `app-11.js` owns 0.8 Story Template / Panel Peek/List / framing UX; `app-12.js` aligns Smart Manga with action-intent semantics and hardens mobile Panel Peek; `app-13.js` owns 0.9 Scene Template Studio; `app-14.js` owns 0.9 localization/feedback hardening. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
+`web/app.js` loads `web/app-1.js` through `web/app-15.js` as static classic scripts. `app-10.js` owns 0.7 localization/state hardening; `app-11.js` owns 0.8 Story Template / Panel Peek/List / framing UX; `app-12.js` aligns Smart Manga with action-intent semantics and hardens mobile Panel Peek; `app-13.js` owns 0.9 Scene Template Studio; `app-14.js` owns 0.9 localization/feedback hardening; `app-15.js` owns 0.10 vertical-first lettering and reading-order synchronization. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
 
 ## Definition of done
 
@@ -226,7 +256,10 @@ Relevant changes preserve:
 
 - JS syntax validity for bootstrap and every runtime chunk;
 - repository-contract validation and legacy normalization;
-- dynamic canvas and RTL/LTR;
+- dynamic canvas and explicit RTL/LTR;
+- selected reading direction synchronized across canvas numbering, preview numbering, Panel List, Scene Template beat application, Prompt, and manifest;
+- vertical text as default with per-balloon and per-SFX horizontal override;
+- text direction persisted through JSON, Prompt, manifest and review preview;
 - bounded three-candidate Smart Manga with purpose/seed/variant/intensity provenance and story-readable action intent after apply;
 - Scene Template browsing/search/category filtering without project mutation;
 - scene-template visual cards with description/use case/panel count/beat flow;
@@ -246,7 +279,7 @@ Relevant changes preserve:
 - guided background and balloon presets;
 - clean AI PNG with authoring metadata removed;
 - AI ZIP excludes annotated PNG; Review ZIP includes it under same export identity;
-- manifest v3 includes file roles, character guidance and panel intent index;
+- manifest v4 includes file roles, character guidance, panel intent, reading-order contract, and text-layout contract;
 - compact JA/EN handoff message;
 - mobile usability and GitHub Pages deployment.
 
