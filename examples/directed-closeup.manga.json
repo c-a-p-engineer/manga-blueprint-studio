@@ -7,6 +7,7 @@
     "pageHeight": 1130,
     "canvasPreset": "standard",
     "layoutPreset": "single",
+    "storyTemplate": "custom",
     "randomIntensity": "standard"
   },
   "characterLibrary": [
@@ -35,6 +36,7 @@
           "order": 1,
           "rect": { "x": 35, "y": 35, "w": 730, "h": 1060 },
           "role": "reaction",
+          "actionIntent": "The character hears the viewer, turns back over one shoulder, and reacts with shy eye contact.",
           "style": { "border": "normal", "bleed": "none", "breakout": "none" },
           "camera": {
             "distance": "extreme-close",
