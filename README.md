@@ -1,25 +1,43 @@
 # Manga Blueprint Studio
 
-Visual manga storyboard editor for designing panels, character poses, camera direction, and AI-ready generation blueprints.
+Visual manga storyboard editor for designing panels, character poses, camera direction, backgrounds, dialogue, and manga-specific effects, then handing that direction to image-generation assistants with minimal ambiguity.
 
-**Manga Blueprint Studio is a direction tool, not an autonomous comic generator.** You decide the page. The tool packages that intent so a multimodal image-generation assistant can understand it with less ambiguity.
+**The human remains the director.** The tool does not autonomously decide composition.
 
-## Prototype
+## Prototype 0.3
 
-The first prototype supports:
+Current prototype supports:
 
-- manga page templates;
-- panel selection and horizontal/vertical splitting;
-- automatic panel numbering for Japanese right-to-left reading;
-- named stick-figure characters;
-- pose presets;
-- character drag, scale, and rotation;
-- per-panel camera distance, angle, and focus notes;
-- character-sheet reference keys;
-- `.manga.json` export/import;
-- visual blueprint PNG export;
-- AI-ready prompt generation and copy;
-- browser-local autosave.
+- Japanese right-to-left manga page templates;
+- panel splitting and semantic panel order;
+- camera distance / angle / viewpoint with inline explanations;
+- named stick-figure characters and pose presets;
+- character placement, scale, rotation, expression, and gaze intent;
+- background location / time / weather / mood / detail treatment;
+- panel border styles, bleed (断ち切り), and breakout (ブチ抜き) semantics;
+- speech / thought / shout / narration balloons with exact text stored semantically;
+- manga effects such as speed lines, focus lines, impact lines, silence/beat, and onomatopoeia;
+- deterministic provider-neutral prompt compilation;
+- legacy `manga-blueprint/0.1` import with migration to `0.2`;
+- browser-local autosave and Undo / Redo;
+- Japanese-first mobile UI with English UI translation;
+- two PNG export modes:
+  - **AI clean PNG** — no character names, panel numbers, camera labels, or other authoring text;
+  - **annotated review PNG** — keeps authoring labels for human review;
+- `.manga.json` export/import.
+
+## Why the clean AI export exists
+
+A multimodal image model may interpret text visible in the blueprint as requested final artwork. For that reason, the AI handoff PNG deliberately removes:
+
+- character display names;
+- Character IDs and sheet keys;
+- panel numbers;
+- camera metadata;
+- editor/UI labels;
+- balloon text and SFX text.
+
+Exact dialogue and onomatopoeia are passed in the generated prompt under `TEXT TO RENDER`. The prompt explicitly forbids rendering any other metadata.
 
 ## Try it
 
@@ -27,58 +45,46 @@ GitHub Pages:
 
 https://c-a-p-engineer.github.io/manga-blueprint-studio/
 
-The Pages deployment is handled by GitHub Actions from `web/`.
-
 ## Local use
 
 No package installation or build is required.
 
 ```bash
-git clone https://github.com/c-a-p-engineer/manga-blueprint-studio.git
-cd manga-blueprint-studio
 python3 -m http.server 4173
 ```
 
-Open `http://localhost:4173/web/`.
-
-## Core idea
+Open:
 
 ```text
-Human direction
-    ↓
-Page / panel layout
-    ↓
-Character placement + pose
-    ↓
-Camera intent
-    ↓
-┌──────────────────────────────┐
-│ Manga Blueprint             │
-│  visual: blueprint.png      │
-│  semantic: project.manga.json│
-└──────────────────────────────┘
-    ↓
-AI-ready prompt + character sheets
-    ↓
-ChatGPT / Gemini / local image workflow / future adapters
+http://localhost:4173/web/
 ```
 
-The visual image communicates **space**. The JSON communicates **meaning**. Character sheets communicate **identity**.
+## Data contract
+
+The visual image communicates **space**.  
+`.manga.json` communicates **meaning**.  
+Character Sheets communicate **identity**.
+
+Current export format:
+
+```text
+manga-blueprint/0.2
+```
+
+Canonical schema:
+
+https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
 
 ## Documents
 
 - [`AGENTS.md`](AGENTS.md) — repository rules and invariants
-- [`docs/PRODUCT.md`](docs/PRODUCT.md) — product contract and MVP acceptance
+- [`docs/PRODUCT.md`](docs/PRODUCT.md) — behavior contract
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — architecture and data flow
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — planned development stages
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff contract
-- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — blueprint JSON Schema
-- [`examples/action-3panel.manga.json`](examples/action-3panel.manga.json) — example project fixture
-
-## Current status
-
-Early interactive prototype. The data format is intentionally marked `0.1` and may evolve before the first stable release.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — development roadmap
+- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — JSON Schema
+- [`examples/directed-closeup.manga.json`](examples/directed-closeup.manga.json) — example
 
 ## License
 
-Not selected yet. Until a license is explicitly added, normal copyright rules apply.
+MIT
