@@ -2,7 +2,7 @@
 
 ## Runtime
 
-The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-9.js` as classic scripts. GitHub Pages serves the exact static assets; no server, build step, external script, analytics, or runtime API is required.
+The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-10.js` as classic scripts. `app-10.js` is a small Prototype 0.7 hardening layer for localized background preset values and appearance-control state. GitHub Pages serves the exact static assets; no server, build step, external script, analytics, or runtime API is required.
 
 ## State
 
@@ -55,6 +55,8 @@ Character identity is project-level and separate from pose instances.
 The runtime normalizer assigns old bases with a non-empty `referenceKey` to `sheet`; old bases without one become `description`. Appearance fields are normalized to empty strings when absent.
 
 Placed character instances do not duplicate appearance guidance. They retain `characterId`; the library remains the identity source while the instance owns panel-specific pose/expression/gaze/placement.
+
+In `free` mode, appearance-detail fields are disabled in the UI so inactive data does not look authoritative. Description/sheet modes can retain appearance notes as applicable.
 
 ## Character diagnostics
 
@@ -117,6 +119,8 @@ The camera diagram is a lightweight SVG derived from selected camera distance an
 ## Guided background presets
 
 Background location/weather/mood remain free text with datalist suggestions. Scene presets simply write a coordinated starting set into the existing background fields. Once applied, every field remains independently editable.
+
+Preset labels and written semantic values follow the selected UI language. The hardening layer owns localized data sets rather than displaying an English label while silently writing Japanese semantic text.
 
 ## Balloon presets
 
