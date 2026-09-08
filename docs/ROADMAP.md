@@ -1,10 +1,11 @@
 # Roadmap
 
-## Shipped through Prototype 0.9
+## Shipped through Prototype 0.10
 
 ### Page and layout
 - named manuscript/canvas presets: 800×1130 default, 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, custom;
-- explicit RTL/LTR reading direction with geometry-based renumbering;
+- explicit RTL/LTR reading direction;
+- **automatic geometry-based panel numbering synchronization** so selected reading direction, canvas numbers, Panel List/Peek, prompt, and export semantics stay aligned;
 - dynamic layout generation across aspect ratios;
 - 4-koma 1×4, 2×2, and 4×1 variants plus common 1–6 panel, conversation, action, and climax layouts;
 - visual layout thumbnail strip with explicit apply.
@@ -51,6 +52,11 @@
 - guided free-text location/weather/mood;
 - localized editable background scene presets;
 - balloon presets for speech/thought/shout/whisper/narration/off-screen placements;
+- **vertical Japanese balloon writing (`vertical-rl`) as default**;
+- horizontal balloon writing (`horizontal-tb`) selectable globally and per balloon;
+- legacy projects normalize to vertical-first lettering;
+- editor/review writing-direction preview while clean AI PNG remains text-free;
+- generation prompt carries effective lettering direction independently from panel reading direction;
 - background semantics, balloons, onomatopoeia, effects, borderless/bleed/breakout, expression/gaze.
 
 ### AI handoff and export
@@ -99,12 +105,14 @@
 - drag panel boundaries;
 - shared-boundary editing that moves adjacent panels together;
 - irregular / diagonal frame shapes;
-- safer overlap/bleed visualization.
+- safer overlap/bleed visualization;
+- extend reading-order grouping rules for arbitrary irregular/overlapping future frame geometry.
 
 ### Text production
 - balloon tail target / speaker visual connection;
-- vertical Japanese text layout;
-- deterministic post-render lettering composition;
+- deterministic post-render lettering composition for final-quality Japanese vertical typesetting;
+- punctuation/kenten/ruby/tate-chu-yoko handling beyond the current authoring preview;
+- selectable SFX writing direction / rotation / path;
 - reusable dialogue/SFX presets beyond Scene Template samples.
 
 ### Manga direction
@@ -117,7 +125,7 @@
 
 ### Generated-result review
 - upload generated manga and compare against Blueprint intent;
-- panel-by-panel checks for camera, character consistency, dialogue/SFX, background continuity, breakout, reading order;
+- panel-by-panel checks for camera, character consistency, dialogue/SFX, background continuity, breakout, reading order, and writing direction;
 - record useful regression examples without collecting private artwork remotely.
 
 ### Export integrity
@@ -126,9 +134,9 @@
 - package compatibility checks across future project/manifest versions.
 
 ### Usability validation
-- representative mobile Scene Template / Panel Peek / custom-template walkthroughs;
+- representative mobile Scene Template / Panel Peek / custom-template / lettering walkthroughs;
 - keyboard/focus/accessibility audit;
-- actual-user feedback on template discovery, camera warnings, and character identity modes;
+- actual-user feedback on template discovery, camera warnings, character identity modes, and vertical/horizontal lettering controls;
 - no analytics by default; any feedback collection needs an explicit privacy boundary.
 
 ### Integration
