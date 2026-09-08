@@ -40,6 +40,7 @@ jobs:
           node --check web/app-14.js
           node --check web/app-15.js
           node --check web/app-16.js
+          node --check web/app-17.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -55,3 +56,6 @@ jobs:
 
       - name: Validate reading-order synchronization
         run: node scripts/validate-reading-order.mjs
+
+      - name: Validate lettering / reading integration
+        run: node scripts/validate-lettering-reading-integration.mjs
