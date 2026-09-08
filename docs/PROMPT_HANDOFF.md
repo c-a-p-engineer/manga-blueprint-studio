@@ -23,17 +23,17 @@ The AI package deliberately excludes annotated review PNG.
 
 Review/archive ZIP contains the same state-linked materials plus `<prefix>_annotated.png`. It is for human checking/storage, not the default image-generation input.
 
-If annotated review is separately shown to an assistant, its labels remain authoring metadata and must not become visible final-art text.
+If annotated review is separately shown to an assistant, its labels and lettering preview remain authoring metadata and must not become visible final-art text unless the exact string is separately allowlisted under `TEXT TO RENDER`.
 
 ## Manifest v3
 
-Prototype 0.8 continues:
+The package continues to use:
 
 ```text
 manga-blueprint-export-manifest/3
 ```
 
-The manifest retains export/package identity, file roles, instructions, and character guidance, and additionally carries Story Template provenance and panel action-intent indexing where available.
+The manifest retains export/package identity, file roles, instructions, character guidance, Story Template provenance, and panel action-intent indexing where available. `.manga.json` remains the complete semantic contract, including reading direction and Prototype 0.10 lettering direction.
 
 ### File roles
 
@@ -57,7 +57,7 @@ The manifest retains export/package identity, file roles, instructions, and char
 
 ### Story action index
 
-Prototype 0.8 may add:
+Manifest may include:
 
 ```json
 {
@@ -93,8 +93,6 @@ No Character Sheet is required. The model may choose a simple appearance but mus
 
 The generated prompt must **not** say that all visual identity comes only from Character Sheets.
 
-Prototype 0.8 uses this semantic rule:
-
 ```text
 Character visual identity follows CHARACTER IDENTITY GUIDANCE.
 Use separately attached Character Sheets only for characters whose identity mode requires them.
@@ -116,6 +114,64 @@ STORY ACTION INTENT:
 
 These strings are **instructions**, not manga lettering. They must never become visible text merely because they appear in the prompt.
 
+## Reading order
+
+`meta.readingDirection` is authoritative:
+
+- `rtl` = Japanese manga, right-to-left;
+- `ltr` = left-to-right.
+
+Prototype 0.10 synchronizes panel `order` from current geometry plus this selected direction before committed renders. The resulting order is the common source used by canvas panel numbers, Panel Peek/List, generated prompt, and exported semantics.
+
+For a standard two-column row:
+
+```text
+RTL: right panel -> lower order number -> left panel
+LTR: left panel  -> lower order number -> right panel
+```
+
+## Balloon lettering direction
+
+Reading order and writing direction are separate contracts.
+
+Project default:
+
+```json
+{
+  "meta": {
+    "defaultWritingMode": "vertical-rl"
+  }
+}
+```
+
+Per balloon:
+
+```json
+{
+  "writingMode": "inherit"
+}
+```
+
+Allowed values:
+
+- `inherit` — follow project default;
+- `vertical-rl` — Japanese vertical writing: glyph flow top-to-bottom, columns ordered right-to-left;
+- `horizontal-tb` — horizontal writing.
+
+Prototype 0.10 defaults legacy/new projects to `vertical-rl` unless explicitly changed.
+
+The generated prompt adds a semantic section such as:
+
+```text
+LETTERING DIRECTION:
+- Default balloon writing mode: vertical-rl (vertical Japanese; top-to-bottom, columns right-to-left).
+- Panel 1 balloon (speech): vertical Japanese writing, top-to-bottom with columns ordered right-to-left.
+- Panel 2 balloon (speech): horizontal writing, left-to-right within the balloon.
+- Writing direction controls lettering layout only; it does not change panel reading order.
+```
+
+These are layout instructions. They do not add any renderable strings.
+
 ## Text allowlist
 
 Only exact strings under:
@@ -134,6 +190,7 @@ Forbidden as visible text includes:
 - camera terms;
 - Story Template names;
 - action intent;
+- writing-mode labels such as `vertical-rl`;
 - Panel Peek/List/Chip summaries;
 - Crop Guide labels;
 - editor/UI text.
@@ -142,11 +199,13 @@ Forbidden as visible text includes:
 
 Clean PNG is the spatial reference. Stick figures communicate pose/placement, not appearance.
 
-Prototype 0.8 editor-only overlays such as Panel Chips, `ⓘ`, and Crop Guide do not enter clean PNG. Camera-framing diagnostics therefore improve authoring without polluting downstream image-generation input.
+Editor-only overlays such as Panel Chips, `ⓘ`, Crop Guide, and balloon text previews do not enter clean PNG. Writing direction is communicated through `.manga.json` and generated prompt instead of rendering the authoring preview into the AI spatial reference.
 
 ## Story Templates and text
 
-A Story Template may seed sample dialogue/SFX only when the user enables that option before apply. Once applied, sample text becomes ordinary project dialogue/SFX and therefore appears under `TEXT TO RENDER` unless the user edits/removes it.
+A Scene Template may seed sample dialogue/SFX only when the user enables that option before apply. Once applied, sample text becomes ordinary project dialogue/SFX and therefore appears under `TEXT TO RENDER` unless the user edits/removes it.
+
+Template-created balloons use `inherit`, so they follow the project default writing direction unless the user overrides a balloon.
 
 Template action intent remains semantic and is never automatically promoted to renderable text.
 
@@ -159,10 +218,6 @@ Template action intent remains semantic and is never automatically promoted to r
 ```
 
 SHA-256 is calculated from serialized Manga Blueprint project state. Manifest records the full state hash and export UUID. Files created from the same unchanged state reuse the same in-session identity.
-
-## Reading direction
-
-`meta.readingDirection` remains authoritative. `rtl` means Japanese manga right-to-left; `ltr` means left-to-right.
 
 ## Example
 
