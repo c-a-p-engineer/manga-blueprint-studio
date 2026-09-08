@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const runtimeFiles=['web/app-1.js','web/app-2.js','web/app-3.js','web/app-4.js','web/app-5.js','web/app-6.js','web/app-7.js','web/app-8.js','web/app-9.js','web/app-10.js','web/app-11.js'];
+const runtimeFiles=['web/app-1.js','web/app-2.js','web/app-3.js','web/app-4.js','web/app-5.js','web/app-6.js','web/app-7.js','web/app-8.js','web/app-9.js','web/app-10.js','web/app-11.js','web/app-12.js'];
 const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
 for(const file of requiredFiles)if(!fs.existsSync(file))throw new Error(`Missing required file: ${file}`);
 
@@ -31,6 +31,7 @@ const app8=sources['web/app-8.js'];
 const app9=sources['web/app-9.js'];
 const app10=sources['web/app-10.js'];
 const app11=sources['web/app-11.js'];
+const app12=sources['web/app-12.js'];
 const bootstrap=fs.readFileSync('web/app.js','utf8');
 for(const id of ['blueprintSvg','helpBtn','helpDialog','canvasPresetSelect','canvasWidth','canvasHeight','templateSelect','randomBtn','randomDialog','panelOverview','selectedPanelSummary','cameraQuickPreset','cameraHelp','backgroundLocation','addBalloon','lineEffect','exportAiPng','exportAnnotatedPng','promptOutput','exportJson','importJson'])if(!html.includes(`id="${id}"`))throw new Error(`Missing base UI control: ${id}`);
 for(const file of runtimeFiles)if(!bootstrap.includes(file.split('/').pop()))throw new Error(`Bootstrap does not load ${file}`);
@@ -66,10 +67,13 @@ if(!app10.includes("localized[language]||localized.ja"))throw new Error('Backgro
 for(const phrase of ['HELP_SEEN_KEY_08','storyTemplates11','storyTemplateIncludeText','actionIntent','panelPeek11','panelChipText11','renderPanelList11','mangaLint11','framingStatus11','fitCharacterToCamera11','crop-guide11','STORY ACTION INTENT:','Character visual identity follows CHARACTER IDENTITY GUIDANCE','panelIntentIndex'])if(!app11.includes(phrase))throw new Error(`Missing 0.8 feature contract: ${phrase}`);
 for(const id of ['cuteDaily','romance','surprise','gag','action'])if(!app11.includes(`${id}:{`))throw new Error(`Missing story template ${id}`);
 if(!app11.includes("panel.actionIntent=String(panel.actionIntent||'')"))throw new Error('Legacy projects must normalize missing actionIntent');
-if(!app11.includes("long-press")&&!app11.includes("pointerdown"))throw new Error('Panel Peek must support pointer long-press');
+if(!app11.includes("pointerdown"))throw new Error('Panel Peek must support pointer long-press');
 if(!app11.includes("data-panel-info11"))throw new Error('Panel Peek must also have a discoverable info affordance');
 if(!app11.includes("authoring-overlay11"))throw new Error('Panel chips/crop guide must remain authoring-only overlays');
 if(!app11.includes("out=out.replace('- Character visual identity comes only"))throw new Error('Prompt identity contract must override the legacy Character-Sheet-only sentence');
+
+for(const phrase of ['smartActionProfiles12','smartActionIntent12','applySmartCandidate08Base12','panel.actionIntent=smartActionIntent12','project.meta.storyTemplate=','actionIntentPlaceholder'])if(!app12.includes(phrase))throw new Error(`Missing Smart Manga 0.8 hardening contract: ${phrase}`);
+if(!app12.includes("if(!panel.actionIntent?.trim())"))throw new Error('Smart Manga may fill only missing action intent');
 
 if(!js.includes("p.format='manga-blueprint/0.2'"))throw new Error('Missing legacy normalization');
 if(!js.includes("'manga-blueprint-studio/0.1'"))throw new Error('Legacy 0.1 autosave compatibility missing');
@@ -85,4 +89,5 @@ for(const page of example.pages){
 if(!example.characterLibrary?.length)throw new Error('Example should demonstrate reusable base characters');
 const exampleBase=example.characterLibrary[0];
 if(exampleBase.identityMode!=='description'||!exampleBase.appearance?.summary)throw new Error('Example should demonstrate Character-Sheet-free appearance guidance');
+if(!example.pages[0].panels[0].actionIntent)throw new Error('Example should demonstrate actionIntent');
 console.log('Prototype 0.8 repository contract validation passed.');
