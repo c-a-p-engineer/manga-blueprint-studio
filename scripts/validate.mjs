@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const runtimeFiles=['web/app-1.js','web/app-2.js','web/app-3.js','web/app-4.js','web/app-5.js','web/app-6.js','web/app-7.js','web/app-8.js'];
+const runtimeFiles=['web/app-1.js','web/app-2.js','web/app-3.js','web/app-4.js','web/app-5.js','web/app-6.js','web/app-7.js','web/app-8.js','web/app-9.js'];
 const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
 for(const file of requiredFiles)if(!fs.existsSync(file))throw new Error(`Missing required file: ${file}`);
 
@@ -15,12 +15,18 @@ if(!schema.properties?.meta?.properties?.readingDirection?.enum?.includes('rtl')
 if(schema.properties?.meta?.properties?.randomSeed?.type!=='string')throw new Error('Schema missing Smart Manga randomSeed provenance');
 const variants=schema.properties?.meta?.properties?.randomVariant?.enum||[];
 for(const value of ['balanced','dynamic','emotion'])if(!variants.includes(value))throw new Error(`Schema missing randomVariant ${value}`);
+const intensities=schema.properties?.meta?.properties?.randomIntensity?.enum||[];
+for(const value of ['stable','standard','bold'])if(!intensities.includes(value))throw new Error(`Schema missing randomIntensity ${value}`);
 if(schema.$defs?.panel?.properties?.assistSeed?.type!=='string')throw new Error('Schema missing panel assistSeed provenance');
+const identityModes=schema.$defs?.baseCharacter?.properties?.identityMode?.enum||[];
+for(const value of ['sheet','description','free'])if(!identityModes.includes(value))throw new Error(`Schema missing character identityMode ${value}`);
+for(const field of ['summary','hair','eyes','outfit','features'])if(schema.$defs?.appearance?.properties?.[field]?.type!=='string')throw new Error(`Schema missing appearance.${field}`);
 
 const html=fs.readFileSync('web/index.html','utf8');
 const sources=Object.fromEntries(runtimeFiles.map(f=>[f,fs.readFileSync(f,'utf8')]));
 const js=Object.values(sources).join('\n');
 const app8=sources['web/app-8.js'];
+const app9=sources['web/app-9.js'];
 const bootstrap=fs.readFileSync('web/app.js','utf8');
 for(const id of ['blueprintSvg','helpBtn','helpDialog','canvasPresetSelect','canvasWidth','canvasHeight','templateSelect','randomBtn','randomDialog','panelOverview','selectedPanelSummary','cameraQuickPreset','cameraHelp','backgroundLocation','addBalloon','lineEffect','exportAiPng','exportAnnotatedPng','promptOutput','exportJson','importJson'])if(!html.includes(`id="${id}"`))throw new Error(`Missing base UI control: ${id}`);
 for(const file of runtimeFiles)if(!bootstrap.includes(file.split('/').pop()))throw new Error(`Bootstrap does not load ${file}`);
@@ -40,6 +46,16 @@ if(!app8.includes("project.meta.randomSeed=c.baseSeed")||!app8.includes("project
 if(!app8.includes("applyBeat08(panel,beat,{characters:true,preserveRole:true,background:false})"))throw new Error('Panel dice must preserve background content and narrative role');
 if(!app8.includes("project.meta.readingDirection==='rtl'?b.x-a.x:a.x-b.x"))throw new Error('Smart Manga preview numbering must respect reading direction');
 
+for(const phrase of ['HELP_SEEN_KEY_07','identityMode','appearanceSummary','characterGuidance09','handoffText09','manga-blueprint-export-manifest/3','fileEntries','instructions={readFirst','characterSheetsRequired','userMessageTemplate','CHARACTER IDENTITY GUIDANCE:','randomIntensity09','smartIntensityStable','smartIntensityBold','romance','cute','suspense','intro','layoutThumbnailGrid09','cameraVisual09','backgroundScenePreset09','balloonPreset09','panelSummary04=function'])if(!app9.includes(phrase))throw new Error(`Missing 0.7 feature contract: ${phrase}`);
+if(!app9.includes("identityMode:['sheet','description','free']")&&!app9.includes("['sheet','description','free'].includes(base.identityMode)"))throw new Error('Character Sheet must be optional through explicit identity modes');
+if(!app9.includes("required=mode==='sheet'"))throw new Error('Only sheet identity mode may require a Character Sheet');
+if(!app9.includes("manifest.instructions={readFirst:files.manifest"))throw new Error('Manifest must be the read-first handoff authority');
+if(!app9.includes("requiredForGeneration"))throw new Error('Manifest file roles must identify generation-critical files');
+if(!app9.includes("Character Sheet が必要と書かれているキャラクター"))throw new Error('Japanese compact handoff template missing Character Sheet guidance');
+if(!app9.includes("Extract this ZIP, read the *_manifest.json file first"))throw new Error('English compact handoff template missing');
+if(!app9.includes("project.meta.randomIntensity=c.intensity"))throw new Error('Applied Smart Manga candidate must store intensity provenance');
+if(!app9.includes("background:false"))throw new Error('Panel dice must continue preserving entered background content');
+
 if(!js.includes("p.format='manga-blueprint/0.2'"))throw new Error('Missing legacy normalization');
 if(!js.includes("'manga-blueprint-studio/0.1'"))throw new Error('Legacy 0.1 autosave compatibility missing');
 
@@ -52,4 +68,6 @@ for(const page of example.pages){
   }
 }
 if(!example.characterLibrary?.length)throw new Error('Example should demonstrate reusable base characters');
-console.log('Prototype 0.6 repository contract validation passed.');
+const exampleBase=example.characterLibrary[0];
+if(exampleBase.identityMode!=='description'||!exampleBase.appearance?.summary)throw new Error('Example should demonstrate Character-Sheet-free appearance guidance');
+console.log('Prototype 0.7 repository contract validation passed.');
