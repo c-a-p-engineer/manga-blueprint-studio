@@ -2,149 +2,109 @@
 
 ## Mission
 
-Manga Blueprint Studio is a visual manga planning tool that lets a human explicitly decide panel layout, character placement, pose, and camera direction, then exports those decisions as both a visual blueprint and machine-readable data for image-generation assistants.
+Manga Blueprint Studio is a human-directed manga planning tool. It records panel layout, character pose/placement, camera intent, backgrounds, text intent, and manga-specific effects, then exports a visual blueprint plus machine-readable semantics for downstream image-generation assistants.
 
-The project is **not** an autonomous AI comic generator. The human remains the director; AI is a downstream renderer/assistant.
+The human is the director. AI is a renderer/assistant.
 
 ## Source of truth
 
-Use this order when documents disagree:
-
-1. `AGENTS.md` — repository operating rules and invariant boundaries
-2. `docs/PRODUCT.md` — user-visible product contract and MVP acceptance
-3. `schema/manga-blueprint.schema.json` — persisted blueprint format
-4. `docs/ARCHITECTURE.md` — implementation boundaries and data flow
+1. `AGENTS.md`
+2. `docs/PRODUCT.md`
+3. `schema/manga-blueprint.schema.json`
+4. `docs/ARCHITECTURE.md`
 5. implementation under `web/`
-6. `docs/ROADMAP.md` — future work only; roadmap items are not shipped behavior
+6. `docs/ROADMAP.md`
 
-If implementation and schema disagree, do not silently change one to match the other. Decide whether the behavior or the format is stale, then update both intentionally.
+When behavior and schema disagree, determine which contract is stale and update intentionally.
 
-## Product invariants
+## Core invariants
 
 ### Human direction first
 
-- The user controls manga composition before image generation.
-- AI must not silently replace panel layout, pose, character identity, or camera decisions recorded in a blueprint.
-- Suggested automation may be added later, but suggestions must remain editable and distinguishable from user-authored decisions.
+AI must not silently replace recorded panel layout, pose, character assignment, camera intent, background intent, dialogue, or manga effects.
 
-### Visual blueprint + semantic blueprint
+### Visual + semantic blueprint
 
-Every meaningful composition should be representable in two forms:
+Every meaningful composition has two complementary representations:
 
-- **visual blueprint**: a PNG/SVG-like page reference that communicates spatial arrangement to a multimodal model;
-- **semantic blueprint**: `.manga.json`, where panel order, character identity, pose intent, camera, and coordinates remain explicit.
+- **visual blueprint** — spatial layout;
+- **semantic blueprint** — `.manga.json` meaning.
 
-Neither representation replaces the other.
+Neither replaces the other.
 
-### Stick figures are pose references, not character identity
+### Stick figures are pose references
 
-- A stick figure represents body relation, pose, position, facing, and approximate scale.
-- The label/`characterId` binds it to a character sheet supplied separately.
-- Do not infer hairstyle, clothing, body type, gender, age, or visual style from the stick figure.
-- Pose preset IDs are editable shorthand, not immutable anatomy.
+Stick figures communicate body relation, pose, position, approximate scale, and direction. They do not define appearance.
 
-### Panel order is semantic
+### AI-safe text boundary
 
-- Panel numbers are authoring/reference markers.
-- They may appear in the exported blueprint image to help an AI correlate prompt instructions.
-- Generated comic art should not render those numbers unless explicitly requested.
-- Japanese manga defaults to right-to-left reading order.
+The editor may display authoring annotations such as:
+
+- character display names;
+- Character IDs;
+- panel numbers;
+- camera metadata;
+- background notes;
+- SFX metadata.
+
+Those annotations are **not final manga text**.
+
+The default AI handoff PNG must omit authoring text. The generated prompt must explicitly state that the only text allowed in final art is exact content listed under `TEXT TO RENDER` (dialogue/narration and deliberate onomatopoeia).
+
+This boundary exists because multimodal models can copy visible blueprint labels into generated art.
+
+### Character names are metadata
+
+A display name such as `綴理` may exist in editor state for human usability. It must not be emitted as visible text in the clean AI blueprint, and the prompt compiler should identify the character by `characterId` / Character Sheet key rather than asking the renderer to draw the display name.
+
+### Manga effects are semantic
+
+Panel border style, borderless panels, bleed/断ち切り, breakout/ブチ抜き, effects, panel role, expression, gaze, balloons, and background treatment belong to the semantic contract.
 
 ### Provider independence
 
-Core blueprint data must not depend on OpenAI, Gemini, Stable Diffusion, ComfyUI, or another image provider.
-Provider-specific adapters, if introduced, belong at the export/integration boundary.
+Core data must not depend on OpenAI, Gemini, Stable Diffusion, ComfyUI, or another provider. Provider adapters belong at the export boundary.
 
-### Editable intermediate artifacts
+## Compatibility
 
-Prefer structures where one bad panel, pose, or prompt can be replaced without regenerating an entire page.
-Do not collapse authoring state into a single opaque prompt.
+- Current export format: `manga-blueprint/0.2`.
+- The web app must accept legacy `manga-blueprint/0.1` projects and normalize missing 0.2 fields.
+- Legacy import must not drop character identity, coordinates, pose, or camera values.
 
-## Current implementation phase
+## Mobile-first UI
 
-The current `web/` application is a zero-dependency static prototype. This is intentional:
+Japanese is the default UI language. English UI translation is optional but supported.
 
-- no build step is required;
-- GitHub Pages can deploy the exact prototype files;
-- interaction semantics can stabilize before choosing a larger UI framework.
+On narrow/mobile screens:
 
-A later migration to React/TypeScript or another framework is allowed if it preserves the product contract and `.manga.json` compatibility.
-
-## Development commands
-
-Serve locally from the repository root:
-
-```bash
-python3 -m http.server 4173
-```
-
-Then open:
-
-```text
-http://localhost:4173/web/
-```
-
-The prototype must also work when hosted under:
-
-```text
-https://c-a-p-engineer.github.io/manga-blueprint-studio/
-```
-
-## GitHub Pages
-
-Pages is deployed through `.github/workflows/pages.yml`.
-The workflow stages `web/` as the site root and also publishes canonical `schema/` and `examples/` resources into the Pages artifact before deploying with the official Pages actions.
-`.github/workflows/validate.yml` performs dependency-free syntax and repository-contract checks.
-Do not add a second deployment mechanism unless there is a documented migration.
-
-## Change rules
-
-When changing persisted data:
-
-1. update `schema/manga-blueprint.schema.json`;
-2. update `docs/PRODUCT.md` if behavior changes;
-3. update `docs/ARCHITECTURE.md` if ownership/data flow changes;
-4. preserve old files when practical or increment the format version with an explicit migration strategy.
-
-When adding a pose preset:
-
-- give it a stable ID;
-- provide a human-readable label;
-- provide a semantic description used by prompt export;
-- keep the drawing representation separate from character identity.
-
-When adding camera controls:
-
-- keep narrative intent in semantic fields;
-- treat visual overlays as aids, not the canonical camera definition.
+- canvas appears before detailed controls;
+- editing sections are switched through a fixed bottom tab bar;
+- primary controls use touch-sized targets;
+- pointer interactions must work without hover.
 
 ## Security and privacy
 
-- The prototype is client-side only.
-- Do not upload local character sheets or project JSON anywhere unless an explicit network feature is introduced and documented.
-- Do not add analytics, telemetry, external fonts, remote scripts, or API calls without documenting the data boundary.
-- Never commit API keys, access tokens, cookies, or private character assets.
+- client-side only;
+- no analytics, telemetry, remote scripts, or API calls without an explicit documented boundary;
+- never commit private Character Sheets, tokens, or credentials.
 
-## Definition of done for prototype changes
+## Runtime
 
-A user-visible change is complete only when relevant checks pass:
+The zero-build browser runtime is bootstrapped by `web/app.js` and split across `web/app-1.js` through `web/app-4.js`. Keep those files usable as plain static assets on GitHub Pages; do not introduce a build dependency merely to reorganize the prototype.
 
-- the page loads without console errors;
-- the main editor remains usable on desktop and narrow/mobile widths;
-- a panel can be selected;
-- characters can be added, selected, moved, and assigned a pose;
-- blueprint JSON export still round-trips through import;
-- prompt export reflects current panel/character state;
-- blueprint PNG export still produces the page reference;
-- no hidden network dependency is introduced;
-- Pages workflow remains valid for the deployed directory.
+## Definition of done
 
-## Non-goals for the current prototype
+Relevant changes must preserve:
 
-- final manga rendering;
-- text-to-image API calls;
-- authentication or cloud project storage;
-- full 3D posing;
-- exact anatomy simulation;
-- speech balloon typesetting;
-- multi-user collaboration.
+- JS syntax validity for the bootstrap and all runtime chunks;
+- repository contract validation;
+- legacy project normalization;
+- panel / character selection;
+- clean AI PNG export with authoring text removed;
+- annotated review PNG export;
+- prompt text safety rule;
+- JSON export/import;
+- GitHub Pages workflow;
+- usable mobile layout.
+
+Visual review and deterministic validation are separate evidence. Do not call a UI fully visually verified based only on syntax/CI.

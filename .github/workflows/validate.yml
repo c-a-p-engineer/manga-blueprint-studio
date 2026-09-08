@@ -22,7 +22,12 @@ jobs:
           node-version: 22
 
       - name: Check JavaScript syntax
-        run: node --check web/app.js
+        run: |
+          node --check web/app.js
+          node --check web/app-1.js
+          node --check web/app-2.js
+          node --check web/app-3.js
+          node --check web/app-4.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs

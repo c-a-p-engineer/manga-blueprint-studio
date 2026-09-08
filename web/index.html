@@ -2,129 +2,109 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#111827" />
   <title>Manga Blueprint Studio</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header class="topbar">
-    <div>
+    <div class="brand-block">
       <div class="brand">Manga Blueprint Studio</div>
-      <div class="tagline">人間が演出を決め、AIへ正確に渡す漫画ネーム設計ツール</div>
+      <div class="tagline" data-i18n="tagline">漫画演出を設計し、AIへ安全に渡すBlueprintエディタ</div>
     </div>
     <div class="top-actions">
-      <button id="exportPng">Blueprint PNG</button>
-      <button id="exportJson">.manga.json</button>
-      <label class="button-like" for="importJson">JSON読込</label>
-      <input id="importJson" type="file" accept="application/json,.json" hidden />
+      <button id="undoBtn" type="button">↶ <span data-i18n="undo">元に戻す</span></button>
+      <button id="redoBtn" type="button">↷ <span data-i18n="redo">やり直す</span></button>
+      <select id="languageSelect" aria-label="Language">
+        <option value="ja">日本語</option>
+        <option value="en">English</option>
+      </select>
     </div>
   </header>
 
   <main class="workspace">
-    <aside class="left-panel panel-ui">
-      <section>
-        <h2>ページ</h2>
-        <label>テンプレート
-          <select id="templateSelect">
-            <option value="action3">アクション3コマ</option>
-            <option value="four">4コマ</option>
-            <option value="single">1コマ</option>
-          </select>
-        </label>
-        <div class="button-grid">
-          <button id="splitVertical">左右に分割</button>
-          <button id="splitHorizontal">上下に分割</button>
-        </div>
-        <button id="renumber">読み順で番号振り直し</button>
-      </section>
-
-      <section>
-        <h2>選択中のコマ</h2>
-        <div id="panelStatus" class="status-box"></div>
-        <label>カメラ距離
-          <select id="cameraDistance">
-            <option value="long">Long</option>
-            <option value="medium">Medium</option>
-            <option value="close">Close</option>
-            <option value="extreme-close">Extreme close</option>
-          </select>
-        </label>
-        <label>カメラ角度
-          <select id="cameraAngle">
-            <option value="eye-level">Eye level</option>
-            <option value="low-angle">Low angle / 煽り</option>
-            <option value="high-angle">High angle / 俯瞰</option>
-            <option value="over-shoulder">Over shoulder</option>
-          </select>
-        </label>
-        <label>フォーカス / 構図メモ
-          <textarea id="cameraFocus" rows="3" placeholder="例: 拳を極端な前景へ。胸付近から見る。"></textarea>
-        </label>
-      </section>
-
-      <section>
-        <h2>キャラクター</h2>
-        <button id="addCharacter" class="primary">＋ 選択コマへ追加</button>
-        <div id="characterList" class="character-list"></div>
-      </section>
-    </aside>
-
     <section class="canvas-column">
       <div class="canvas-toolbar">
-        <span>白いページ内のコマ/棒人間をタップ。棒人間はドラッグ移動できます。</span>
+        <span data-i18n="canvasHelp">コマ・人物・吹き出しをタップして編集します。</span>
         <span id="saveStatus">local autosave</span>
       </div>
       <div class="page-stage">
         <svg id="blueprintSvg" viewBox="0 0 800 1130" role="img" aria-label="Manga blueprint page"></svg>
       </div>
+      <div class="canvas-note" data-i18n="safeExportNote">AI用PNGではキャラ名・コマ番号・カメラ注記などの制作メタ文字を自動除去します。</div>
     </section>
 
-    <aside class="right-panel panel-ui">
-      <section>
-        <h2>選択中のキャラ</h2>
-        <div id="noCharacter" class="status-box">棒人間を選択してください。</div>
-        <div id="characterInspector" hidden>
-          <label>表示名
-            <input id="characterName" type="text" />
-          </label>
-          <label>Character ID
-            <input id="characterId" type="text" />
-          </label>
-          <label>Character Sheet参照キー
-            <input id="referenceKey" type="text" placeholder="例: tsuzuri-sheet" />
-          </label>
-          <label>ポーズ
-            <select id="poseSelect"></select>
-          </label>
-          <label>スケール <output id="scaleOut"></output>
-            <input id="characterScale" type="range" min="0.55" max="1.8" step="0.05" />
-          </label>
-          <label>回転 <output id="rotationOut"></output>
-            <input id="characterRotation" type="range" min="-45" max="45" step="1" />
-          </label>
-          <button id="deleteCharacter" class="danger">キャラを削除</button>
-        </div>
-      </section>
+    <section class="control-shell">
+      <nav class="tabbar" aria-label="Editor sections">
+        <button class="tab active" data-tab="page" type="button" data-i18n="tabPage">ページ</button>
+        <button class="tab" data-tab="panel" type="button" data-i18n="tabPanel">コマ</button>
+        <button class="tab" data-tab="character" type="button" data-i18n="tabCharacter">キャラ</button>
+        <button class="tab" data-tab="background" type="button" data-i18n="tabBackground">背景</button>
+        <button class="tab" data-tab="text" type="button" data-i18n="tabText">文字</button>
+        <button class="tab" data-tab="effects" type="button" data-i18n="tabEffects">演出</button>
+        <button class="tab" data-tab="output" type="button" data-i18n="tabOutput">出力</button>
+      </nav>
 
-      <section class="prompt-section">
-        <div class="section-title-row">
-          <h2>生成プロンプト</h2>
-          <button id="copyPrompt">コピー</button>
-        </div>
-        <textarea id="promptOutput" rows="18" readonly></textarea>
-      </section>
+      <div class="panels">
+        <section class="tool-panel active" data-section="page">
+          <h2 data-i18n="pageHeading">ページ</h2>
+          <label><span data-i18n="templateLabel">テンプレート</span>
+            <select id="templateSelect"><option value="action3">アクション3コマ</option><option value="four">4コマ</option><option value="single">1コマ</option></select>
+          </label>
+          <div class="button-grid"><button id="splitVertical" type="button" data-i18n="splitVertical">左右に分割</button><button id="splitHorizontal" type="button" data-i18n="splitHorizontal">上下に分割</button></div>
+          <button id="renumber" type="button" data-i18n="renumber">読み順で番号振り直し</button>
+          <p class="help" data-i18n="pageHelp">日本漫画は右→左を既定にしています。</p>
+        </section>
 
-      <section class="legend">
-        <h2>Blueprintの意味</h2>
-        <p><strong>枠</strong> = コマ</p>
-        <p><strong>番号</strong> = Promptとの対応用。完成絵には描かない。</p>
-        <p><strong>棒人間</strong> = 位置・ポーズ参照。外見はCharacter Sheetを使用。</p>
-      </section>
-    </aside>
+        <section class="tool-panel" data-section="panel">
+          <div class="section-title-row"><h2 data-i18n="panelHeading">選択中のコマ</h2><button id="deletePanel" type="button" class="danger" data-i18n="deletePanel">削除</button></div>
+          <div id="panelStatus" class="status-box"></div>
+          <label><span data-i18n="narrativeRole">コマの役割</span><select id="panelRole"><option value="setup">導入 / Setup</option><option value="exposition">状況説明 / Exposition</option><option value="reaction">反応 / Reaction</option><option value="beat">間 / Beat</option><option value="climax">決め / Climax</option><option value="transition">転換 / Transition</option><option value="afterglow">余韻 / Afterglow</option></select></label>
+          <div class="subhead" data-i18n="cameraHeading">カメラ</div>
+          <label><span data-i18n="cameraDistance">距離</span><select id="cameraDistance"><option value="extreme-long">Extreme long</option><option value="long">Long</option><option value="medium">Medium</option><option value="close">Close</option><option value="extreme-close">Extreme close</option></select></label>
+          <label><span data-i18n="cameraAngle">高さ・角度</span><select id="cameraAngle"><option value="eye-level">水平 / Eye level</option><option value="low-angle">煽り / Low angle</option><option value="high-angle">俯瞰 / High angle</option><option value="birds-eye">真上 / Bird's-eye</option><option value="worms-eye">真下 / Worm's-eye</option><option value="dutch-angle">傾き / Dutch angle</option><option value="over-shoulder">肩越し / Over shoulder</option></select></label>
+          <label><span data-i18n="cameraViewpoint">視点方向</span><select id="cameraViewpoint"><option value="front">正面 / Front</option><option value="three-quarter-front">斜め前 / 3/4 front</option><option value="side">横 / Side</option><option value="three-quarter-back">斜め後ろ / 3/4 back</option><option value="back">背面 / Back</option><option value="pov">主観 / POV</option><option value="near-object">対象の近く / Near object</option></select></label>
+          <div id="cameraHelp" class="explain-card"></div>
+          <label><span data-i18n="cameraFocus">主対象・構図メモ</span><textarea id="cameraFocus" rows="3" placeholder="例: 右拳を極端な前景へ。胸付近から見る。"></textarea></label>
+          <label><span data-i18n="cameraIntent">演出意図</span><textarea id="cameraIntent" rows="2" placeholder="例: 威圧感、緊張感、孤独感"></textarea></label>
+          <div class="subhead" data-i18n="frameHeading">コマ枠</div>
+          <label><span data-i18n="borderStyle">枠タイプ</span><select id="borderStyle"><option value="normal">通常枠 / Normal</option><option value="borderless">枠なし / Borderless</option><option value="inset">小窓 / Inset</option><option value="impact">衝撃枠 / Impact</option></select></label>
+          <label><span data-i18n="bleedEdge">断ち切り</span><select id="bleedEdge"><option value="none">なし</option><option value="top">上</option><option value="right">右</option><option value="bottom">下</option><option value="left">左</option><option value="all">全面</option></select></label>
+          <label><span data-i18n="breakoutMode">ブチ抜き</span><select id="breakoutMode"><option value="none">なし</option><option value="character">人物を枠外へ</option><option value="foreground">前景だけ枠外へ</option><option value="cross-panel">コマ跨ぎ</option></select></label>
+        </section>
+
+        <section class="tool-panel" data-section="character">
+          <div class="section-title-row"><h2 data-i18n="charactersHeading">キャラクター</h2><button id="addCharacter" type="button" class="primary" data-i18n="addCharacter">＋ 追加</button></div>
+          <div id="characterList" class="list"></div><div id="noCharacter" class="status-box" data-i18n="selectCharacter">棒人間を選択してください。</div>
+          <div id="characterInspector" hidden>
+            <label><span data-i18n="displayName">表示名</span><input id="characterName" type="text" /></label><label>Character ID<input id="characterId" type="text" /></label><label><span data-i18n="referenceKey">Character Sheet参照キー</span><input id="referenceKey" type="text" /></label><label><span data-i18n="poseLabel">ポーズ</span><select id="poseSelect"></select></label>
+            <label><span data-i18n="expressionLabel">表情</span><select id="expressionType"><option value="neutral">無表情 / Neutral</option><option value="smile">笑顔 / Smile</option><option value="shy">照れ / Shy</option><option value="angry">怒り / Angry</option><option value="surprised">驚き / Surprised</option><option value="sad">悲しみ / Sad</option><option value="fear">恐怖 / Fear</option><option value="smirk">ニヤリ / Smirk</option><option value="sleepy">眠そう / Sleepy</option></select></label>
+            <label><span data-i18n="expressionIntensity">表情強度</span><input id="expressionIntensity" type="range" min="0" max="1" step="0.1" /></label><label><span data-i18n="expressionNotes">表情メモ</span><input id="expressionNotes" type="text" placeholder="例: 頬を赤らめ、口を少し開く" /></label>
+            <label><span data-i18n="gazeLabel">視線</span><select id="gazeTarget"><option value="camera">カメラ</option><option value="other-character">相手</option><option value="down">下</option><option value="up">上</option><option value="away">視線を外す</option><option value="closed">目を閉じる</option><option value="custom">自由指定</option></select></label><label><span data-i18n="gazeNotes">視線メモ</span><input id="gazeNotes" type="text" /></label>
+            <label><span data-i18n="scaleLabel">スケール</span> <output id="scaleOut"></output><input id="characterScale" type="range" min="0.45" max="2.3" step="0.05" /></label><label><span data-i18n="rotationLabel">回転</span> <output id="rotationOut"></output><input id="characterRotation" type="range" min="-60" max="60" step="1" /></label><button id="deleteCharacter" type="button" class="danger" data-i18n="deleteCharacter">キャラを削除</button>
+          </div>
+        </section>
+
+        <section class="tool-panel" data-section="background">
+          <h2 data-i18n="backgroundHeading">背景</h2><label><span data-i18n="locationLabel">場所</span><input id="backgroundLocation" type="text" placeholder="例: 学校の教室、屋上、路地裏" /></label><label><span data-i18n="timeLabel">時間帯</span><select id="backgroundTime"><option value="">指定なし</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕方</option><option value="night">夜</option></select></label><label><span data-i18n="weatherLabel">天気</span><input id="backgroundWeather" type="text" placeholder="例: 晴れ、雨、曇り" /></label><label><span data-i18n="moodLabel">雰囲気</span><input id="backgroundMood" type="text" placeholder="例: 静か、不穏、柔らかい" /></label><label><span data-i18n="detailLabel">描き込み量</span><select id="backgroundDetail"><option value="none">背景なし</option><option value="low">少なめ</option><option value="medium">中</option><option value="high">多め</option></select></label><label><span data-i18n="renderModeLabel">背景の見せ方</span><select id="backgroundRenderMode"><option value="normal">通常</option><option value="selective-detail">必要部分だけ描く</option><option value="white">白背景</option><option value="blur">ぼかす</option><option value="speed-lines">スピード線へ置換</option><option value="focus-lines">集中線へ置換</option><option value="black">黒ベタ</option></select></label><label><span data-i18n="backgroundNotes">背景メモ</span><textarea id="backgroundNotes" rows="3"></textarea></label>
+        </section>
+
+        <section class="tool-panel" data-section="text">
+          <div class="section-title-row"><h2 data-i18n="balloonsHeading">吹き出し</h2><button id="addBalloon" type="button" class="primary" data-i18n="addBalloon">＋ 吹き出し</button></div><div id="balloonList" class="list"></div><div id="balloonInspector" hidden><label><span data-i18n="balloonType">種類</span><select id="balloonType"><option value="speech">会話</option><option value="thought">心の声</option><option value="shout">叫び</option><option value="whisper">小声</option><option value="narration">ナレーション</option><option value="offscreen">画面外</option></select></label><label><span data-i18n="speaker">話者</span><select id="balloonSpeaker"></select></label><label><span data-i18n="balloonText">内容</span><textarea id="balloonText" rows="3"></textarea></label><label>X<input id="balloonX" type="range" min="0" max="800" step="5" /></label><label>Y<input id="balloonY" type="range" min="0" max="1130" step="5" /></label><label><span data-i18n="balloonSize">サイズ</span><input id="balloonSize" type="range" min="0.6" max="1.8" step="0.1" /></label><button id="deleteBalloon" type="button" class="danger" data-i18n="deleteBalloon">吹き出しを削除</button></div><div class="subhead" data-i18n="textSafetyHeading">AI文字出力の安全策</div><p class="help" data-i18n="textSafetyHelp">AI用PNGでは吹き出し位置だけ残し、本文はPrompt側へ渡します。これによりキャラ名などの誤写植を減らします。</p>
+        </section>
+
+        <section class="tool-panel" data-section="effects">
+          <h2 data-i18n="effectsHeading">漫画演出</h2><label><span data-i18n="lineEffect">効果線</span><select id="lineEffect"><option value="none">なし</option><option value="speed">スピード線</option><option value="focus">集中線</option><option value="impact">衝撃線</option><option value="tension">緊張線</option><option value="silence">無音・間</option></select></label><label><span data-i18n="effectStrength">強度</span><select id="effectStrength"><option value="low">弱</option><option value="medium">中</option><option value="high">強</option></select></label><label><span data-i18n="onomatopoeia">オノマトペ</span><input id="sfxText" type="text" placeholder="例: ドン、バキ、シーン" /></label><label><span data-i18n="sfxStyle">文字演出</span><select id="sfxStyle"><option value="impact">衝撃</option><option value="quiet">静か</option><option value="rumble">不穏</option><option value="cute">可愛い</option><option value="mechanical">機械的</option></select></label><label><span data-i18n="effectNotes">演出メモ</span><textarea id="effectNotes" rows="3" placeholder="例: 拳の前景だけ枠を飛び出させる"></textarea></label>
+        </section>
+
+        <section class="tool-panel" data-section="output">
+          <h2 data-i18n="outputHeading">出力</h2><button id="exportAiPng" type="button" class="primary full" data-i18n="exportAiPng">AI用クリーンPNG</button><button id="exportAnnotatedPng" type="button" class="full" data-i18n="exportAnnotatedPng">確認用注釈PNG</button><button id="exportJson" type="button" class="full">.manga.json</button><label class="button-like full" for="importJson" data-i18n="importJson">JSON読込</label><input id="importJson" type="file" accept="application/json,.json" hidden /><div class="section-title-row"><h2 data-i18n="promptHeading">生成プロンプト</h2><button id="copyPrompt" type="button" data-i18n="copy">コピー</button></div><textarea id="promptOutput" rows="18" readonly></textarea><div class="warning-card" data-i18n="metaWarning">完成絵に表示してよい文字は「吹き出し本文」と「オノマトペ」だけ。キャラ名・Character ID・カメラ注記・コマ番号は描画禁止としてPromptへ明記します。</div>
+        </section>
+      </div>
+    </section>
   </main>
-
-  <footer>Prototype 0.1 — client-side only / no upload / provider-independent</footer>
+  <footer>Prototype 0.3 — client-side only / AI-safe handoff / provider-independent</footer>
   <script type="module" src="./app.js"></script>
 </body>
 </html>

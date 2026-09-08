@@ -1,149 +1,55 @@
 # Architecture
 
-## Current architecture
+## Runtime
 
-The prototype is a static client-side application deployed from `web/`.
+The prototype is a zero-dependency static web application. `web/app.js` is a tiny module bootstrap that loads `web/app-1.js` through `web/app-4.js` as classic scripts. This keeps GitHub Pages delivery build-free while keeping the prototype source manageable.
 
-```text
-web/index.html
-  ↓
-web/app.js
-  ├─ editor state
-  ├─ panel operations
-  ├─ pose preset semantics
-  ├─ SVG blueprint rendering
-  ├─ pointer/drag interaction
-  ├─ prompt compiler
-  ├─ JSON import/export
-  └─ PNG export
-  ↓
-localStorage
-```
+No server, runtime API, database, package install, analytics, or external JavaScript is required.
 
-No server, build pipeline, runtime API, database, or external JavaScript dependency is required.
+## State
 
-## Why zero-dependency for the prototype
-
-The uncertain part of this project is the interaction model and blueprint contract, not component framework selection. A static implementation lets us validate:
-
-- whether panel editing feels useful;
-- whether stick-figure pose presets are expressive enough;
-- whether multimodal AI understands the exported blueprint;
-- whether `.manga.json` contains the right semantics.
-
-A framework migration should happen only when complexity justifies it.
-
-## Coordinate system
-
-The prototype uses a logical page space of:
+The canonical in-browser project state is normalized to `manga-blueprint/0.2`.
 
 ```text
-width: 800
-height: 1130
+Project
+└─ Page
+   └─ Panel
+      ├─ rect / order / narrative role
+      ├─ panel style (border / bleed / breakout)
+      ├─ camera
+      ├─ background
+      ├─ effects
+      ├─ characters
+      │  ├─ pose
+      │  ├─ expression
+      │  └─ gaze
+      └─ balloons
 ```
 
-Panel rectangles and character positions are stored in this page coordinate space.
+Legacy `0.1` projects are normalized in memory by supplying missing fields while preserving original core data.
 
-This keeps visual rendering and semantic export aligned. A future stable format may normalize to `0..1`; if so, migration must be explicit.
+## Two render modes
 
-## Data ownership
+### Editor / annotated render
 
-### Project metadata
+Used for humans. It may contain panel numbers, camera labels, character display names, background notes, and SFX notes.
 
-Owns title, format version, reading direction, and page dimensions.
+### Clean AI render
 
-### Page
-
-Owns panels.
-
-### Panel
-
-Owns:
-
-- geometry;
-- order;
-- camera intent;
-- character instances.
-
-### Character instance
-
-Owns placement and pose on a specific panel.
-It references a logical `characterId` and optional `referenceKey` but does not own the character sheet image itself.
-
-### Pose preset
-
-Owns reusable pose semantics and a minimal stick-figure skeleton.
-It does not own character appearance.
+Used as a multimodal image-generation reference. It excludes all authoring text while preserving graphical composition, character pose references, effect lines, and empty balloon placement. This split is a correctness boundary, not merely a cosmetic export option.
 
 ## Prompt compiler
 
-Prompt generation is deterministic from the current blueprint state.
-
-```text
-MangaBlueprint
-   ↓
-page-level rules
-   ↓
-panels sorted by `order`
-   ↓
-character bindings + pose semantics + camera intent
-   ↓
-provider-neutral prompt
-```
-
-Prompt text is derived output. It is not the source of truth.
-
-## Blueprint image renderer
-
-The page editor itself is SVG. PNG export serializes that SVG, rasterizes it on an in-browser canvas, and downloads the result.
-
-The exported image intentionally keeps panel numbers and character labels because they act as cross-references for the prompt.
+The prompt compiler is deterministic from project state. It emits a strict text rendering rule, reading direction, per-panel semantics, character identity references by `characterId` / sheet key, camera/background/frame/expression/gaze/effect instructions, and a `TEXT TO RENDER` allowlist. Display names are deliberately not needed for rendering.
 
 ## Persistence
 
-Prototype persistence uses `localStorage` only.
+`localStorage` stores project JSON. Explicit `.manga.json` export is the portable artifact.
 
-- autosave: current blueprint JSON;
-- explicit export: downloaded `.manga.json`;
-- explicit import: local file, parsed in the browser.
+## Coordinate system
 
-No project data is transmitted over the network by application code.
+Logical page coordinates are `800 x 1130`. Character and balloon placement use the same page coordinate system as SVG rendering.
 
 ## Deployment
 
-`.github/workflows/pages.yml`:
-
-1. checks out `master`;
-2. configures GitHub Pages;
-3. creates `_site/` from `web/`;
-4. copies canonical `schema/` and `examples/` resources into `_site/`;
-5. uploads and deploys `_site/`.
-
-The browser application remains rooted in `web/`, while the deployed site additionally exposes `/schema/` and `/examples/` without duplicating their source files in the repository.
-
-`.github/workflows/validate.yml` runs `node --check web/app.js` plus `scripts/validate.mjs` to catch syntax, missing-file, fixture, and basic contract regressions without third-party dependencies.
-
-## Future boundaries
-
-Potential future modules, without committing to a framework:
-
-```text
-core/
-  blueprint-model
-  pose-contract
-  prompt-compiler
-  validation
-
-editor/
-  page-layout
-  pose-editor
-  camera-editor
-
-adapters/
-  generic-multimodal
-  openai
-  gemini
-  comfyui
-```
-
-Provider adapters should consume the core format rather than modifying it.
+GitHub Pages deploys the static web directory and publishes schema/examples as static resources. Validation remains dependency-free.
