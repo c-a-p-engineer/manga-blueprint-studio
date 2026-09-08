@@ -2,7 +2,7 @@
 
 ## Runtime
 
-The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-16.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior; `app-12.js` contains Smart Manga action-intent alignment plus mobile Panel Peek hardening; `app-13.js` owns Prototype 0.9 Scene Template Studio; `app-14.js` provides 0.9 localization/feedback hardening; `app-15.js` adds Prototype 0.10 balloon writing direction; `app-16.js` synchronizes panel order with selected reading direction. GitHub Pages serves exact static assets; no server, build step, external runtime script, analytics, or API is required.
+The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-17.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior; `app-12.js` contains Smart Manga action-intent alignment plus mobile Panel Peek hardening; `app-13.js` owns Prototype 0.9 Scene Template Studio; `app-14.js` provides 0.9 localization/feedback hardening; `app-15.js` adds Prototype 0.10 balloon writing direction; `app-16.js` synchronizes panel order with selected reading direction; `app-17.js` integrates Scene Template numbering/beat assignment with that order and adds per-panel SFX writing-direction state/UI/prompt/manifest metadata. GitHub Pages serves exact static assets; no server, build step, external runtime script, analytics, or API is required.
 
 ## State
 
@@ -28,14 +28,16 @@ Project
    └─ Panel
       ├─ rect / order / role
       ├─ actionIntent
-      ├─ style / camera / background / effects
+      ├─ style / camera / background
+      ├─ effects
+      │  └─ sfxWritingMode (inherit | vertical-rl | horizontal-tb)
       ├─ characters (pose / expression / gaze / placement)
       ├─ balloons
       │  └─ writingMode (inherit | vertical-rl | horizontal-tb)
       └─ assistSeed
 ```
 
-`storyTemplate`, `actionIntent`, `defaultWritingMode`, and balloon `writingMode` are compatible optional additions. Prototype 0.10 does not change the project schema version. Legacy projects normalize missing writing-mode state to vertical-first behavior.
+`storyTemplate`, `actionIntent`, `defaultWritingMode`, balloon `writingMode`, and SFX `sfxWritingMode` are compatible optional additions. Prototype 0.10 does not change the project schema version. Legacy projects normalize missing writing-mode state to vertical-first behavior.
 
 ## Story action model
 
@@ -55,9 +57,25 @@ Template Studio adds category filtering, free-text search, visual cards, layout 
 
 Browsing/searching/selecting changes only transient authoring UI state. It does not mutate the manga page.
 
+Prototype 0.10 overrides template thumbnail numbering in `app-17.js`. Ordering is calculated from page-scale template geometry through the existing reading-order preview function; those numbers are then drawn onto thumbnail-scale geometry. Using page-scale geometry avoids thumbnail dimensions changing row-grouping semantics.
+
 ### Apply path
 
-Template apply resolves shipped/custom geometry, confirms destructive replacement when authored content exists, creates ordinary panel state, copies beat semantics, optionally copies sample dialogue/SFX, places a reusable base character when available, renumbers by selected reading direction, and records `meta.storyTemplate` as provenance. No continuing template authority remains after apply.
+Template apply resolves shipped/custom geometry, confirms destructive replacement when authored content exists, creates ordinary panel state, and records `meta.storyTemplate` as provenance.
+
+Prototype 0.10's integrated apply path then:
+
+1. creates all panels from the template geometry;
+2. calls the canonical geometry/read-direction renumbering path;
+3. obtains panels in `readingOrderedPanels16()` order;
+4. assigns template beat `N` to panel order `N`;
+5. copies role/action/camera/background/effects;
+6. optionally copies sample dialogue/SFX;
+7. initializes template-created SFX writing mode as `inherit`;
+8. places the selected/project reusable base character when available;
+9. selects panel order 1.
+
+No continuing template authority remains after apply. The important contract is that thumbnail number, panel `order`, and applied beat index all express the same reading sequence.
 
 ### Bounded derivation
 
@@ -98,22 +116,30 @@ Use separately attached Character Sheets only for characters whose identity mode
 
 Prototype 0.10 treats panel `order` as synchronized semantic state derived from current geometry plus reading direction before committed renders. `readingOrderedPanels16()` groups panels into horizontal reading rows using page-relative Y tolerance, then orders X descending for RTL or ascending for LTR. `renumberPanels()` assigns sequential `order` values.
 
-The synchronized order is shared by canvas badges, Panel Peek/List, generated prompt, manifest-derived semantics, and exports. Changing text writing direction does not participate in this algorithm.
+The synchronized order is shared by canvas badges, Scene Template thumbnail numbering/beat placement, Panel Peek/List, generated prompt, manifest-derived semantics, and exports. Changing text writing direction does not participate in this algorithm.
 
-## Balloon writing direction
+## Lettering direction
 
-`app-15.js` adds a separate lettering model:
+`app-15.js` establishes the project/balloon lettering model:
 
 ```text
 meta.defaultWritingMode = vertical-rl | horizontal-tb
 balloon.writingMode = inherit | vertical-rl | horizontal-tb
 ```
 
-`vertical-rl` is the default. `inherit` resolves against `meta.defaultWritingMode`.
+`app-17.js` extends the same model to per-panel onomatopoeia:
 
-Editor and annotated review rendering use an authoring-only text preview. Horizontal preview wraps into centered lines; vertical preview lays glyphs top-to-bottom and columns right-to-left. This preview is explanatory rather than a deterministic final typesetter.
+```text
+panel.effects.sfxWritingMode = inherit | vertical-rl | horizontal-tb
+```
 
-Clean AI render still removes balloon text entirely. The prompt adds a `LETTERING DIRECTION` section describing project default plus effective mode for each non-empty balloon. The exact visible strings remain exclusively under `TEXT TO RENDER`.
+`vertical-rl` is the project default. `inherit` resolves against `meta.defaultWritingMode` for both balloons and SFX.
+
+Editor and annotated review balloon rendering use an authoring-only text preview. Horizontal preview wraps into centered lines; vertical preview lays glyphs top-to-bottom and columns right-to-left. SFX writing direction is recorded semantically and exposed in the effects editor; clean AI render continues to omit SFX labels.
+
+The prompt adds `LETTERING DIRECTION` for balloons and `SFX LETTERING DIRECTION` for non-empty onomatopoeia. The exact visible strings remain exclusively under `TEXT TO RENDER`.
+
+Manifest v3 keeps its existing schema identifier while its derived `lettering` object may contain balloon entries plus an `onomatopoeia` array with stored/effective writing mode per non-empty SFX.
 
 ## Dynamic coordinate system
 
@@ -150,18 +176,18 @@ Scene Template Studio and Smart Manga intentionally solve different problems: te
 
 ## AI-safe render modes
 
-- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, authoring labels, and writing-direction text previews;
+- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, authoring labels, and balloon writing-direction text previews;
 - canonical annotated export contains normal authoring metadata defined by the exporter;
-- clean AI export removes authoring text/anatomy colors/balloon text while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
+- clean AI export removes authoring text/anatomy colors/balloon and SFX text while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
 - dynamic editor overlays and Template Studio UI are never part of canonical export serialization;
 - AI-generation ZIP excludes annotated PNG entirely.
 
 ## Prompt compiler and manifest
 
-The compiler remains deterministic from current project state. It preserves clean-reference rule, strict `TEXT TO RENDER` allowlist, panel semantics, `STORY ACTION INTENT`, mode-aware `CHARACTER IDENTITY GUIDANCE`, and Prototype 0.10 `LETTERING DIRECTION` guidance.
+The compiler remains deterministic from current project state. It preserves clean-reference rule, strict `TEXT TO RENDER` allowlist, panel semantics, `STORY ACTION INTENT`, mode-aware `CHARACTER IDENTITY GUIDANCE`, `LETTERING DIRECTION`, and `SFX LETTERING DIRECTION` guidance.
 
-Manifest v3 remains the read-first authority and may record `storyTemplate` provenance plus `panelIntentIndex`. The included semantic `.manga.json` and prompt carry writing-direction state. Browser-local template library contents are never exported automatically.
+Manifest v3 remains the read-first authority and may record `storyTemplate` provenance plus `panelIntentIndex` and derived lettering metadata. The included semantic `.manga.json` and prompt carry writing-direction state. Browser-local template library contents are never exported automatically.
 
 ## Persistence / privacy / deployment
 
-`localStorage` stores autosave state and Prototype 0.9 custom templates; `.manga.json` is the portable project artifact. All templates, search, derivation, lettering preview, reading-order synchronization, lint, hashing, ZIP generation, appearance guidance, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.
+`localStorage` stores autosave state and Prototype 0.9 custom templates; `.manga.json` is the portable project artifact. All templates, search, derivation, lettering preview, SFX writing-direction controls, reading-order synchronization, lint, hashing, ZIP generation, appearance guidance, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.

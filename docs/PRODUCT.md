@@ -33,7 +33,7 @@ Examples:
 
 ## Scene Template Studio
 
-Prototype 0.9 expands Story Templates into a scene-first Template Studio.
+Prototype 0.9 expands Story Templates into a scene-first Template Studio. Prototype 0.10 makes template numbering and applied beat order use the same selected RTL/LTR reading order as the page.
 
 ### Discovery
 
@@ -45,6 +45,8 @@ Templates are discoverable by:
 - selected-template preview with recommended use case and beat flow.
 
 Categories include romance, battle, emotion, daily, comedy, suspense, character introduction, and custom.
+
+Template layout thumbnails number their panels using `meta.readingDirection`. In RTL, the rightmost panel in an ordinary row receives the earlier number; in LTR the leftmost does.
 
 ### Shipped scene packs
 
@@ -75,7 +77,9 @@ A template may seed valid panel geometry, narrative role, action intent, pose/ex
 
 Browsing/filtering/searching never mutates the current page. Applying over authored content requires confirmation. The user explicitly chooses whether sample dialogue/SFX is included. After apply, every field is ordinary editable project state; `meta.storyTemplate` is provenance only.
 
-The selected/project reusable base character may be placed when one exists. Template definitions do not become continuing authorities after apply.
+After template geometry is created, the page is renumbered from current geometry and `meta.readingDirection`. Template beat 1 is then assigned to panel order 1, beat 2 to panel order 2, and so on. This keeps the visible template number, the page number, and the semantic event placed into that panel aligned.
+
+The selected/project reusable base character may be placed when one exists. Template definitions do not become continuing authorities after apply. Template-created balloons and SFX use inherited project writing direction until explicitly overridden.
 
 ### Bounded derivation
 
@@ -148,7 +152,7 @@ Professional terms remain available for interoperability, but Japanese UI pairs 
 
 The product ships named manuscript presets: `800×1130 Portrait` (default), 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, and custom dimensions.
 
-Japanese right-to-left is default; left-to-right is supported. Panel `order` is derived from current geometry plus selected reading direction on committed render paths. For ordinary rows, RTL numbers right-to-left and LTR numbers left-to-right. The same resulting order drives canvas badges, Panel Peek/List, prompt, manifest semantics, and exports.
+Japanese right-to-left is default; left-to-right is supported. Panel `order` is derived from current geometry plus selected reading direction on committed render paths. For ordinary rows, RTL numbers right-to-left and LTR numbers left-to-right. The same resulting order drives canvas badges, Scene Template numbering/beat placement, Panel Peek/List, prompt, manifest semantics, and exports.
 
 Common layouts include single, 2-panel, 3-panel, action, 4-koma 1×4 / 2×2 / 4×1, 5/6-panel, conversation, action, and climax patterns. Visual thumbnails require explicit apply rather than destructive browse-time replacement.
 
@@ -174,20 +178,26 @@ Inputs include purpose, optional panel count, canvas-size preservation, optional
 
 The selected-panel dice preserves geometry, background content, dialogue, and narrative role while re-proposing camera/effects/breakout plus pose/expression/gaze.
 
-## Balloon lettering direction
+## Lettering direction
 
 Prototype 0.10 makes writing direction explicit and independent from panel reading direction.
 
-- `meta.defaultWritingMode` is the project default;
-- the default is `vertical-rl`, appropriate for Japanese manga balloons;
-- users can switch the default to `horizontal-tb`;
-- each balloon stores optional `writingMode: inherit | vertical-rl | horizontal-tb`;
-- `inherit` follows the project default;
-- existing projects without either field normalize to vertical-first behavior;
-- editor/review preview reflects the effective direction;
-- clean AI PNG still removes balloon text and keeps only balloon geometry;
-- the generation prompt includes a `LETTERING DIRECTION` section so the downstream image generator receives the effective direction for each non-empty balloon;
-- changing lettering direction never changes panel numbering or RTL/LTR reading order.
+Project default:
+
+- `meta.defaultWritingMode = vertical-rl | horizontal-tb`;
+- `vertical-rl` is the Japanese-manga-oriented default.
+
+Balloon override:
+
+- `balloon.writingMode = inherit | vertical-rl | horizontal-tb`.
+
+Onomatopoeia/SFX override:
+
+- `panel.effects.sfxWritingMode = inherit | vertical-rl | horizontal-tb`.
+
+For both balloons and SFX, `inherit` follows the project default. Existing projects without these fields normalize to vertical-first behavior. Changing lettering direction never changes panel numbering or RTL/LTR reading order.
+
+Editor/review preview reflects balloon effective direction. Clean AI PNG still removes balloon/SFX text and keeps only spatial/effect geometry. The generation prompt carries `LETTERING DIRECTION` for balloons and `SFX LETTERING DIRECTION` for non-empty onomatopoeia, while exact visible strings remain under `TEXT TO RENDER`.
 
 ## Background / balloons / manga effects
 
@@ -195,19 +205,19 @@ Background location/weather/mood remain unrestricted free text with suggestions;
 
 Balloon presets can create or modify speech/thought/shout/whisper/narration/off-screen balloons without erasing existing dialogue. Newly created/template balloons inherit the project writing direction unless explicitly overridden.
 
-Frame treatment includes borderless, bleed, and breakout. Effects support speed/focus/impact/tension/silence patterns plus SFX text/style.
+Frame treatment includes borderless, bleed, and breakout. Effects support speed/focus/impact/tension/silence patterns plus SFX text/style and per-panel SFX writing-direction override.
 
 ## AI-safe boundary
 
 Clean AI PNG removes authoring labels, including character names, panel numbers, camera metadata, Panel Chips, Crop Guide, summaries, action notes, balloon text, and SFX labels. It keeps spatial composition, monochrome pose figures, balloon geometry, and effect lines.
 
-The prompt uses strict `TEXT TO RENDER`. Only exact dialogue/SFX entries in that section may become visible manga text. Lettering direction is semantic layout guidance and does not create additional renderable strings.
+The prompt uses strict `TEXT TO RENDER`. Only exact dialogue/SFX entries in that section may become visible manga text. Balloon/SFX lettering direction is semantic layout guidance and does not create additional renderable strings.
 
 Character identity follows `CHARACTER IDENTITY GUIDANCE`. Character Sheets are used only for characters whose identity mode requires them; description/free modes must not be contradicted by generic prompt wording.
 
 ## Manifest-first handoff
 
-Manifest v3 remains the read-first authority and contains package identity, file roles, generation inputs, character guidance, Character Sheet requirements, compact user handoff text, Story Template provenance, and `panelIntentIndex`. The semantic `.manga.json` and generation prompt carry explicit lettering direction.
+Manifest v3 remains the read-first authority and contains package identity, file roles, generation inputs, character guidance, Character Sheet requirements, compact user handoff text, Story Template provenance, `panelIntentIndex`, and derived lettering metadata. The semantic `.manga.json` and generation prompt carry explicit writing-direction state.
 
 AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it under the same export identity.
 
@@ -215,6 +225,8 @@ AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it 
 
 - template browsing/filter/search never mutates current project state;
 - template cards expose category, panel count, description, use case, and beat flow;
+- template thumbnail numbering follows selected RTL/LTR direction;
+- template beat N is assigned to panel order N after geometry-based renumbering;
 - shipped romance/battle/emotion/daily/comedy/suspense/character-introduction scene templates are available in both JA and EN UI;
 - derived template variation preserves story action flow and requires explicit apply;
 - custom templates are browser-local, scale normalized geometry to the current canvas, and never store character-specific visual identity;
@@ -224,8 +236,8 @@ AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it 
 - Panel Peek works through long-press and visible `ⓘ`, with mobile viewport-bounded opaque presentation;
 - detailed/compact Panel List is reading-order aware and selects panels;
 - selected RTL/LTR direction automatically matches persisted/displayed panel numbering from geometry;
-- vertical writing is the default, horizontal writing is selectable globally and per balloon, and the choice persists in JSON;
-- writing direction is forwarded to prompt but does not leak text into clean PNG;
+- vertical writing is the default, horizontal writing is selectable globally and per balloon/per SFX, and the choice persists in JSON;
+- writing direction is forwarded to prompt/manifest but does not leak metadata into clean PNG;
 - Panel Chips/Crop Guide never enter clean AI output;
 - camera-framing warnings are advisory and explicit fit is user-triggered;
 - Manga Check never blocks export;

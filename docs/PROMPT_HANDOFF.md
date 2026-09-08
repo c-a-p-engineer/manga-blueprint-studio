@@ -33,7 +33,7 @@ The package continues to use:
 manga-blueprint-export-manifest/3
 ```
 
-The manifest retains export/package identity, file roles, instructions, character guidance, Story Template provenance, and panel action-intent indexing where available. `.manga.json` remains the complete semantic contract, including reading direction and Prototype 0.10 lettering direction.
+The manifest retains export/package identity, file roles, instructions, character guidance, Story Template provenance, panel action-intent indexing, and derived lettering metadata where available. `.manga.json` remains the complete semantic contract, including reading direction and Prototype 0.10 balloon/SFX lettering direction.
 
 ### File roles
 
@@ -74,6 +74,16 @@ Manifest may include:
 ```
 
 `storyTemplate` is provenance only. `panelIntentIndex` is a convenient manifest index; `.manga.json` remains the semantic source of truth.
+
+### Lettering metadata
+
+Manifest v3 keeps the same schema identifier. Prototype 0.10 may add derived `lettering` metadata containing:
+
+- project default writing mode;
+- stored/effective balloon writing mode;
+- stored/effective onomatopoeia writing mode for panels with non-empty SFX.
+
+This metadata is layout guidance and never adds visible strings by itself.
 
 ## Character identity modes
 
@@ -121,7 +131,7 @@ These strings are **instructions**, not manga lettering. They must never become 
 - `rtl` = Japanese manga, right-to-left;
 - `ltr` = left-to-right.
 
-Prototype 0.10 synchronizes panel `order` from current geometry plus this selected direction before committed renders. The resulting order is the common source used by canvas panel numbers, Panel Peek/List, generated prompt, and exported semantics.
+Prototype 0.10 synchronizes panel `order` from current geometry plus this selected direction before committed renders. The resulting order is the common source used by canvas panel numbers, Scene Template thumbnail numbers, Scene Template beat assignment, Panel Peek/List, generated prompt, and exported semantics.
 
 For a standard two-column row:
 
@@ -129,6 +139,8 @@ For a standard two-column row:
 RTL: right panel -> lower order number -> left panel
 LTR: left panel  -> lower order number -> right panel
 ```
+
+When a Scene Template is applied, beat 1 is applied to panel order 1, beat 2 to panel order 2, and so on. Template preview numbering therefore describes the same event sequence that will be placed into the page.
 
 ## Balloon lettering direction
 
@@ -172,6 +184,32 @@ LETTERING DIRECTION:
 
 These are layout instructions. They do not add any renderable strings.
 
+## Onomatopoeia / SFX lettering direction
+
+Each panel may independently override the project writing default for its SFX:
+
+```json
+{
+  "effects": {
+    "sfxText": "ドン",
+    "sfxWritingMode": "inherit"
+  }
+}
+```
+
+Allowed values are the same as balloons: `inherit`, `vertical-rl`, `horizontal-tb`. `inherit` resolves through `meta.defaultWritingMode`.
+
+For non-empty SFX, the generated prompt adds a separate semantic section such as:
+
+```text
+SFX LETTERING DIRECTION:
+- Panel 1 onomatopoeia "ドン": vertical Japanese writing, top-to-bottom with columns ordered right-to-left.
+- Panel 3 onomatopoeia "BAM": horizontal writing.
+- SFX writing direction follows the same project default as balloons unless explicitly overridden.
+```
+
+The exact SFX string still becomes renderable only because it also appears under `TEXT TO RENDER`.
+
 ## Text allowlist
 
 Only exact strings under:
@@ -199,13 +237,13 @@ Forbidden as visible text includes:
 
 Clean PNG is the spatial reference. Stick figures communicate pose/placement, not appearance.
 
-Editor-only overlays such as Panel Chips, `ⓘ`, Crop Guide, and balloon text previews do not enter clean PNG. Writing direction is communicated through `.manga.json` and generated prompt instead of rendering the authoring preview into the AI spatial reference.
+Editor-only overlays such as Panel Chips, `ⓘ`, Crop Guide, and balloon text previews do not enter clean PNG. Balloon/SFX writing direction is communicated through `.manga.json`, prompt, and derived manifest metadata instead of rendering authoring lettering labels into the AI spatial reference.
 
 ## Story Templates and text
 
 A Scene Template may seed sample dialogue/SFX only when the user enables that option before apply. Once applied, sample text becomes ordinary project dialogue/SFX and therefore appears under `TEXT TO RENDER` unless the user edits/removes it.
 
-Template-created balloons use `inherit`, so they follow the project default writing direction unless the user overrides a balloon.
+Template-created balloons and SFX use `inherit`, so they follow the project default writing direction unless the user overrides them later.
 
 Template action intent remains semantic and is never automatically promoted to renderable text.
 
