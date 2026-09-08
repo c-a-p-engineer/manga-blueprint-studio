@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const runtimeFiles=['web/app-1.js','web/app-2.js','web/app-3.js','web/app-4.js','web/app-5.js','web/app-6.js'];
+const runtimeFiles=['web/app-1.js','web/app-2.js','web/app-3.js','web/app-4.js','web/app-5.js','web/app-6.js','web/app-7.js'];
 const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
 for(const file of requiredFiles)if(!fs.existsSync(file))throw new Error(`Missing required file: ${file}`);
 
@@ -21,7 +21,7 @@ for(const file of runtimeFiles)if(!bootstrap.includes(file.split('/').pop()))thr
 
 for(const phrase of ['STRICT TEXT RENDERING RULE:','TEXT TO RENDER:','exportPng(false)','NEVER render character display names','authoring-text'])if(!js.includes(phrase))throw new Error(`Missing AI-safe handoff contract: ${phrase}`);
 for(const phrase of ['square:{','four-vertical','four-grid','four-horizontal','smartRandom04','panelSummary04(','Extreme close','超寄り','Low angle','あおり','HELP_SEEN_KEY_04'])if(!js.includes(phrase))throw new Error(`Missing 0.4 feature contract: ${phrase}`);
-for(const phrase of ['HELP_SEEN_KEY_05','800×1130 縦長（標準）','readingDirectionSelect','characterLibrary','baseCharacterSelect','placeBaseCharacter06','skel-head','backgroundLocations06','exportZip06','zipStore06','manga-blueprint-export-manifest/1','sha256Hex06','contentHash','randomUUID'])if(!js.includes(phrase))throw new Error(`Missing 0.5 feature contract: ${phrase}`);
+for(const phrase of ['HELP_SEEN_KEY_05','800×1130 縦長（標準）','readingDirectionSelect','characterLibrary','baseCharacterSelect','placeBaseCharacter06','skel-head','backgroundLocations06','exportZip06','zipStore06','manga-blueprint-export-manifest/1','sha256Hex06','contentHash','randomUUID','guideExtremeCloseBody','guideHighBody','PNG encoding failed'])if(!js.includes(phrase))throw new Error(`Missing 0.5 feature contract: ${phrase}`);
 if(!js.includes("p.format='manga-blueprint/0.2'"))throw new Error('Missing legacy normalization');
 if(!js.includes("'manga-blueprint-studio/0.1'"))throw new Error('Legacy 0.1 autosave compatibility missing');
 
@@ -33,4 +33,5 @@ for(const page of example.pages){
     for(const ch of panel.characters??[])if(!ch.expression||!ch.gaze)throw new Error(`Missing expression/gaze: ${ch.id}`);
   }
 }
+if(!example.characterLibrary?.length)throw new Error('Example should demonstrate reusable base characters');
 console.log('Prototype 0.5 repository contract validation passed.');
