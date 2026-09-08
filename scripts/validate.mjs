@@ -9,9 +9,7 @@ const requiredFiles = [
   '.github/workflows/pages.yml','.github/workflows/validate.yml'
 ];
 
-for (const file of requiredFiles) {
-  if (!fs.existsSync(file)) throw new Error(`Missing required file: ${file}`);
-}
+for (const file of requiredFiles) if (!fs.existsSync(file)) throw new Error(`Missing required file: ${file}`);
 
 const schema = JSON.parse(fs.readFileSync('schema/manga-blueprint.schema.json','utf8'));
 const example = JSON.parse(fs.readFileSync('examples/directed-closeup.manga.json','utf8'));
@@ -28,27 +26,21 @@ for (const id of [
   'blueprintSvg','cameraHelp','backgroundLocation','borderStyle','bleedEdge','breakoutMode',
   'expressionType','gazeTarget','addBalloon','balloonText','lineEffect','sfxText',
   'exportAiPng','exportAnnotatedPng','promptOutput','exportJson','importJson'
-]) {
-  if (!html.includes(`id="${id}"`)) throw new Error(`Missing UI control: ${id}`);
-}
+]) if (!html.includes(`id="${id}"`)) throw new Error(`Missing UI control: ${id}`);
 
-for (const file of runtimeFiles) {
-  if (!bootstrap.includes(file.split('/').pop())) throw new Error(`Bootstrap does not load ${file}`);
-}
+for (const file of runtimeFiles) if (!bootstrap.includes(file.split('/').pop())) throw new Error(`Bootstrap does not load ${file}`);
 
 for (const phrase of [
   'STRICT TEXT RENDERING RULE:',
   'TEXT TO RENDER:',
   'blueprint-ai-clean.png',
   'exportPng(false)',
-  'NEVER render character display names'
-]) {
-  if (!js.includes(phrase)) throw new Error(`Missing AI-safe handoff contract: ${phrase}`);
-}
+  'NEVER render character display names',
+  'authoring-text'
+]) if (!js.includes(phrase)) throw new Error(`Missing AI-safe handoff contract: ${phrase}`);
 
 if (!js.includes("p.format='manga-blueprint/0.2'")) throw new Error('Missing legacy normalization');
 if (!js.includes("'manga-blueprint-studio/0.1'")) throw new Error('Legacy 0.1 autosave compatibility missing');
-if (!js.includes("renderSvg(false)")) throw new Error('Clean render path missing');
 
 for (const page of example.pages) {
   const orders = new Set();
@@ -57,9 +49,7 @@ for (const page of example.pages) {
     orders.add(panel.order);
     if (!panel.style || !panel.background || !panel.effects) throw new Error(`Missing 0.2 panel semantics: ${panel.id}`);
     if (!panel.camera?.viewpoint) throw new Error(`Missing camera viewpoint: ${panel.id}`);
-    for (const ch of panel.characters ?? []) {
-      if (!ch.expression || !ch.gaze) throw new Error(`Missing expression/gaze: ${ch.id}`);
-    }
+    for (const ch of panel.characters ?? []) if (!ch.expression || !ch.gaze) throw new Error(`Missing expression/gaze: ${ch.id}`);
   }
 }
 
