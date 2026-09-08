@@ -1,18 +1,18 @@
-// Prototype 0.10: balloon writing direction. Page default is vertical Japanese (vertical-rl), with per-balloon override.
+// Prototype 0.10: balloon writing direction. Project default is vertical Japanese (vertical-rl), with per-balloon override.
 Object.assign(i18n.ja,{
   textWritingHeading:'文字の向き',
-  defaultWritingMode:'新しい吹き出しの既定',
+  defaultWritingMode:'吹き出しの既定',
   balloonWritingMode:'この吹き出しの文字方向',
-  writingInherit:'ページ既定',
+  writingInherit:'既定を使う',
   writingVertical:'縦書き',
   writingHorizontal:'横書き',
   writingHelp:'日本漫画向けに縦書きを既定にしています。吹き出しごとに横書きへ変更できます。ページの右→左/左→右の読み順とは別設定です。'
 });
 Object.assign(i18n.en,{
   textWritingHeading:'Writing direction',
-  defaultWritingMode:'Default for new balloons',
+  defaultWritingMode:'Balloon default',
   balloonWritingMode:'This balloon writing direction',
-  writingInherit:'Page default',
+  writingInherit:'Use default',
   writingVertical:'Vertical',
   writingHorizontal:'Horizontal',
   writingHelp:'Vertical Japanese writing is the default. Each balloon can override it to horizontal. This is separate from page RTL/LTR reading order.'
@@ -93,7 +93,7 @@ function ensureWritingUi15(){
   if(!$('writingControls15')){
     const block=document.createElement('div');block.id='writingControls15';block.innerHTML=`
       <div class="subhead" data-i18n="textWritingHeading">文字の向き</div>
-      <label><span data-i18n="defaultWritingMode">新しい吹き出しの既定</span>
+      <label><span data-i18n="defaultWritingMode">吹き出しの既定</span>
         <select id="defaultWritingMode15"><option value="vertical-rl"></option><option value="horizontal-tb"></option></select>
       </label>
       <p class="help" data-i18n="writingHelp"></p>`;
@@ -147,6 +147,25 @@ compilePrompt=function(){
   ].join('\n');
   return base.includes('TEXT TO RENDER:')?base.replace('TEXT TO RENDER:',`${section}\n\nTEXT TO RENDER:`):`${base}\n\n${section}`;
 };
+
+function letteringManifest15(){
+  const balloons=[];
+  for(const p of [...currentPage().panels].sort((a,b)=>a.order-b.order))for(const b of p.balloons||[]){
+    balloons.push({panelId:p.id,order:p.order,balloonId:b.id,type:b.type,writingMode:b.writingMode||'inherit',effectiveWritingMode:effectiveWritingMode15(b)});
+  }
+  return {defaultWritingMode:defaultWritingMode15(),balloons};
+}
+if(typeof exportManifest08==='function'){
+  const exportManifestBase15=exportManifest08;
+  exportManifest08=function(identity,packageType,files){
+    ensureWritingState15(project);
+    const manifest=exportManifestBase15(identity,packageType,files);
+    manifest.lettering=letteringManifest15();
+    manifest.readingDirection=project.meta.readingDirection||'rtl';
+    manifest.panelOrder=[...currentPage().panels].sort((a,b)=>a.order-b.order).map(p=>({panelId:p.id,order:p.order}));
+    return manifest;
+  };
+}
 
 ensureWritingUi15();
 localizeWritingUi15();
