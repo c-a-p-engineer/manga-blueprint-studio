@@ -1,5 +1,22 @@
 // Zero-build runtime bootstrap. Named classic-script chunks share the existing global runtime state;
 // keep this order explicit because later chunks intentionally extend earlier behavior.
+const fallbackBuildInfo={
+  schema:'manga-blueprint-build-info/1',
+  appVersion:'0.12.9',
+  gitCommit:null,
+  buildSource:'runtime-fallback',
+  deployedAt:null
+};
+try{
+  const response=await fetch('./build-info.json',{cache:'no-store'});
+  if(!response.ok)throw new Error(`HTTP ${response.status}`);
+  const loaded=await response.json();
+  globalThis.MANGA_BLUEPRINT_BUILD_INFO=Object.freeze({...fallbackBuildInfo,...loaded});
+}catch(error){
+  console.warn('Build provenance unavailable; using runtime fallback.',error);
+  globalThis.MANGA_BLUEPRINT_BUILD_INFO=Object.freeze(fallbackBuildInfo);
+}
+
 const runtimeChunks = [
   ['core/foundation', './runtime/core/foundation.js'],
   ['core/editor-state', './runtime/core/editor-state.js'],
@@ -30,7 +47,8 @@ const runtimeChunks = [
   ['templates/two-visible', './runtime/templates/two-visible.js'],
   ['templates/panel-cast-flow', './runtime/templates/panel-cast-flow.js'],
   ['handoff/interaction-generation-contract', './runtime/handoff/interaction-generation-contract.js'],
-  ['handoff/render-brief', './runtime/handoff/render-brief.js']
+  ['handoff/render-brief', './runtime/handoff/render-brief.js'],
+  ['handoff/producer-provenance', './runtime/handoff/producer-provenance.js']
 ];
 
 for (const [id, src] of runtimeChunks) {
