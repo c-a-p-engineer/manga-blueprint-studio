@@ -4,20 +4,46 @@
 
 Image-generation assistants can render manga-style images, but users should not need cinematography vocabulary, manual coordinates, repeated character entry, or a Character Sheet for every character just to communicate manga direction. They also need to understand **what happens in each panel** without opening every editor field, and they should be able to begin from a recognizable scene such as a confession, a kiss beat, a counterattack, or a reaction without manually inventing every camera/pose choice.
 
-Manga Blueprint Studio lets a human choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the whole page quickly, control manga lettering direction, and export an AI-safe visual reference plus semantic instructions.
+Manga Blueprint Studio lets a human organize a work into pages, choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the selected page quickly, control manga lettering direction, and export an AI-safe visual reference plus semantic instructions.
 
 ## Primary user flow
 
-1. Choose manuscript size and panel reading direction (`rtl` or `ltr`).
-2. Start from **Scene Template Studio**, Smart Manga, or a visual panel layout.
-3. If using Scene Template Studio, filter/search by scene intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
-4. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
-5. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
-6. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, lettering direction, frame/effects.
-7. Review advisory Manga Check / camera-framing warnings.
-8. Optionally save the current page pattern as a browser-local custom template.
-9. Export AI generation ZIP and copy the short manifest-first handoff message.
-10. Attach Character Sheets separately only where manifest says they are required.
+1. Open/create a work and select or add the page to edit.
+2. Choose manuscript size and panel reading direction (`rtl` or `ltr`).
+3. Start from **Scene Template Studio**, Smart Manga, or a visual panel layout.
+4. If using Scene Template Studio, filter/search by scene intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
+5. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
+6. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
+7. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, lettering direction, frame/effects.
+8. Review advisory Manga Check / camera-framing warnings.
+9. Optionally save the current page pattern as a browser-local custom template.
+10. Export the currently selected page as AI generation ZIP and copy the short manifest-first handoff message.
+11. Attach Character Sheets separately only where manifest says they are required.
+
+## Work and multi-page model
+
+Prototype 0.13.0 makes a work explicitly multi-page while keeping generation/export scoped to the selected page.
+
+A project/work has stable identity through `meta.workId`. Each page has a stable `id` independent from its visible `pageNumber`, ordering metadata, optional title, and optional future container assignment.
+
+The Page tab must support:
+
+- selecting a page without mutating another page;
+- adding a new page;
+- duplicating the selected page with fresh page/panel/placed-character/balloon instance IDs;
+- deleting the selected page with confirmation while refusing to delete the final remaining page;
+- moving a page earlier/later;
+- sequential renumbering;
+- editing a visible page number while rejecting duplicates;
+- editing an optional page title.
+
+`selectedPageId` is editor selection state. Ordinary authoring/render/handoff operations resolve the page through `currentPage()` rather than assuming `pages[0]`.
+
+Project persistence uses IndexedDB. The active work and the last selected page for that work are browser metadata, not competing project semantics. Startup restores the saved project and remembered page before page-selection persistence is enabled, so the first render cannot overwrite the remembered page with page 1.
+
+Historical project autosave keys in `localStorage` are intentionally not migrated or reused. Portable `.manga.json` import is the compatibility path. Browser-local custom Scene Templates remain a separate `localStorage` concern.
+
+Work-library UI, volume/chapter/folder management, backup/restore, selected-range/work-wide export, and panel-first generation are outside Prototype 0.13.0.
 
 ## Story action intent
 
@@ -221,8 +247,18 @@ Manifest v3 remains the read-first authority and contains package identity, file
 
 AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it under the same export identity.
 
+Prototype 0.13.0 keeps these packages scoped to the currently selected page. Multi-page/range/whole-work export must be introduced as an explicit later contract rather than inferred from the presence of multiple pages.
+
 ## Acceptance criteria
 
+- a work may contain multiple pages and page selection routes authoring/render/handoff through the selected page;
+- page add/select/duplicate/delete/reorder/renumber/title operations are undoable through ordinary project mutation paths where applicable;
+- the final remaining page cannot be deleted;
+- manual visible page numbers reject duplicates;
+- duplicate page creation uses fresh page/panel/placed-character/balloon instance IDs;
+- active page is remembered per work and restored before page-selection persistence is re-enabled;
+- project autosave uses IndexedDB and does not silently bootstrap from historical project `localStorage` autosaves;
+- current generation/export remains selected-page scoped;
 - template browsing/filter/search never mutates current project state;
 - template cards expose category, panel count, description, use case, and beat flow;
 - template thumbnail numbering follows selected RTL/LTR direction;
@@ -243,5 +279,5 @@ AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it 
 - Manga Check never blocks export;
 - generated prompt contains action intent as semantic guidance, not visible text;
 - prompt does not claim Character Sheets are universally required;
-- existing Smart Manga, character identity modes, background/balloon presets, AI ZIP/review ZIP, manifest v3, RTL/LTR, autosave, Undo/Redo, and mobile UI remain functional;
+- existing Smart Manga, character identity modes, background/balloon presets, AI ZIP/review ZIP, manifest v3, RTL/LTR, IndexedDB autosave, Undo/Redo, and mobile UI remain functional;
 - dependency-free validation and GitHub Pages deployment succeed.
