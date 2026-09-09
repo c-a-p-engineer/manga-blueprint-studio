@@ -1,14 +1,25 @@
 # Roadmap
 
-## Shipped through Prototype 0.13.0
+## Shipped through Prototype 0.14.0
 
 ### Project / persistence foundation
-- stable `meta.workId` plus stable page identity;
-- page metadata for visible number, order, optional title, and future container assignment;
-- IndexedDB-backed work persistence with active-work tracking;
+- stable `meta.workId` plus stable page/container identity;
+- IndexedDB-backed multi-work persistence;
+- active work and per-work active-page metadata;
+- ordinary autosave saves work contents without silently changing active work;
 - project autosave no longer depends on historical project `localStorage` keys;
 - same-`workId` JSON import is protected from silent overwrite;
-- reserved `volume | chapter | folder` container schema for later hierarchy UI.
+- full-work copy/import-as-new regenerates work/container/page/panel/placed-instance IDs and remaps hierarchy references.
+
+### Work library / hierarchy
+- browser-local Work Library listing title, update time, and page count;
+- explicit create/open/rename/duplicate/delete work operations;
+- browsing the Work Library does not change active-work state;
+- `volume | chapter | folder` containers with optional parent-child nesting;
+- create/rename/reparent/reorder/delete container operations;
+- current-page assignment to a container or ungrouped state;
+- parent changes reject self/descendant cycles;
+- deleting a non-empty container re-homes direct pages and child containers to the parent instead of silently deleting pages.
 
 ### Multi-page core
 - multiple pages inside one work;
@@ -17,8 +28,6 @@
 - optional page title;
 - page duplication regenerates page/panel/placed-character/balloon instance IDs;
 - active page is remembered per work in IndexedDB;
-- startup restores remembered page before page-selection persistence is enabled;
-- page controls include narrow-screen/mobile layout handling;
 - existing editor/render/handoff logic resolves the selected page through `currentPage()` instead of assuming `pages[0]`.
 
 ### Page, layout, reading and lettering
@@ -62,13 +71,12 @@
 - current-page Render Contract that rejects prior-conversation/prior-image story carryover;
 - exact panel/cast/setting/text constraints represented at high signal;
 - producer provenance in manifest with app version, deployed commit, build source, and deployment timestamp;
-- GitHub Pages deployment stamps exact `GITHUB_SHA` into deployed `build-info.json`;
-- local/offline build-info fallback remains zero-build and dependency-free.
+- GitHub Pages deployment stamps exact `GITHUB_SHA` into deployed `build-info.json`.
 
 ### Runtime / validation
 - semantic runtime ownership under `web/runtime/` rather than chronology-named patch files;
 - explicit runtime load-order registry mirrored by validation scripts;
-- repository, project-storage, multi-page, UI-contract, reading/lettering, spatial, cross-model, template, cast, generation-contract, render-brief, and producer-provenance CI validation.
+- repository, project-storage, multi-page, work-library/hierarchy, UI-contract, reading/lettering, spatial, cross-model, template, cast, generation-contract, render-brief, and producer-provenance CI validation.
 
 ---
 
@@ -78,43 +86,33 @@
 |---:|:---:|---|---|:---:|
 | 0 | S | Storage / stable identity | `workId`, page/container identity, IndexedDB, import conflict protection | **Shipped** |
 | 1 | S | Multi-page Core | page CRUD/reorder/number/title/selection persistence | **Shipped in 0.13.0** |
-| 2 | S | Work / Volume / Folder management | work library, volume/chapter/folder UI, page moves | Next |
-| 3 | S | Backup / Restore | complete backup ZIP, checksum, preview, transactional restore | Planned |
+| 2 | S | Work / Volume / Folder management | work library, volume/chapter/folder UI, page moves | **Shipped in 0.14.0** |
+| 3 | S | Backup / Restore | complete backup ZIP, checksum, preview, transactional restore | **Next** |
 | 4 | S | Scoped Export | page selection/range/volume/work export contracts | Planned |
 | 5 | S | Panel-first / Hybrid generation | per-panel units, generation groups, deterministic composition | Planned |
 | 6 | A | Cross-page continuity | reference assets, location/prop/outfit continuity | Planned |
 | 7 | A/B | Manga direction expansion | spatial grammar, perspective, eye-flow, gutters, spreads, typesetting | Planned |
 
-## Phase 2 — Work / Volume / Folder management
-
-### Work library
-- list multiple IndexedDB works;
-- create, rename, duplicate, open, and delete works with explicit confirmation;
-- show title, updated time, and page count;
-- keep stable `workId` independent from visible title;
-- never silently switch the active work while browsing.
-
-### Hierarchy
-- expose the already-reserved `volume | chapter | folder` containers;
-- create/rename/reorder/delete containers;
-- optional parent-child hierarchy where useful;
-- move pages between containers without changing page identity;
-- clear behavior for deleting a non-empty container (move pages or explicit destructive choice; never silent loss).
-
-### Acceptance direction
-- one work can contain ungrouped pages and grouped pages;
-- ordering is deterministic;
-- page selection survives normal hierarchy edits;
-- work/container management remains local-only and provider-independent.
-
 ## Phase 3 — Backup / Restore
 
-- whole-work backup ZIP with semantic project state and browser-local reusable assets/templates that are explicitly included;
+### Backup package
+- whole-work backup ZIP containing the complete semantic project state;
+- optional explicit inclusion of browser-local reusable assets/template libraries once their file roles are defined;
 - backup manifest with schema/version, work identity, file roles, counts, checksums, and creation metadata;
-- restore preview before mutation;
+- deterministic ordered paths so identical logical scope is inspectable and reproducible where timestamps are excluded.
+
+### Restore
+- inspect/preview backup before mutating IndexedDB;
+- show work title/ID, page count, container count, character count, and included optional libraries;
 - conflict choices for same `workId`: replace, import as new work, or cancel;
 - transactional restore so partial failure does not leave mixed state;
-- deterministic integrity checks for required files, hashes, JSON parseability, and counts;
+- import-as-new must reuse the full-work identity regeneration/remapping contract from Phase 2.
+
+### Integrity validation
+- required-file presence;
+- checksum verification;
+- JSON parseability/schema compatibility;
+- declared-vs-actual counts;
 - no semantic/aesthetic AI judgment in backup validation.
 
 ## Phase 4 — Scoped Export
@@ -124,7 +122,7 @@
 - page range;
 - container/volume;
 - whole work;
-- manifest declares exact scope and ordered page IDs/numbers;
+- manifest declares exact scope and ordered work/container/page IDs/numbers;
 - multi-page prompt/package conventions remain explicit rather than relying on downstream inference;
 - provider adapters remain at the export boundary.
 

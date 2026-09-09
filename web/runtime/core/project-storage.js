@@ -4,6 +4,7 @@ const PROJECT_WORK_STORE = 'works';
 const PROJECT_META_STORE = 'meta';
 const ACTIVE_WORK_META_KEY = 'activeWorkId';
 const activePageMetaKey = workId => `activePageId:${workId}`;
+const CONTAINER_KINDS = new Set(['volume','chapter','folder']);
 // Legacy browser project keys such as 'manga-blueprint-studio/0.1' are intentionally not migrated.
 // Portable .manga.json import remains the compatibility path; language/custom-template localStorage is separate.
 
@@ -13,13 +14,35 @@ function ensureProjectIdentity(input){
   p.meta.workId ||= uid('work');
   p.containers = Array.isArray(p.containers) ? p.containers : [];
 
+  const seenContainerIds=new Set();
+  p.containers.forEach((container,index)=>{
+    if(!container.id||seenContainerIds.has(container.id))container.id=uid('container');
+    seenContainerIds.add(container.id);
+    container.kind=CONTAINER_KINDS.has(container.kind)?container.kind:'folder';
+    container.title=typeof container.title==='string'?container.title:'';
+    container.order=Number.isInteger(container.order)&&container.order>0?container.order:index+1;
+    container.parentId=typeof container.parentId==='string'&&container.parentId!==container.id?container.parentId:null;
+  });
+  const containerMap=new Map(p.containers.map(container=>[container.id,container]));
+  for(const container of p.containers){
+    if(container.parentId&&!containerMap.has(container.parentId))container.parentId=null;
+    const seen=new Set([container.id]);
+    let cursor=container;
+    while(cursor.parentId){
+      if(seen.has(cursor.parentId)){container.parentId=null;break;}
+      seen.add(cursor.parentId);
+      cursor=containerMap.get(cursor.parentId);
+      if(!cursor)break;
+    }
+  }
+
   const seenPageIds=new Set();
   p.pages.forEach((page,index)=>{
     if(!page.id || seenPageIds.has(page.id)) page.id=uid('page');
     seenPageIds.add(page.id);
     page.pageNumber=Number.isInteger(page.pageNumber)&&page.pageNumber>0?page.pageNumber:index+1;
     page.order=Number.isInteger(page.order)&&page.order>0?page.order:index+1;
-    page.containerId=page.containerId??null;
+    page.containerId=typeof page.containerId==='string'&&containerMap.has(page.containerId)?page.containerId:null;
     page.title=typeof page.title==='string'?page.title:'';
   });
   return p;
@@ -42,7 +65,27 @@ function createProjectWithIdentity(template='action3',workId=null){
 function cloneProjectAsNewWork(input){
   const p=ensureProjectIdentity(input);
   p.meta.workId=uid('work');
-  p.pages.forEach(page=>{page.id=uid('page');});
+
+  const containerIdMap=new Map();
+  p.containers.forEach(container=>{
+    const oldId=container.id;
+    container.id=uid('container');
+    containerIdMap.set(oldId,container.id);
+  });
+  p.containers.forEach(container=>{
+    container.parentId=container.parentId?containerIdMap.get(container.parentId)||null:null;
+  });
+
+  p.pages.forEach(page=>{
+    page.id=uid('page');
+    page.containerId=page.containerId?containerIdMap.get(page.containerId)||null:null;
+    page.panels=(page.panels||[]).map(panel=>({
+      ...panel,
+      id:uid('panel'),
+      characters:(panel.characters||[]).map(character=>({...character,id:uid('char')})),
+      balloons:(panel.balloons||[]).map(balloon=>({...balloon,id:uid('balloon')}))
+    }));
+  });
   return p;
 }
 
@@ -92,6 +135,15 @@ function openProjectDb(){
 const projectStorage={
   supported:projectStorageSupported,
 
+  async load(workId){
+    if(!projectStorageSupported()||!workId)return null;
+    const db=await openProjectDb();
+    const tx=db.transaction(PROJECT_WORK_STORE,'readonly');
+    const record=await requestResult(tx.objectStore(PROJECT_WORK_STORE).get(workId));
+    await transactionDone(tx);
+    return record?.project?ensureProjectIdentity(record.project):null;
+  },
+
   async loadActive(){
     if(!projectStorageSupported()) return null;
     const db=await openProjectDb();
@@ -122,18 +174,18 @@ const projectStorage={
     await transactionDone(tx);
   },
 
+  // Saving work contents must never change which work is active. Activation is explicit via setActive().
   async save(input){
     if(!projectStorageSupported()) throw new Error('IndexedDB is unavailable');
     const project=ensureProjectIdentity(input);
     const db=await openProjectDb();
-    const tx=db.transaction([PROJECT_META_STORE,PROJECT_WORK_STORE],'readwrite');
+    const tx=db.transaction(PROJECT_WORK_STORE,'readwrite');
     tx.objectStore(PROJECT_WORK_STORE).put({
       workId:project.meta.workId,
       title:project.meta.title||'',
       updatedAt:Date.now(),
       project:clone(project)
     });
-    tx.objectStore(PROJECT_META_STORE).put({key:ACTIVE_WORK_META_KEY,value:project.meta.workId});
     await transactionDone(tx);
     return project.meta.workId;
   },
@@ -160,6 +212,7 @@ const projectStorage={
 
   async setActive(workId){
     if(!projectStorageSupported()) throw new Error('IndexedDB is unavailable');
+    if(workId&&!await this.has(workId))throw new Error(`Unknown work: ${workId}`);
     const db=await openProjectDb();
     const tx=db.transaction(PROJECT_META_STORE,'readwrite');
     tx.objectStore(PROJECT_META_STORE).put({key:ACTIVE_WORK_META_KEY,value:workId||null});

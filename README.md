@@ -4,14 +4,18 @@ Visual manga storyboard editor for designing manuscript size, reading direction,
 
 **The human remains the director.** AI, Smart Manga, and templates propose; the user chooses and edits.
 
-## Current prototype: 0.13.0
+## Current prototype: 0.14.0
 
-The current implementation baseline is **Prototype 0.13.0**. Project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
+The current implementation baseline is **Prototype 0.14.0**. Project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
 Current prototype supports:
 
+- local multi-work library with explicit create/open/rename/duplicate/delete operations;
+- volume/chapter/folder hierarchy inside a work, including nesting, reordering, and current-page assignment;
+- safe group deletion that moves pages/child groups to the deleted group's parent instead of silently deleting pages;
 - multi-page works with add/select/duplicate/delete/reorder, editable page number/title, and per-work active-page restore;
-- stable work/page identity with IndexedDB-backed project persistence;
+- stable work/page/container identity with IndexedDB-backed project persistence;
+- autosave that persists work contents without silently changing the active work;
 - manuscript presets from portrait/social/video sizes through B5/A4/Webtoon/custom;
 - Japanese RTL reading by default plus LTR;
 - geometry-based panel-number synchronization shared by canvas, Panel Peek/List, Scene Templates, prompt, manifest, and export;
@@ -31,34 +35,43 @@ Current prototype supports:
 - producer provenance in exported manifests so stale GitHub Pages/cache exports can be distinguished from current `master`;
 - Undo/Redo, Japanese-first mobile UI, and English localization.
 
-See [`docs/PROTOTYPE-0.13.0.md`](docs/PROTOTYPE-0.13.0.md) for the current multi-page release baseline.
+See [`docs/PROTOTYPE-0.14.0.md`](docs/PROTOTYPE-0.14.0.md) for the current work-library/hierarchy release baseline.
 
 ## Recommended workflow
 
-1. Open or create a work, then choose/add the page you want to edit.
-2. Choose canvas size and RTL/LTR panel reading direction.
-3. Start with Scene Template Studio, Smart Manga, or a visual layout.
-4. Create/select reusable base characters and choose each appearance source.
-5. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
-6. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
-7. Resolve useful Manga Check / framing / action-pose warnings when they match your intent.
-8. Download **AI generation ZIP** for the currently selected page.
-9. Press **AIへ渡す文をコピー** and send the ZIP plus the short manifest-first instruction.
-10. Attach Character Sheets separately only for characters whose manifest entry marks them required.
-11. When debugging a suspicious result, inspect `manifest.producer` before assuming the current repository code generated that ZIP.
+1. Open the **Works / 作品** library and create or explicitly open the work you want to edit.
+2. Select/add a page, and optionally assign it to a volume/chapter/folder.
+3. Choose canvas size and RTL/LTR panel reading direction.
+4. Start with Scene Template Studio, Smart Manga, or a visual layout.
+5. Create/select reusable base characters and choose each appearance source.
+6. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
+7. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
+8. Resolve useful Manga Check / framing / action-pose warnings when they match your intent.
+9. Download **AI generation ZIP** for the currently selected page.
+10. Press **AIへ渡す文をコピー** and send the ZIP plus the short manifest-first instruction.
+11. Attach Character Sheets separately only for characters whose manifest entry marks them required.
+12. When debugging a suspicious result, inspect `manifest.producer` before assuming the current repository code generated that ZIP.
 
-## Multi-page persistence
+## Work library, hierarchy, and persistence
 
-Prototype 0.13.0 stores complete works in browser IndexedDB and records the active work plus the last selected page for that work.
+Prototype 0.14.0 stores complete works in browser IndexedDB and exposes a local work library.
 
+- listing/browsing works does not switch the active work;
+- opening/creating/importing a work explicitly sets active-work state;
+- ordinary autosave only saves work contents and cannot silently reactivate an older work after a switch;
+- work duplication receives a fresh `workId`, page IDs, panel IDs, placed-character/balloon IDs, and remapped container IDs;
+- work title is presentation metadata and is independent from stable `workId`;
+- volume/chapter/folder containers can be nested and reordered;
+- moving a page between containers changes only `page.containerId`, not page identity;
+- deleting a non-empty container requires confirmation and re-homes its pages/children to the parent rather than deleting them;
 - page IDs are stable identity and are independent from visible page numbers;
-- duplicate creates a new page ID and fresh panel/placed-instance IDs;
-- page title and page number are ordinary project state and persist in `.manga.json`;
-- project autosave no longer boots from or writes the historical project `localStorage` keys;
+- duplicate page creation uses a new page ID and fresh panel/placed-instance IDs;
+- the active page is remembered separately for each work;
+- project autosave no longer boots from or writes historical project `localStorage` keys;
 - old browser-local autosave state is intentionally not migrated; portable `.manga.json` import is the compatibility path;
 - browser-local custom Scene Templates continue to use their separate `localStorage` library.
 
-Current generation/export behavior remains **selected-page scoped**. Work-wide/range export and volume/folder UI are later phases.
+Current generation/export behavior remains **selected-page scoped**. Backup/restore and range/container/work export are later phases.
 
 ## Reading direction vs writing direction
 
@@ -137,13 +150,13 @@ Character Sheet が必要と書かれているキャラクターは、別途添�
 
 ### Producer provenance
 
-Prototype 0.13.0 keeps diagnostic producer metadata in each newly generated manifest:
+Prototype 0.14.0 keeps diagnostic producer metadata in each newly generated manifest:
 
 ```json
 {
   "producer": {
     "schema": "manga-blueprint-producer/1",
-    "appVersion": "0.13.0",
+    "appVersion": "0.14.0",
     "gitCommit": "<deployed commit or null>",
     "buildSource": "github-pages",
     "deployedAt": "<ISO timestamp>",
@@ -188,7 +201,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/
 
 ## Data contract
 
-Current application baseline: **Prototype 0.13.0**.
+Current application baseline: **Prototype 0.14.0**.
 
 - project format: `manga-blueprint/0.2`;
 - manifest: `manga-blueprint-export-manifest/3`;
@@ -207,7 +220,7 @@ Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- [`docs/PROTOTYPE-0.13.0.md`](docs/PROTOTYPE-0.13.0.md)
+- [`docs/PROTOTYPE-0.14.0.md`](docs/PROTOTYPE-0.14.0.md)
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json)
 
 ## License

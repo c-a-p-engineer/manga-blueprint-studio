@@ -4,27 +4,47 @@
 
 Image-generation assistants can render manga-style images, but users should not need cinematography vocabulary, manual coordinates, repeated character entry, or a Character Sheet for every character just to communicate manga direction. They also need to understand **what happens in each panel** without opening every editor field, and they should be able to begin from a recognizable scene such as a confession, a kiss beat, a counterattack, or a reaction without manually inventing every camera/pose choice.
 
-Manga Blueprint Studio lets a human organize a work into pages, choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the selected page quickly, control manga lettering direction, and export an AI-safe visual reference plus semantic instructions.
+Manga Blueprint Studio lets a human organize local works into pages and optional volume/chapter/folder groups, choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the selected page quickly, control manga lettering direction, and export an AI-safe visual reference plus semantic instructions.
 
 ## Primary user flow
 
-1. Open/create a work and select or add the page to edit.
-2. Choose manuscript size and panel reading direction (`rtl` or `ltr`).
-3. Start from **Scene Template Studio**, Smart Manga, or a visual panel layout.
-4. If using Scene Template Studio, filter/search by scene intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
-5. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
-6. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
-7. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, lettering direction, frame/effects.
-8. Review advisory Manga Check / camera-framing warnings.
-9. Optionally save the current page pattern as a browser-local custom template.
-10. Export the currently selected page as AI generation ZIP and copy the short manifest-first handoff message.
-11. Attach Character Sheets separately only where manifest says they are required.
+1. Open/create a work explicitly from the local Work Library.
+2. Select or add the page to edit and optionally assign it to a volume/chapter/folder.
+3. Choose manuscript size and panel reading direction (`rtl` or `ltr`).
+4. Start from **Scene Template Studio**, Smart Manga, or a visual panel layout.
+5. If using Scene Template Studio, filter/search by scene intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
+6. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
+7. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
+8. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, lettering direction, frame/effects.
+9. Review advisory Manga Check / camera-framing warnings.
+10. Optionally save the current page pattern as a browser-local custom template.
+11. Export the currently selected page as AI generation ZIP and copy the short manifest-first handoff message.
+12. Attach Character Sheets separately only where manifest says they are required.
 
-## Work and multi-page model
+## Work library, hierarchy, and multi-page model
 
-Prototype 0.13.0 makes a work explicitly multi-page while keeping generation/export scoped to the selected page.
+Prototype 0.14.0 keeps the explicit multi-page work model from 0.13.0 and adds browser-local multi-work plus hierarchy management while generation/export remains scoped to the selected page.
 
-A project/work has stable identity through `meta.workId`. Each page has a stable `id` independent from its visible `pageNumber`, ordering metadata, optional title, and optional future container assignment.
+A project/work has stable identity through `meta.workId`. Each page has a stable `id` independent from its visible `pageNumber`, ordering metadata, optional title, and optional `containerId`. Containers have stable identity and represent `volume | chapter | folder` organization with optional parent-child nesting.
+
+### Work Library
+
+The Work Library must support:
+
+- listing IndexedDB works with title, update time, and page count;
+- browsing/listing without changing active-work state;
+- explicitly opening a saved work;
+- creating a new work;
+- renaming without changing stable `workId`;
+- duplicating a work with fresh work/container/page/panel/placed-instance identities;
+- deleting with explicit confirmation;
+- deterministic fallback to another saved work, or a new blank work, after explicit deletion of the active work.
+
+Ordinary autosave must persist work contents **without changing active-work state**. Activation is a separate explicit operation. This prevents a delayed save from a previously open work from reactivating that work after the user has switched.
+
+Import remains explicit on same-`workId` conflicts. Copy import receives fresh mutable identities; overwrite requires confirmation. Once the choice is accepted, import saves and explicitly activates the resulting work. Undo/Redo history must not cross a work-identity switch/import boundary.
+
+### Multi-page authoring
 
 The Page tab must support:
 
@@ -39,11 +59,26 @@ The Page tab must support:
 
 `selectedPageId` is editor selection state. Ordinary authoring/render/handoff operations resolve the page through `currentPage()` rather than assuming `pages[0]`.
 
-Project persistence uses IndexedDB. The active work and the last selected page for that work are browser metadata, not competing project semantics. Startup restores the saved project and remembered page before page-selection persistence is enabled, so the first render cannot overwrite the remembered page with page 1.
+### Volume / chapter / folder hierarchy
+
+The Page tab must support:
+
+- ungrouped pages and grouped pages in the same work;
+- creating `volume`, `chapter`, and `folder` containers;
+- optional parent-child nesting;
+- renaming containers;
+- deterministic sibling ordering and earlier/later moves;
+- changing a container parent while preventing self/descendant cycles;
+- assigning the selected page to a container without changing page identity;
+- deleting a container only after explicit confirmation.
+
+Deleting a non-empty container must never silently delete pages. Directly assigned pages and direct child containers are moved to the deleted container's parent before the container is removed.
+
+Project persistence uses IndexedDB. The active work and last selected page for each work are browser metadata, not competing project semantics. Startup restores the saved active work and remembered page before normal authoring continues.
 
 Historical project autosave keys in `localStorage` are intentionally not migrated or reused. Portable `.manga.json` import is the compatibility path. Browser-local custom Scene Templates remain a separate `localStorage` concern.
 
-Work-library UI, volume/chapter/folder management, backup/restore, selected-range/work-wide export, and panel-first generation are outside Prototype 0.13.0.
+Backup/restore, selected-range/container/work-wide export, and panel-first generation remain later phases.
 
 ## Story action intent
 
@@ -247,10 +282,21 @@ Manifest v3 remains the read-first authority and contains package identity, file
 
 AI-generation ZIP excludes annotated review PNG. Review/archive ZIP includes it under the same export identity.
 
-Prototype 0.13.0 keeps these packages scoped to the currently selected page. Multi-page/range/whole-work export must be introduced as an explicit later contract rather than inferred from the presence of multiple pages.
+Prototype 0.14.0 keeps these packages scoped to the currently selected page. Multi-page/range/container/whole-work export must be introduced as an explicit later contract rather than inferred from the presence of multiple works/pages/containers.
 
 ## Acceptance criteria
 
+- Work Library browsing/listing never changes active-work state;
+- create/open/import are explicit work activation paths;
+- ordinary autosave cannot change `activeWorkId`;
+- work rename preserves stable `workId`;
+- work duplicate gets fresh work/container/page/panel/placed-character/balloon identities with internal references remapped;
+- work deletion is confirmed, and deleting the active work leaves a valid active work afterward;
+- a work can mix ungrouped pages with pages assigned to volume/chapter/folder containers;
+- container create/rename/reorder/reparent/delete is supported locally;
+- container reparenting cannot create self/descendant cycles;
+- moving a page between containers preserves page identity;
+- deleting a non-empty container never silently deletes pages; direct pages/children are re-homed to its parent;
 - a work may contain multiple pages and page selection routes authoring/render/handoff through the selected page;
 - page add/select/duplicate/delete/reorder/renumber/title operations are undoable through ordinary project mutation paths where applicable;
 - the final remaining page cannot be deleted;
