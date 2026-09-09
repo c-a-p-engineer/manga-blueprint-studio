@@ -14,6 +14,12 @@ Built-in templates may carry authoring-only scene metadata:
 
 This metadata helps the user choose a template and helps export derive a scene contract. It does not become permanent authority over later manual edits.
 
+### Prototype 0.12.1 visible-cast fallback
+
+The current template application path places one selected/reusable base character per panel. Until automatic placement of multiple distinct base characters is implemented, every template whose recommended cast is greater than one is exported and presented as **one visible character + an explicit off-panel partner**.
+
+This keeps the expected story cast visible in Quick Status while preventing downstream models from inventing an unplanned second visible character. A future multi-character template-placement feature may intentionally replace this fallback.
+
 ## Conversation behavior
 
 Conversation-first templates declare a minimum useful amount of seeded dialogue when **Include sample dialogue and SFX** is enabled. Classroom Talk uses four seeded dialogue beats and explicitly treats the reaction line as an off-panel partner line when only one visible base character is available.
