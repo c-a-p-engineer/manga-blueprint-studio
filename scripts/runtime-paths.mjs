@@ -6,6 +6,7 @@ export const runtimePaths = Object.freeze({
   editorState: 'web/runtime/core/editor-state.js',
   exportInput: 'web/runtime/core/export-input.js',
   eventBindings: 'web/runtime/core/event-bindings.js',
+  pageNavigation: 'web/runtime/authoring/page-navigation.js',
   pageLayoutCamera: 'web/runtime/authoring/page-layout-camera.js',
   characterLibraryExport: 'web/runtime/authoring/character-library-export.js',
   localizationExportHardening: 'web/runtime/authoring/localization-export-hardening.js',
@@ -36,7 +37,7 @@ export const runtimePaths = Object.freeze({
 });
 
 export const runtimeLoadOrder = Object.freeze([
-  'foundation','projectStorage','editorState','exportInput','eventBindings',
+  'foundation','projectStorage','editorState','exportInput','eventBindings','pageNavigation',
   'pageLayoutCamera','characterLibraryExport','localizationExportHardening',
   'smartManga','characterGuidance','identityLocalizationHardening',
   'storyReadability','smartIntentHardening',
