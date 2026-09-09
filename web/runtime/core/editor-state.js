@@ -1,32 +1,61 @@
-function loadAutosave(){
-  try{
-    for(const key of [STORAGE_KEY,'manga-blueprint-studio/0.1']){
-      const raw=localStorage.getItem(key);
-      if(raw) return normalizeProject(JSON.parse(raw));
-    }
-  }catch{}
-  return makeProject();
-}
-
-let project=loadAutosave();
-let selectedPanelId=project.pages[0].panels[0]?.id||null;
+let project=createProjectWithIdentity();
+let selectedPageId=project.pages[0]?.id||null;
+let selectedPanelId=project.pages[0]?.panels[0]?.id||null;
 let selectedCharacterId=null;
 let selectedBalloonId=null;
 let language=localStorage.getItem(LANG_KEY)||'ja';
 let drag=null;
 let history=[], future=[];
+let persistenceReady=false;
 
-const currentPage = () => project.pages[0];
-const selectedPanel = () => currentPage().panels.find(p=>p.id===selectedPanelId)||null;
+const currentPage = () => project.pages.find(page=>page.id===selectedPageId)||project.pages[0]||null;
+const selectedPanel = () => currentPage()?.panels.find(p=>p.id===selectedPanelId)||null;
 const selectedCharacter = () => selectedPanel()?.characters.find(c=>c.id===selectedCharacterId)||null;
 const selectedBalloon = () => selectedPanel()?.balloons.find(b=>b.id===selectedBalloonId)||null;
-const save = () => { localStorage.setItem(STORAGE_KEY,JSON.stringify(project)); $('saveStatus').textContent=`saved ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`; };
+const save = () => {
+  if(!persistenceReady)return;
+  const workId=project.meta.workId;
+  $('saveStatus').textContent='saving…';
+  queueProjectSave(project,{
+    onSaved:savedWorkId=>{if(savedWorkId===workId&&project.meta.workId===workId)$('saveStatus').textContent=`saved ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;},
+    onError:error=>{console.warn('Project autosave failed.',error);if(project.meta.workId===workId)$('saveStatus').textContent='save failed';}
+  });
+};
 const snapshot = () => JSON.stringify(project);
 function pushHistory(){ const s=snapshot(); if(history.at(-1)!==s)history.push(s); if(history.length>HISTORY_LIMIT)history.shift(); future=[]; }
-function restore(s){ project=normalizeProject(JSON.parse(s)); const panels=currentPage().panels; if(!panels.some(p=>p.id===selectedPanelId))selectedPanelId=panels[0]?.id||null; selectedCharacterId=null; selectedBalloonId=null; render(); }
+function restore(s){
+  project=ensureProjectIdentity(JSON.parse(s));
+  if(!project.pages.some(page=>page.id===selectedPageId))selectedPageId=project.pages[0]?.id||null;
+  const panels=currentPage()?.panels||[];
+  if(!panels.some(p=>p.id===selectedPanelId))selectedPanelId=panels[0]?.id||null;
+  selectedCharacterId=null; selectedBalloonId=null; render();
+}
 function undo(){ if(!history.length)return; future.push(snapshot()); restore(history.pop()); }
 function redo(){ if(!future.length)return; history.push(snapshot()); restore(future.pop()); }
 function mutate(fn){ pushHistory(); fn(); render(); }
+
+async function initializeEditorState(){
+  let loaded=null;
+  let canPersist=false;
+  if(projectStorage.supported()){
+    try{
+      loaded=await projectStorage.loadActive();
+      canPersist=true;
+    }catch(error){
+      console.warn('Project storage initialization failed.',error);
+    }
+  }
+  project=loaded?ensureProjectIdentity(loaded):createProjectWithIdentity();
+  selectedPageId=project.pages[0]?.id||null;
+  selectedPanelId=currentPage()?.panels[0]?.id||null;
+  selectedCharacterId=null;
+  selectedBalloonId=null;
+  history=[];
+  future=[];
+  persistenceReady=canPersist;
+  render();
+  if(!persistenceReady)$('saveStatus').textContent='autosave unavailable';
+}
 
 function poseLabel(id){ const p=posePresets[id]||posePresets.stand; return language==='ja'?`${p.ja} / ${p.en}`:p.en; }
 function t(key){ return i18n[language]?.[key]||i18n.ja[key]||key; }
@@ -157,10 +186,9 @@ function splitPanel(axis){
 }
 function applyTemplate(name){
   if(!templates[name])return;if(currentPage().panels.some(p=>p.characters.length||p.balloons.length)&&!confirm('テンプレート変更で現在の配置をリセットします。続行しますか？'))return;
-  mutate(()=>{project=makeProject(name);selectedPanelId=project.pages[0].panels[0].id;selectedCharacterId=null;selectedBalloonId=null;});
+  mutate(()=>{const workId=project.meta.workId,title=project.meta.title;project=createProjectWithIdentity(name,workId);project.meta.title=title;selectedPageId=project.pages[0].id;selectedPanelId=project.pages[0].panels[0].id;selectedCharacterId=null;selectedBalloonId=null;});
 }
 function deletePanel(){
   const p=selectedPanel();if(!p||currentPage().panels.length<=1)return alert('最後の1コマは削除できません。');
   mutate(()=>{currentPage().panels=currentPage().panels.filter(x=>x.id!==p.id);renumberPanels();selectedPanelId=currentPage().panels[0]?.id||null;selectedCharacterId=null;selectedBalloonId=null;});
 }
-
