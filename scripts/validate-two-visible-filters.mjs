@@ -36,8 +36,8 @@ for(const phrase of [
   'template-filter-chip27.active'
 ])if(!app.includes(phrase))throw new Error(`Missing quick-filter contract: ${phrase}`);
 
-if(!app.includes('2人表示（想定'))throw new Error('Japanese cast badge must distinguish visible count from expected cast');
-if(!app.includes('2 visible ('))throw new Error('English cast badge must distinguish visible count from expected cast');
+if(!app.includes('人表示（想定${c.expected}人）'))throw new Error('Japanese cast badge must distinguish visible count from expected cast');
+if(!app.includes('visible (${c.expected} expected)'))throw new Error('English cast badge must distinguish visible count from expected cast');
 if(!app.includes('ベースキャラクターを2人以上作成'))throw new Error('Japanese UI must explain the two-base requirement');
 if(!app.includes('Create at least two base characters'))throw new Error('English UI must explain the two-base requirement');
 
