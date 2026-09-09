@@ -49,6 +49,7 @@ jobs:
           node --check web/app-23.js
           node --check web/app-24.js
           node --check web/app-25.js
+          node --check web/app-26.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -85,3 +86,6 @@ jobs:
 
       - name: Validate authoring clarity
         run: node scripts/validate-authoring-clarity.mjs
+
+      - name: Validate template cast meaning
+        run: node scripts/validate-template-cast-meaning.mjs
