@@ -53,6 +53,7 @@ for(const phrase of [
   'function deletePage15()',
   'function movePage15(delta)',
   'function renumberPageNumbers15()',
+  'function nextAvailablePageNumber15(preferred=1)',
   'function updatePageNumber15(value)',
   'function updatePageTitle15(value)',
   "if(project.pages.length<=1)",
@@ -80,6 +81,22 @@ if(!pages.includes("if(project.pages.some(candidate=>candidate.id!==page.id&&can
 if(!pages.includes("[pages[index],pages[target]]=[pages[target],pages[index]]")){
   throw new Error('Page reordering contract missing');
 }
+
+function functionBody(name,nextName){
+  const start=pages.indexOf(`function ${name}`);
+  if(start<0)throw new Error(`Unable to inspect ${name}`);
+  const end=nextName?pages.indexOf(`function ${nextName}`,start+1):pages.length;
+  return pages.slice(start,end<0?pages.length:end);
+}
+const duplicateBody=functionBody('duplicatePage15()','deletePage15()');
+const deleteBody=functionBody('deletePage15()','movePage15(delta)');
+const moveBody=functionBody('movePage15(delta)','updatePageNumber15(value)');
+for(const [name,body] of [['duplicatePage15',duplicateBody],['deletePage15',deleteBody],['movePage15',moveBody]]){
+  if(body.includes('renumberPageNumbers15()'))throw new Error(`${name} must preserve explicit visible page numbers`);
+  if(!body.includes('renumberPageOrders15()'))throw new Error(`${name} must maintain page sequence order`);
+}
+if(!duplicateBody.includes('nextAvailablePageNumber15'))throw new Error('Duplicate page must allocate a non-conflicting visible page number');
+if(!pages.includes("project.pages=orderedPages15()"))throw new Error('Explicit renumber must normalize current page sequence first');
 if(!pages.includes("@media(max-width:680px)"))throw new Error('Page manager must include narrow-screen layout handling');
 
 console.log('Multi-page core contract validation passed.');
