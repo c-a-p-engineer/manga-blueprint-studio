@@ -19,6 +19,7 @@ try{
 
 const runtimeChunks = [
   ['core/foundation', './runtime/core/foundation.js'],
+  ['core/project-storage', './runtime/core/project-storage.js'],
   ['core/editor-state', './runtime/core/editor-state.js'],
   ['core/export-input', './runtime/core/export-input.js'],
   ['core/event-bindings', './runtime/core/event-bindings.js'],
@@ -60,4 +61,8 @@ for (const [id, src] of runtimeChunks) {
     script.onerror = () => reject(new Error(`Failed to load runtime chunk ${id}: ${src}`));
     document.head.appendChild(script);
   });
+}
+
+if(typeof initializeEditorState==='function'){
+  await initializeEditorState();
 }
