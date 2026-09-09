@@ -47,6 +47,7 @@ jobs:
           node --check web/app-21.js
           node --check web/app-22.js
           node --check web/app-23.js
+          node --check web/app-24.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -77,3 +78,6 @@ jobs:
 
       - name: Validate scene contract / quick status
         run: node scripts/validate-scene-contract.mjs
+
+      - name: Validate desktop responsive layout
+        run: node scripts/validate-desktop-layout.mjs
