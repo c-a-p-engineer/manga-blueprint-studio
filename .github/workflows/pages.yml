@@ -34,6 +34,14 @@ jobs:
           cp -R web/. _site/
           cp schema/manga-blueprint.schema.json _site/schema/
           if [ -d examples ]; then cp -R examples/. _site/examples/; fi
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const info = JSON.parse(fs.readFileSync('web/build-info.json', 'utf8'));
+          info.gitCommit = process.env.GITHUB_SHA || null;
+          info.buildSource = 'github-pages';
+          info.deployedAt = new Date().toISOString();
+          fs.writeFileSync('_site/build-info.json', `${JSON.stringify(info, null, 2)}\n`);
+          NODE
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
