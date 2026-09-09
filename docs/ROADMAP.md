@@ -1,6 +1,25 @@
 # Roadmap
 
-## Shipped through Prototype 0.12.9
+## Shipped through Prototype 0.13.0
+
+### Project / persistence foundation
+- stable `meta.workId` plus stable page identity;
+- page metadata for visible number, order, optional title, and future container assignment;
+- IndexedDB-backed work persistence with active-work tracking;
+- project autosave no longer depends on historical project `localStorage` keys;
+- same-`workId` JSON import is protected from silent overwrite;
+- reserved `volume | chapter | folder` container schema for later hierarchy UI.
+
+### Multi-page core
+- multiple pages inside one work;
+- add, select, duplicate, delete, move earlier/later, and sequential renumber;
+- editable visible page number with duplicate protection;
+- optional page title;
+- page duplication regenerates page/panel/placed-character/balloon instance IDs;
+- active page is remembered per work in IndexedDB;
+- startup restores remembered page before page-selection persistence is enabled;
+- page controls include narrow-screen/mobile layout handling;
+- existing editor/render/handoff logic resolves the selected page through `currentPage()` instead of assuming `pages[0]`.
 
 ### Page, layout, reading and lettering
 - manuscript/canvas presets including portrait/social/video, B5, A4, Webtoon, and custom sizes;
@@ -49,45 +68,94 @@
 ### Runtime / validation
 - semantic runtime ownership under `web/runtime/` rather than chronology-named patch files;
 - explicit runtime load-order registry mirrored by validation scripts;
-- repository, UI-contract, reading/lettering, spatial, cross-model, template, cast, generation-contract, render-brief, and producer-provenance CI validation.
+- repository, project-storage, multi-page, UI-contract, reading/lettering, spatial, cross-model, template, cast, generation-contract, render-brief, and producer-provenance CI validation.
 
-## Highest-priority next candidates
+---
 
-### 1. Panel-first / hybrid generation contract
-- export a self-contained generation contract per panel rather than requiring one image model call to obey the whole page at once;
-- preserve normal isolated panels as independent generation units;
-- allow explicit shared-canvas generation groups for cross-panel breakout, shared-background, or spread effects;
-- add deterministic page composition after panel generation;
-- keep provider adapters at the export boundary.
+## Delivery phases
 
-### 2. Generated-result validator
-- upload a generated manga page and compare it against Blueprint intent;
-- verify panel count/order, visible cast, identity consistency, action/pose, camera, background continuity, breakout, lettering allowlist, and writing direction;
-- distinguish hard contract violations from aesthetic variance;
-- optionally emit targeted panel re-generation instructions rather than redoing the entire page.
+| Phase | Priority | Goal | Key work | Status |
+|---:|:---:|---|---|:---:|
+| 0 | S | Storage / stable identity | `workId`, page/container identity, IndexedDB, import conflict protection | **Shipped** |
+| 1 | S | Multi-page Core | page CRUD/reorder/number/title/selection persistence | **Shipped in 0.13.0** |
+| 2 | S | Work / Volume / Folder management | work library, volume/chapter/folder UI, page moves | Next |
+| 3 | S | Backup / Restore | complete backup ZIP, checksum, preview, transactional restore | Planned |
+| 4 | S | Scoped Export | page selection/range/volume/work export contracts | Planned |
+| 5 | S | Panel-first / Hybrid generation | per-panel units, generation groups, deterministic composition | Planned |
+| 6 | A | Cross-page continuity | reference assets, location/prop/outfit continuity | Planned |
+| 7 | A/B | Manga direction expansion | spatial grammar, perspective, eye-flow, gutters, spreads, typesetting | Planned |
 
-### 3. Reference Asset Library
+## Phase 2 — Work / Volume / Folder management
+
+### Work library
+- list multiple IndexedDB works;
+- create, rename, duplicate, open, and delete works with explicit confirmation;
+- show title, updated time, and page count;
+- keep stable `workId` independent from visible title;
+- never silently switch the active work while browsing.
+
+### Hierarchy
+- expose the already-reserved `volume | chapter | folder` containers;
+- create/rename/reorder/delete containers;
+- optional parent-child hierarchy where useful;
+- move pages between containers without changing page identity;
+- clear behavior for deleting a non-empty container (move pages or explicit destructive choice; never silent loss).
+
+### Acceptance direction
+- one work can contain ungrouped pages and grouped pages;
+- ordering is deterministic;
+- page selection survives normal hierarchy edits;
+- work/container management remains local-only and provider-independent.
+
+## Phase 3 — Backup / Restore
+
+- whole-work backup ZIP with semantic project state and browser-local reusable assets/templates that are explicitly included;
+- backup manifest with schema/version, work identity, file roles, counts, checksums, and creation metadata;
+- restore preview before mutation;
+- conflict choices for same `workId`: replace, import as new work, or cancel;
+- transactional restore so partial failure does not leave mixed state;
+- deterministic integrity checks for required files, hashes, JSON parseability, and counts;
+- no semantic/aesthetic AI judgment in backup validation.
+
+## Phase 4 — Scoped Export
+
+- export current page (existing behavior);
+- selected pages;
+- page range;
+- container/volume;
+- whole work;
+- manifest declares exact scope and ordered page IDs/numbers;
+- multi-page prompt/package conventions remain explicit rather than relying on downstream inference;
+- provider adapters remain at the export boundary.
+
+## Phase 5 — Panel-first / Hybrid generation contract
+
+- export a self-contained generation contract per ordinary isolated panel;
+- preserve explicit shared-canvas generation groups for cross-panel breakout, shared-background, or spread effects;
+- deterministic page composition after panel generation;
+- exact geometry and crop/placement metadata for recomposition;
+- targeted re-generation can replace one generation unit without invalidating unrelated panels;
+- no requirement for a semantic AI result validator as part of the core pipeline.
+
+## Phase 6 — Cross-page continuity / Reference Asset Library
+
 - generalize references beyond Character Sheets to characters, locations, props, outfits, vehicles, styles, poses, and lighting;
 - browser-local registration and thumbnail binding;
-- explicit continuity lock / soft-reference modes;
+- explicit continuity-lock / soft-reference modes;
+- named locations such as `bedroom-A` / `classroom-A` with inherited anchors;
+- prop owner/hand/location/state and costume variant continuity;
 - optional safe inclusion of registered reference files in generation packages;
-- avoid silently uploading private assets.
+- never silently upload private assets.
 
-### 4. Pose Studio + Contact Graph
-- direct joint dragging for head / shoulders / elbows / hands / hip / knees / feet;
-- reusable pose presets, mirroring, reset, support/center-of-gravity/torso controls;
-- semantic contact edges such as hand→shoulder, arm→back, foot→ground, hand→prop;
-- contact validation for hugs, grabs, throws, strikes, hand-holding, and prop handling.
+## Phase 7 — Manga direction expansion
 
-### 5. Spatial continuity grammar
+### Spatial continuity grammar
 - 180-degree action axis;
 - per-character screen side;
 - entry/exit edge and movement direction;
 - eyeline vectors and shot/reverse-shot relationship;
 - intentional-axis-break override;
 - Manga Check warnings for accidental left/right inversion.
-
-## High-priority direction candidates
 
 ### Perspective / lens contract
 - horizon line and vanishing-point semantics;
@@ -113,47 +181,43 @@
 - distinguish moment-to-moment, action-to-action, subject-to-subject, and scene transitions;
 - make gutter width/overlap suggestions advisory, not automatic authority.
 
-### Multi-page / spread / page-turn
-- multiple pages per project;
+### Spread / page-turn
 - two-page spreads and binding-safe zones;
 - page-turn/reveal intent;
 - scene-level pacing across page boundaries;
-- preserve current single-page format compatibility during migration.
+- preserve ordinary single-page editing/export semantics unless an explicit spread/group is selected.
 
-## Continuity libraries
-
-### Scene / location library
-- reusable named locations such as `bedroom-A` / `classroom-A`;
-- inherited scene anchors and fixed background elements;
-- lighting direction/temperature/softness continuity.
-
-### Prop / costume state
-- reusable props with owner, hand, location, and state;
-- costume state/variant continuity;
-- Manga Check for unexplained disappearance, hand-switching, or state reset.
-
-## Text production
+### Text production
 - balloon-tail target / speaker visual connection;
 - deterministic final Japanese vertical typesetting;
 - punctuation, ruby, kenten, tate-chu-yoko;
 - SFX rotation/path controls;
 - deterministic post-render lettering composition after image generation.
 
-## Provider-adapter ecosystem
-- ChatGPT-oriented package adapter;
-- Gemini-oriented package adapter;
-- ComfyUI / ControlNet adapter for pose/depth/edge/segmentation conditioning;
-- capability declarations so unsupported features degrade explicitly instead of being silently discarded;
-- core project state remains provider-independent.
+## Additional authoring candidates
 
-## Panel geometry and authoring
+### Pose Studio + Contact Graph
+- direct joint dragging for head / shoulders / elbows / hands / hip / knees / feet;
+- reusable pose presets, mirroring, reset, support/center-of-gravity/torso controls;
+- semantic contact edges such as hand→shoulder, arm→back, foot→ground, hand→prop;
+- contact validation for hugs, grabs, throws, strikes, hand-holding, and prop handling.
+
+### Panel geometry
 - drag/shared panel boundaries;
 - irregular/diagonal frames;
 - inset/overlap and safer bleed visualization;
 - extend reading-order grouping rules for arbitrary geometry;
 - favorites/recent templates and import/export template packs.
 
+### Provider-adapter ecosystem
+- ChatGPT-oriented package adapter;
+- Gemini-oriented package adapter;
+- ComfyUI / ControlNet adapter for pose/depth/edge/segmentation conditioning;
+- capability declarations so unsupported features degrade explicitly instead of being silently discarded;
+- core project state remains provider-independent.
+
 ## Longer-term / optional
+
 - script → scene/beat/page planning assistance;
 - revision/diff history beyond current Undo/Redo;
 - collaboration only if privacy/hosting boundaries are intentionally introduced;
