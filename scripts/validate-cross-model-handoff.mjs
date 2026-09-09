@@ -1,10 +1,10 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const read=path=>fs.readFileSync(path,'utf8');
-const bootstrap=read('web/app.js');
-const app20=read('web/app-20.js');
-
-if(!bootstrap.includes('app-20.js'))throw new Error('Bootstrap must load app-20.js');
+const bootstrap=fs.readFileSync('web/app.js','utf8');
+const app20=readRuntime('crossModel');
+const src=`./${runtimePaths.crossModel.slice('web/'.length)}`;
+if(!bootstrap.includes(src))throw new Error(`Bootstrap must load ${src}`);
 
 for(const phrase of [
   'MODEL-INDEPENDENT INTERPRETATION PRIORITY:',

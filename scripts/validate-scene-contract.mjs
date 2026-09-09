@@ -1,11 +1,14 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const app = fs.readFileSync('web/app-22.js','utf8');
-const fallback = fs.readFileSync('web/app-23.js','utf8');
-const bootstrap = fs.readFileSync('web/app.js','utf8');
+const app=readRuntime('sceneContract');
+const fallback=readRuntime('castFallback');
+const bootstrap=fs.readFileSync('web/app.js','utf8');
 
+const sceneSrc=`./${runtimePaths.sceneContract.slice('web/'.length)}`;
+const fallbackSrc=`./${runtimePaths.castFallback.slice('web/'.length)}`;
 const required = [
-  "'./app-22.js'",
+  sceneSrc,
   "quickStatus22",
   "sceneTemplateContract",
   "outputConstraints",
@@ -30,12 +33,12 @@ const required = [
 ];
 
 for (const needle of required) {
-  const source = needle === "'./app-22.js'" ? bootstrap : app;
+  const source = needle === sceneSrc ? bootstrap : app;
   if (!source.includes(needle)) throw new Error(`Prototype 0.12 contract missing: ${needle}`);
 }
 
 const fallbackRequired = [
-  "'./app-23.js'",
+  fallbackSrc,
   'sceneInfoBase23',
   '(scene.cast?.recommended||1)>1',
   "presentation:'one-visible-offscreen'",
@@ -43,7 +46,7 @@ const fallbackRequired = [
   'guideCastFallback'
 ];
 for (const needle of fallbackRequired) {
-  const source = needle === "'./app-23.js'" ? bootstrap : fallback;
+  const source = needle === fallbackSrc ? bootstrap : fallback;
   if (!source.includes(needle)) throw new Error(`Prototype 0.12.1 cast fallback missing: ${needle}`);
 }
 

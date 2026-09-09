@@ -2,7 +2,28 @@
 
 ## Runtime
 
-The prototype is a zero-dependency static web application. `web/app.js` loads `web/app-1.js` through `web/app-17.js` as classic scripts. `app-10.js` keeps Prototype 0.7 localization/state hardening; `app-11.js` owns Prototype 0.8 story-readability behavior; `app-12.js` contains Smart Manga action-intent alignment plus mobile Panel Peek hardening; `app-13.js` owns Prototype 0.9 Scene Template Studio; `app-14.js` provides 0.9 localization/feedback hardening; `app-15.js` adds Prototype 0.10 balloon writing direction; `app-16.js` synchronizes panel order with selected reading direction; `app-17.js` integrates Scene Template numbering/beat assignment with that order and adds per-panel SFX writing-direction state/UI/prompt/manifest metadata. GitHub Pages serves exact static assets; no server, build step, external runtime script, analytics, or API is required.
+The prototype is a zero-dependency static web application. `web/app.js` loads ordered classic-script chunks from `web/runtime/`. GitHub Pages serves the exact static assets; no server, build step, external runtime script, analytics, or API is required.
+
+Runtime files are organized by responsibility rather than prototype chronology:
+
+```text
+web/runtime/
+├─ core/         foundational state, rendering, export/input, event bindings
+├─ authoring/    page/layout/camera and reusable-character authoring
+├─ assist/       bounded Smart Manga assistance
+├─ identity/     character identity and appearance handoff
+├─ story/        story-readable panel semantics
+├─ templates/    Scene Template Studio and scene/cast contracts
+├─ lettering/    text writing direction
+├─ ordering/     reading-order synchronization
+├─ integration/  cross-feature integration with intentional order dependencies
+├─ handoff/      prompt/manifest/render contracts for downstream models
+└─ ui/           presentation-only layout and authoring clarity
+```
+
+The explicit load order in `web/app.js` remains a compatibility contract because later classic-script chunks intentionally extend globals established by earlier chunks. `scripts/runtime-paths.mjs` mirrors those semantic owners for validators, and `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` chunks, missing registrations, duplicate registrations, and unregistered runtime JavaScript.
+
+This organization is a behavior-preserving structural refactor, not an ES-module conversion. A future module/bundler migration must be handled separately with characterization tests, semantic-equivalence checks, and a cutover/rollback plan.
 
 ## State
 
@@ -57,7 +78,7 @@ Template Studio adds category filtering, free-text search, visual cards, layout 
 
 Browsing/searching/selecting changes only transient authoring UI state. It does not mutate the manga page.
 
-Prototype 0.10 overrides template thumbnail numbering in `app-17.js`. Ordering is calculated from page-scale template geometry through the existing reading-order preview function; those numbers are then drawn onto thumbnail-scale geometry. Using page-scale geometry avoids thumbnail dimensions changing row-grouping semantics.
+Prototype 0.10 overrides template thumbnail numbering in `web/runtime/integration/template-lettering-order.js`. Ordering is calculated from page-scale template geometry through the existing reading-order preview function; those numbers are then drawn onto thumbnail-scale geometry. Using page-scale geometry avoids thumbnail dimensions changing row-grouping semantics.
 
 ### Apply path
 
@@ -120,14 +141,14 @@ The synchronized order is shared by canvas badges, Scene Template thumbnail numb
 
 ## Lettering direction
 
-`app-15.js` establishes the project/balloon lettering model:
+`web/runtime/lettering/writing-direction.js` establishes the project/balloon lettering model:
 
 ```text
 meta.defaultWritingMode = vertical-rl | horizontal-tb
 balloon.writingMode = inherit | vertical-rl | horizontal-tb
 ```
 
-`app-17.js` extends the same model to per-panel onomatopoeia:
+`web/runtime/integration/template-lettering-order.js` extends the same model to per-panel onomatopoeia:
 
 ```text
 panel.effects.sfxWritingMode = inherit | vertical-rl | horizontal-tb

@@ -239,13 +239,32 @@ Primary hierarchy:
 
 ## Runtime
 
-`web/app.js` loads `web/app-1.js` through `web/app-17.js` as static classic scripts. `app-10.js` owns 0.7 localization/state hardening; `app-11.js` owns 0.8 Story Template / Panel Peek/List / framing UX; `app-12.js` aligns Smart Manga with action-intent semantics and hardens mobile Panel Peek; `app-13.js` owns 0.9 Scene Template Studio; `app-14.js` owns 0.9 localization/feedback hardening; `app-15.js` owns 0.10 balloon writing direction; `app-16.js` owns 0.10 reading-order synchronization; `app-17.js` integrates Scene Template numbering/beat placement with that reading order and adds per-panel SFX writing-direction overrides plus handoff metadata. Preserve zero-build GitHub Pages operation unless an intentional migration updates the contract.
+`web/app.js` loads named classic-script chunks under `web/runtime/` in one explicit order. This preserves the zero-build GitHub Pages runtime and its existing global extension semantics while naming files by responsibility instead of prototype chronology.
+
+Runtime ownership is grouped by responsibility:
+
+- `runtime/core/` — foundational state, rendering, export/input, and event bindings;
+- `runtime/authoring/` — page/layout/camera and reusable-character authoring;
+- `runtime/assist/` — bounded Smart Manga assistance;
+- `runtime/identity/` — character identity and appearance handoff;
+- `runtime/story/` — story-readable panel semantics;
+- `runtime/templates/` — Scene Template Studio and scene/cast contracts;
+- `runtime/lettering/` — text writing direction;
+- `runtime/ordering/` — reading-order synchronization;
+- `runtime/integration/` — cross-feature integrations whose load order is intentional;
+- `runtime/handoff/` — prompt/manifest/render contracts for downstream image-generation models;
+- `runtime/ui/` — presentation-only layout and authoring clarity.
+
+The canonical load order is declared by `web/app.js` and mirrored by `scripts/runtime-paths.mjs` for validation. `scripts/validate-runtime-layout.mjs` rejects version-numbered `web/app-N.js` runtime chunks and requires every runtime JavaScript file to be explicitly registered. Later classic-script chunks may intentionally extend globals established by earlier chunks, so the ordered runtime remains a compatibility contract.
+
+New work should modify the existing semantic owner whenever one exists instead of adding another chronology-named patch file. A future ES-module or bundler migration is a separate refactor and must preserve current external behavior, zero-build/deployment expectations unless intentionally changed, and rollback/reference evidence.
 
 ## Definition of done
 
 Relevant changes preserve:
 
 - JS syntax validity for bootstrap and every runtime chunk;
+- semantic runtime paths are registered in the explicit load order and no `web/app-N.js` runtime chunks remain;
 - repository-contract validation and legacy normalization;
 - dynamic canvas and RTL/LTR;
 - panel numbers automatically align with selected RTL/LTR geometry order across canvas, Panel Peek/List, prompt, manifest, and exports;

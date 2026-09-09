@@ -1,10 +1,12 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const app=fs.readFileSync('web/app-24.js','utf8');
+const app=readRuntime('desktopLayout');
 const bootstrap=fs.readFileSync('web/app.js','utf8');
+const src=`./${runtimePaths.desktopLayout.slice('web/'.length)}`;
 
 const required=[
-  "'./app-24.js'",
+  src,
   '--desktop-sticky-top24',
   '.top-actions select{width:auto',
   '.control-shell{position:sticky',
@@ -16,7 +18,7 @@ const required=[
 ];
 
 for(const needle of required){
-  const source=needle==="'./app-24.js'"?bootstrap:app;
+  const source=needle===src?bootstrap:app;
   if(!source.includes(needle))throw new Error(`Desktop layout contract missing: ${needle}`);
 }
 

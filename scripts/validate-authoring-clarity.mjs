@@ -1,9 +1,11 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const bootstrap=fs.readFileSync('web/app.js','utf8');
-const app=fs.readFileSync('web/app-25.js','utf8');
+const app=readRuntime('authoringClarity');
+const src=`./${runtimePaths.authoringClarity.slice('web/'.length)}`;
 
-if(!bootstrap.includes("'./app-25.js'"))throw new Error('Bootstrap must load app-25.js');
+if(!bootstrap.includes(src))throw new Error(`Bootstrap must load ${src}`);
 
 for(const phrase of [
   'container-type:inline-size',

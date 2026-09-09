@@ -1,6 +1,6 @@
-import fs from 'node:fs';
+import {readRuntime} from './runtime-paths.mjs';
 
-const app=fs.readFileSync('web/app-12.js','utf8');
+const app=readRuntime('smartIntentHardening');
 for(const phrase of [
   'openPanelPeek11=function',
   'peek-header12',

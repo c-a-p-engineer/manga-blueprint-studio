@@ -24,35 +24,12 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check web/app.js
-          node --check web/app-1.js
-          node --check web/app-2.js
-          node --check web/app-3.js
-          node --check web/app-4.js
-          node --check web/app-5.js
-          node --check web/app-6.js
-          node --check web/app-7.js
-          node --check web/app-8.js
-          node --check web/app-9.js
-          node --check web/app-10.js
-          node --check web/app-11.js
-          node --check web/app-12.js
-          node --check web/app-13.js
-          node --check web/app-14.js
-          node --check web/app-15.js
-          node --check web/app-16.js
-          node --check web/app-17.js
-          node --check web/app-18.js
-          node --check web/app-19.js
-          node --check web/app-20.js
-          node --check web/app-21.js
-          node --check web/app-22.js
-          node --check web/app-23.js
-          node --check web/app-24.js
-          node --check web/app-25.js
-          node --check web/app-26.js
-          node --check web/app-27.js
-          node --check web/app-28.js
-          node --check web/app-29.js
+          node --check scripts/runtime-paths.mjs
+          node --check scripts/validate-runtime-layout.mjs
+          find web/runtime -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+
+      - name: Validate semantic runtime layout
+        run: node scripts/validate-runtime-layout.mjs
 
       - name: Validate repository contract
         run: node scripts/validate.mjs

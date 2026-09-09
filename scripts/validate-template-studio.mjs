@@ -1,9 +1,10 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const bootstrap=fs.readFileSync('web/app.js','utf8');
-const app13=fs.readFileSync('web/app-13.js','utf8');
-const app14=fs.readFileSync('web/app-14.js','utf8');
-for(const file of ['./app-13.js','./app-14.js'])if(!bootstrap.includes(file))throw new Error(`Bootstrap must load ${file}`);
+const app13=readRuntime('templateStudio');
+const app14=readRuntime('templateStudioFeedback');
+for(const key of ['templateStudio','templateStudioFeedback']){const file=runtimePaths[key];const src=`./${file.slice('web/'.length)}`;if(!bootstrap.includes(src))throw new Error(`Bootstrap must load ${src}`);}
 
 for(const phrase of [
   'CUSTOM_TEMPLATE_KEY_13',
