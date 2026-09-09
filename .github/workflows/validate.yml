@@ -44,6 +44,7 @@ jobs:
           node --check web/app-18.js
           node --check web/app-19.js
           node --check web/app-20.js
+          node --check web/app-21.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -68,3 +69,6 @@ jobs:
 
       - name: Validate cross-model handoff hardening
         run: node scripts/validate-cross-model-handoff.mjs
+
+      - name: Validate template camera / dialogue quality
+        run: node scripts/validate-template-quality.mjs
