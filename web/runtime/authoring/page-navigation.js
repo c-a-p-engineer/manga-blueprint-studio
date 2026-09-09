@@ -199,8 +199,9 @@ function updatePageTitle15(value){
 }
 
 let lastPersistedPage15='';
+let suppressPageSelectionPersist15=true;
 function persistSelectedPage15(){
-  if(!persistenceReady||!selectedPageId||!project?.meta?.workId)return;
+  if(suppressPageSelectionPersist15||!persistenceReady||!selectedPageId||!project?.meta?.workId)return;
   const key=`${project.meta.workId}:${selectedPageId}`;
   if(key===lastPersistedPage15)return;
   lastPersistedPage15=key;
@@ -242,6 +243,7 @@ renderUi=function(){renderUiBeforePageManager15();renderPageManager15();};
 
 const initializeEditorStateBeforePageManager15=initializeEditorState;
 initializeEditorState=async function(){
+  suppressPageSelectionPersist15=true;
   await initializeEditorStateBeforePageManager15();
   if(persistenceReady&&project?.meta?.workId){
     try{
@@ -249,11 +251,12 @@ initializeEditorState=async function(){
       if(remembered&&project.pages.some(page=>page.id===remembered)){
         selectPage15(remembered,{renderNow:false});
         selectedPanelId=currentPage()?.panels?.[0]?.id||null;
-        render();
       }
     }catch(error){console.warn('Unable to restore active page.',error);}
   }
-  renderPageManager15();
+  suppressPageSelectionPersist15=false;
+  lastPersistedPage15='';
+  render();
 };
 
 renderPageManager15();
