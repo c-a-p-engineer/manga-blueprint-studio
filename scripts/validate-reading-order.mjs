@@ -1,14 +1,16 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const app=fs.readFileSync('web/app-16.js','utf8');
+const app=readRuntime('readingOrder');
 const bootstrap=fs.readFileSync('web/app.js','utf8');
 const agents=fs.readFileSync('AGENTS.md','utf8');
 
 for(const token of ['readingOrderedPanels16','renumberPanels=function','project.meta.readingDirection','panel.order=index+1','render=function']){
   if(!app.includes(token))throw new Error(`reading-order contract missing: ${token}`);
 }
-if(!bootstrap.includes("'./app-16.js'"))throw new Error('app-16.js is not loaded by bootstrap');
+const src=`./${runtimePaths.readingOrder.slice('web/'.length)}`;
+if(!bootstrap.includes(src))throw new Error(`Reading-order runtime is not loaded by bootstrap: ${src}`);
 if(!agents.includes('reading direction') && !agents.includes('読み方向'))throw new Error('AGENTS.md must preserve reading-direction contract');
 
 const panels=[

@@ -1,9 +1,11 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const bootstrap=fs.readFileSync('web/app.js','utf8');
-const app=fs.readFileSync('web/app-26.js','utf8');
+const app=readRuntime('castSemantics');
+const src=`./${runtimePaths.castSemantics.slice('web/'.length)}`;
 
-if(!bootstrap.includes("'./app-26.js'"))throw new Error('Bootstrap must load app-26.js');
+if(!bootstrap.includes(src))throw new Error(`Bootstrap must load ${src}`);
 
 for(const phrase of [
   "templateExpectedCast26:'想定登場'",

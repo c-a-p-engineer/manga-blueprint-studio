@@ -1,13 +1,15 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const read = path => fs.readFileSync(path, 'utf8');
 const app = read('web/app.js');
-const art = read('web/app-18.js');
-const spatial = read('web/app-19.js');
+const art = readRuntime('artDirectionReadiness');
+const spatial = readRuntime('spatialSemantics');
 const schema = JSON.parse(read('schema/manga-blueprint.schema.json'));
 
-for (const file of ['app-18.js','app-19.js']) {
-  if (!app.includes(file)) throw new Error(`Bootstrap must load ${file}`);
+for (const key of ['artDirectionReadiness','spatialSemantics']) {
+  const file=runtimePaths[key],src=`./${file.slice('web/'.length)}`;
+  if (!app.includes(src)) throw new Error(`Bootstrap must load ${src}`);
 }
 
 for (const phrase of [
@@ -62,7 +64,6 @@ for (const field of ['sceneId','continuityFrom','anchorNotes']) {
   if (schema.$defs?.background?.properties?.[field]?.type !== 'string') throw new Error(`Schema missing background.${field}`);
 }
 
-// Art direction is project-global and must not be promoted into character identity.
 if (!schema.properties?.meta?.properties?.artDirection) throw new Error('meta.artDirection missing');
 if (schema.$defs?.baseCharacter?.properties?.artDirection) throw new Error('Art direction must remain separate from character identity');
 

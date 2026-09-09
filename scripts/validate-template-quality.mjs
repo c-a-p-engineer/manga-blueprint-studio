@@ -1,8 +1,9 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const app=fs.readFileSync('web/app-21.js','utf8');
+const app=readRuntime('templateQuality');
 const bootstrap=fs.readFileSync('web/app.js','utf8');
-const app13=fs.readFileSync('web/app-13.js','utf8');
+const app13=readRuntime('templateStudio');
 
 for(const phrase of [
   'TEMPLATE_SCALE_MAX_21=6',
@@ -16,7 +17,8 @@ for(const phrase of [
   'templateQualityIssues21'
 ])if(!app.includes(phrase))throw new Error(`Missing template quality contract: ${phrase}`);
 
-if(!bootstrap.includes("'./app-21.js'"))throw new Error('Bootstrap does not load app-21.js');
+const src=`./${runtimePaths.templateQuality.slice('web/'.length)}`;
+if(!bootstrap.includes(src))throw new Error(`Bootstrap does not load ${src}`);
 if(!app13.includes("classroomTalk:{label:'storyClassroomTalk'"))throw new Error('Classroom conversation template missing');
 
 for(const text of [
@@ -26,8 +28,6 @@ for(const text of [
   'うん。それでね…'
 ])if(!app.includes(text))throw new Error(`Classroom dialogue seed missing: ${text}`);
 
-// Regression intent: do not silence framing diagnostics for templates. Template-created
-// instances must instead be fitted to the same camera-distance target used by the diagnostic.
 if(app.includes("framingStatus11=function(){return{kind:'good'"))throw new Error('Template hardening must not bypass framing diagnostics');
 if(!app.includes('target*panel.rect.h/localH'))throw new Error('Template camera fit must derive scale from panel height and camera target');
 

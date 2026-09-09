@@ -1,10 +1,11 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const read=path=>fs.readFileSync(path,'utf8');
-const bootstrap=read('web/app.js');
-const app=read('web/app-29.js');
+const bootstrap=fs.readFileSync('web/app.js','utf8');
+const app=readRuntime('interactionGenerationContract');
+const src=`./${runtimePaths.interactionGenerationContract.slice('web/'.length)}`;
 
-if(!bootstrap.includes("'./app-29.js'"))throw new Error('Bootstrap must load app-29.js');
+if(!bootstrap.includes(src))throw new Error(`Bootstrap must load ${src}`);
 
 for(const phrase of [
   "'approach-right'",

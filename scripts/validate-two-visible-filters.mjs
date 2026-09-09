@@ -1,9 +1,11 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const bootstrap=fs.readFileSync('web/app.js','utf8');
-const app=fs.readFileSync('web/app-27.js','utf8');
+const app=readRuntime('twoVisible');
+const src=`./${runtimePaths.twoVisible.slice('web/'.length)}`;
 
-if(!bootstrap.includes("'./app-27.js'"))throw new Error('Bootstrap must load app-27.js');
+if(!bootstrap.includes(src))throw new Error(`Bootstrap must load ${src}`);
 
 for(const id of ['twoVisibleChat27','twoVisibleAffection27','twoVisibleGaze27','twoVisibleHug27','twoVisibleStandoff27']){
   if(!app.includes(id))throw new Error(`Missing two-visible template: ${id}`);

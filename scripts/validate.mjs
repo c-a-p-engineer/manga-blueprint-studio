@@ -1,7 +1,14 @@
 import fs from 'node:fs';
+import {runtimePaths, readRuntimeSet} from './runtime-paths.mjs';
 
-const runtimeFiles=['web/app-1.js','web/app-2.js','web/app-3.js','web/app-4.js','web/app-5.js','web/app-6.js','web/app-7.js','web/app-8.js','web/app-9.js','web/app-10.js','web/app-11.js','web/app-12.js'];
-const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
+const runtimeKeys=[
+  'foundation','editorState','exportInput','eventBindings',
+  'pageLayoutCamera','characterLibraryExport','localizationExportHardening',
+  'smartManga','characterGuidance','identityLocalizationHardening',
+  'storyReadability','smartIntentHardening'
+];
+const runtimeFiles=runtimeKeys.map(key=>runtimePaths[key]);
+const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js','web/runtime/README.md',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
 for(const file of requiredFiles)if(!fs.existsSync(file))throw new Error(`Missing required file: ${file}`);
 
 const schema=JSON.parse(fs.readFileSync('schema/manga-blueprint.schema.json','utf8'));
@@ -25,16 +32,16 @@ for(const value of ['sheet','description','free'])if(!identityModes.includes(val
 for(const field of ['summary','hair','eyes','outfit','features'])if(schema.$defs?.appearance?.properties?.[field]?.type!=='string')throw new Error(`Schema missing appearance.${field}`);
 
 const html=fs.readFileSync('web/index.html','utf8');
-const sources=Object.fromEntries(runtimeFiles.map(f=>[f,fs.readFileSync(f,'utf8')]));
+const sources=readRuntimeSet(runtimeKeys);
 const js=Object.values(sources).join('\n');
-const app8=sources['web/app-8.js'];
-const app9=sources['web/app-9.js'];
-const app10=sources['web/app-10.js'];
-const app11=sources['web/app-11.js'];
-const app12=sources['web/app-12.js'];
+const app8=sources.smartManga;
+const app9=sources.characterGuidance;
+const app10=sources.identityLocalizationHardening;
+const app11=sources.storyReadability;
+const app12=sources.smartIntentHardening;
 const bootstrap=fs.readFileSync('web/app.js','utf8');
 for(const id of ['blueprintSvg','helpBtn','helpDialog','canvasPresetSelect','canvasWidth','canvasHeight','templateSelect','randomBtn','randomDialog','panelOverview','selectedPanelSummary','cameraQuickPreset','cameraHelp','backgroundLocation','addBalloon','lineEffect','exportAiPng','exportAnnotatedPng','promptOutput','exportJson','importJson'])if(!html.includes(`id="${id}"`))throw new Error(`Missing base UI control: ${id}`);
-for(const file of runtimeFiles)if(!bootstrap.includes(file.split('/').pop()))throw new Error(`Bootstrap does not load ${file}`);
+for(const file of runtimeFiles){const src=`./${file.slice('web/'.length)}`;if(!bootstrap.includes(src))throw new Error(`Bootstrap does not load ${src}`);}
 
 for(const phrase of ['STRICT TEXT RENDERING RULE:','TEXT TO RENDER:','exportPng(false)','NEVER render character display names','authoring-text'])if(!js.includes(phrase))throw new Error(`Missing AI-safe handoff contract: ${phrase}`);
 for(const phrase of ['square:{','four-vertical','four-grid','four-horizontal','smartRandom04','panelSummary04(','Extreme close','超寄り','Low angle','あおり','HELP_SEEN_KEY_04'])if(!js.includes(phrase))throw new Error(`Missing 0.4 feature contract: ${phrase}`);

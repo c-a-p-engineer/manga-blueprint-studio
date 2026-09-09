@@ -1,12 +1,44 @@
-// Zero-build runtime bootstrap. Feature code is split into classic scripts so GitHub Pages can serve it directly.
-const scripts = ['./app-1.js', './app-2.js', './app-3.js', './app-4.js', './app-5.js', './app-6.js', './app-7.js', './app-8.js', './app-9.js', './app-10.js', './app-11.js', './app-12.js', './app-13.js', './app-14.js', './app-15.js', './app-16.js', './app-17.js', './app-18.js', './app-19.js', './app-20.js', './app-21.js', './app-22.js', './app-23.js', './app-24.js', './app-25.js', './app-26.js', './app-27.js', './app-28.js', './app-29.js'];
+// Zero-build runtime bootstrap. Named classic-script chunks share the existing global runtime state;
+// keep this order explicit because later chunks intentionally extend earlier behavior.
+const runtimeChunks = [
+  ['core/foundation', './runtime/core/foundation.js'],
+  ['core/editor-state', './runtime/core/editor-state.js'],
+  ['core/export-input', './runtime/core/export-input.js'],
+  ['core/event-bindings', './runtime/core/event-bindings.js'],
+  ['authoring/page-layout-camera', './runtime/authoring/page-layout-camera.js'],
+  ['authoring/character-library-export', './runtime/authoring/character-library-export.js'],
+  ['authoring/localization-export-hardening', './runtime/authoring/localization-export-hardening.js'],
+  ['assist/smart-manga', './runtime/assist/smart-manga.js'],
+  ['identity/character-guidance', './runtime/identity/character-guidance.js'],
+  ['identity/localization-hardening', './runtime/identity/localization-hardening.js'],
+  ['story/story-readability', './runtime/story/story-readability.js'],
+  ['story/smart-intent-hardening', './runtime/story/smart-intent-hardening.js'],
+  ['templates/studio', './runtime/templates/studio.js'],
+  ['templates/studio-feedback', './runtime/templates/studio-feedback.js'],
+  ['lettering/writing-direction', './runtime/lettering/writing-direction.js'],
+  ['ordering/reading-order', './runtime/ordering/reading-order.js'],
+  ['integration/template-lettering-order', './runtime/integration/template-lettering-order.js'],
+  ['handoff/art-direction-readiness', './runtime/handoff/art-direction-readiness.js'],
+  ['handoff/spatial-semantics', './runtime/handoff/spatial-semantics.js'],
+  ['handoff/cross-model', './runtime/handoff/cross-model.js'],
+  ['templates/quality', './runtime/templates/quality.js'],
+  ['templates/scene-contract', './runtime/templates/scene-contract.js'],
+  ['templates/cast-fallback', './runtime/templates/cast-fallback.js'],
+  ['ui/desktop-layout', './runtime/ui/desktop-layout.js'],
+  ['ui/authoring-clarity', './runtime/ui/authoring-clarity.js'],
+  ['templates/cast-semantics', './runtime/templates/cast-semantics.js'],
+  ['templates/two-visible', './runtime/templates/two-visible.js'],
+  ['templates/panel-cast-flow', './runtime/templates/panel-cast-flow.js'],
+  ['handoff/interaction-generation-contract', './runtime/handoff/interaction-generation-contract.js']
+];
 
-for (const src of scripts) {
+for (const [id, src] of runtimeChunks) {
   await new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = src;
+    script.dataset.runtimeChunk = id;
     script.onload = resolve;
-    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    script.onerror = () => reject(new Error(`Failed to load runtime chunk ${id}: ${src}`));
     document.head.appendChild(script);
   });
 }
