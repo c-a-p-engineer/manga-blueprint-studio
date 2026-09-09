@@ -30,7 +30,8 @@ export const runtimePaths = Object.freeze({
   twoVisible: 'web/runtime/templates/two-visible.js',
   panelCastFlow: 'web/runtime/templates/panel-cast-flow.js',
   interactionGenerationContract: 'web/runtime/handoff/interaction-generation-contract.js',
-  renderBrief: 'web/runtime/handoff/render-brief.js'
+  renderBrief: 'web/runtime/handoff/render-brief.js',
+  producerProvenance: 'web/runtime/handoff/producer-provenance.js'
 });
 
 export const runtimeLoadOrder = Object.freeze([
@@ -44,7 +45,7 @@ export const runtimeLoadOrder = Object.freeze([
   'templateQuality','sceneContract','castFallback',
   'desktopLayout','authoringClarity',
   'castSemantics','twoVisible','panelCastFlow',
-  'interactionGenerationContract','renderBrief'
+  'interactionGenerationContract','renderBrief','producerProvenance'
 ]);
 
 export function readRuntime(key) {

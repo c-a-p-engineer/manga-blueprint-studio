@@ -27,6 +27,8 @@ jobs:
           node --check scripts/runtime-paths.mjs
           node --check scripts/validate-runtime-layout.mjs
           node --check scripts/validate-render-brief.mjs
+          node --check scripts/validate-producer-provenance.mjs
+          node --check scripts/validate-version-sync.mjs
           find web/runtime -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
 
       - name: Validate semantic runtime layout
@@ -82,3 +84,9 @@ jobs:
 
       - name: Validate current-page render brief
         run: node scripts/validate-render-brief.mjs
+
+      - name: Validate producer provenance
+        run: node scripts/validate-producer-provenance.mjs
+
+      - name: Validate version/document synchronization
+        run: node scripts/validate-version-sync.mjs
