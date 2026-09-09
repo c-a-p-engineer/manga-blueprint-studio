@@ -23,6 +23,7 @@ const runtimeChunks = [
   ['core/editor-state', './runtime/core/editor-state.js'],
   ['core/export-input', './runtime/core/export-input.js'],
   ['core/event-bindings', './runtime/core/event-bindings.js'],
+  ['authoring/page-navigation', './runtime/authoring/page-navigation.js'],
   ['authoring/page-layout-camera', './runtime/authoring/page-layout-camera.js'],
   ['authoring/character-library-export', './runtime/authoring/character-library-export.js'],
   ['authoring/localization-export-hardening', './runtime/authoring/localization-export-hardening.js'],
