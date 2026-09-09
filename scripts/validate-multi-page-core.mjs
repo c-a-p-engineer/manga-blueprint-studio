@@ -7,6 +7,7 @@ const app = read('web/app.js');
 const storage = read(runtimePaths.projectStorage);
 const editor = read(runtimePaths.editorState);
 const pages = read(runtimePaths.pageNavigation);
+const pageLayout = read(runtimePaths.pageLayoutCamera);
 
 if(runtimePaths.pageNavigation!=='web/runtime/authoring/page-navigation.js')throw new Error('pageNavigation runtime owner is not registered');
 for(const key of ['projectStorage','editorState','eventBindings','pageNavigation','pageLayoutCamera']){
@@ -82,15 +83,15 @@ if(!pages.includes("[pages[index],pages[target]]=[pages[target],pages[index]]"))
   throw new Error('Page reordering contract missing');
 }
 
-function functionBody(name,nextName){
-  const start=pages.indexOf(`function ${name}`);
+function functionBody(source,name,nextName){
+  const start=source.indexOf(`function ${name}`);
   if(start<0)throw new Error(`Unable to inspect ${name}`);
-  const end=nextName?pages.indexOf(`function ${nextName}`,start+1):pages.length;
-  return pages.slice(start,end<0?pages.length:end);
+  const end=nextName?source.indexOf(`function ${nextName}`,start+1):source.length;
+  return source.slice(start,end<0?source.length:end);
 }
-const duplicateBody=functionBody('duplicatePage15()','deletePage15()');
-const deleteBody=functionBody('deletePage15()','movePage15(delta)');
-const moveBody=functionBody('movePage15(delta)','updatePageNumber15(value)');
+const duplicateBody=functionBody(pages,'duplicatePage15()','deletePage15()');
+const deleteBody=functionBody(pages,'deletePage15()','movePage15(delta)');
+const moveBody=functionBody(pages,'movePage15(delta)','updatePageNumber15(value)');
 for(const [name,body] of [['duplicatePage15',duplicateBody],['deletePage15',deleteBody],['movePage15',moveBody]]){
   if(body.includes('renumberPageNumbers15()'))throw new Error(`${name} must preserve explicit visible page numbers`);
   if(!body.includes('renumberPageOrders15()'))throw new Error(`${name} must maintain page sequence order`);
@@ -98,5 +99,17 @@ for(const [name,body] of [['duplicatePage15',duplicateBody],['deletePage15',dele
 if(!duplicateBody.includes('nextAvailablePageNumber15'))throw new Error('Duplicate page must allocate a non-conflicting visible page number');
 if(!pages.includes("project.pages=orderedPages15()"))throw new Error('Explicit renumber must normalize current page sequence first');
 if(!pages.includes("@media(max-width:680px)"))throw new Error('Page manager must include narrow-screen layout handling');
+
+for(const phrase of [
+  'function resizeProjectCanvas04(w,h,preset=',
+  'for(const page of project.pages)',
+  'mutate(()=>resizeProjectCanvas04(w,h,preset))',
+  'Canvas size is shared by this work.',
+  'resizeProjectCanvas04(c.w,c.h,preset)'
+]){
+  if(!pageLayout.includes(phrase))throw new Error(`Work-wide canvas resize contract missing: ${phrase}`);
+}
+const resizeBody=functionBody(pageLayout,"resizeProjectCanvas04(w,h,preset='custom')","applyCanvas04(w,h,preset='custom')");
+if(resizeBody.includes('currentPage().panels'))throw new Error('Work-wide canvas resize must not scale only the selected page');
 
 console.log('Multi-page core contract validation passed.');
