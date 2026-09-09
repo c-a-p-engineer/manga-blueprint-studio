@@ -2,6 +2,7 @@ import fs from 'node:fs';
 
 export const runtimePaths = Object.freeze({
   foundation: 'web/runtime/core/foundation.js',
+  projectStorage: 'web/runtime/core/project-storage.js',
   editorState: 'web/runtime/core/editor-state.js',
   exportInput: 'web/runtime/core/export-input.js',
   eventBindings: 'web/runtime/core/event-bindings.js',
@@ -35,7 +36,7 @@ export const runtimePaths = Object.freeze({
 });
 
 export const runtimeLoadOrder = Object.freeze([
-  'foundation','editorState','exportInput','eventBindings',
+  'foundation','projectStorage','editorState','exportInput','eventBindings',
   'pageLayoutCamera','characterLibraryExport','localizationExportHardening',
   'smartManga','characterGuidance','identityLocalizationHardening',
   'storyReadability','smartIntentHardening',
