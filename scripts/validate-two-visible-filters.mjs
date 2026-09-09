@@ -1,0 +1,41 @@
+import fs from 'node:fs';
+
+const bootstrap=fs.readFileSync('web/app.js','utf8');
+const app=fs.readFileSync('web/app-27.js','utf8');
+
+if(!bootstrap.includes("'./app-27.js'"))throw new Error('Bootstrap must load app-27.js');
+
+for(const id of ['twoVisibleChat27','twoVisibleAffection27','twoVisibleGaze27','twoVisibleHug27','twoVisibleStandoff27']){
+  if(!app.includes(id))throw new Error(`Missing two-visible template: ${id}`);
+}
+for(const phrase of [
+  "visibleMode:'two-visible'",
+  "presentation:'two-shot'",
+  "offPanelPartner:false",
+  'actors27',
+  'speakerIndex27',
+  'bases.length<2',
+  "document.querySelector('.tab[data-tab=\"character\"]')",
+  'makeActorInstance27',
+  'panel.characters=actors.slice(0,2).map',
+  'applyTemplateReadingAware17()'
+])if(!app.includes(phrase))throw new Error(`Missing two-visible application contract: ${phrase}`);
+
+for(const phrase of [
+  'templateQuickFilters27',
+  "data-template-filter-group27=\"visible\"",
+  "data-template-filter-value27=\"2\"",
+  "data-template-filter-group27=\"relationship\"",
+  "data-template-filter-group27=\"dialogue\"",
+  "data-template-filter-group27=\"art\"",
+  'templateMatchesQuick27',
+  'activeTemplateFilters27',
+  'template-filter-chip27.active'
+])if(!app.includes(phrase))throw new Error(`Missing quick-filter contract: ${phrase}`);
+
+if(!app.includes('2人表示（想定'))throw new Error('Japanese cast badge must distinguish visible count from expected cast');
+if(!app.includes('2 visible ('))throw new Error('English cast badge must distinguish visible count from expected cast');
+if(!app.includes('ベースキャラクターを2人以上作成'))throw new Error('Japanese UI must explain the two-base requirement');
+if(!app.includes('Create at least two base characters'))throw new Error('English UI must explain the two-base requirement');
+
+console.log('Prototype 0.12.5 two-visible templates / quick filters validation passed.');
