@@ -25,7 +25,30 @@ bindValue('balloonType',selectedBalloon,(b,v)=>b.type=v);bindValue('balloonSpeak
 
 $('copyPrompt').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('promptOutput').value);$('copyPrompt').textContent=language==='ja'?'コピー済み':'Copied';setTimeout(()=>{$('copyPrompt').textContent=t('copy')},1000);}catch{}});
 $('exportAiPng').addEventListener('click',()=>exportPng(false));$('exportAnnotatedPng').addEventListener('click',()=>exportPng(true));$('exportJson').addEventListener('click',exportJson);
-$('importJson').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{const incoming=normalizeProject(JSON.parse(await file.text()));pushHistory();project=incoming;selectedPanelId=currentPage().panels[0]?.id||null;selectedCharacterId=null;selectedBalloonId=null;render();}catch(err){alert('JSONを読み込めませんでした。');}e.target.value='';});
+$('importJson').addEventListener('change',async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{
+    let incoming=ensureProjectIdentity(JSON.parse(await file.text()));
+    if(await projectStorage.has(incoming.meta.workId)){
+      const choice=prompt(
+        `同じ作品IDのデータが既にあります。\n1: 別作品として取り込む\n2: 既存作品を上書き\n3: キャンセル\n\n作品: ${incoming.meta.title||'(無題)'}\n既存ページ数: ${(await projectStorage.list()).find(x=>x.workId===incoming.meta.workId)?.pageCount??'?'}\n取込ページ数: ${incoming.pages.length}`,
+        '1'
+      );
+      if(choice==='1')incoming=cloneProjectAsNewWork(incoming);
+      else if(choice==='2'){
+        if(!confirm(`「${incoming.meta.title||'(無題)'}」を上書きします。既存のローカル変更は置き換えられます。続行しますか？`))return;
+      }else return;
+    }
+    pushHistory();
+    project=incoming;
+    selectedPageId=project.pages[0]?.id||null;
+    selectedPanelId=currentPage()?.panels[0]?.id||null;
+    selectedCharacterId=null;
+    selectedBalloonId=null;
+    render();
+  }catch(err){console.warn('Project JSON import failed.',err);alert('JSONを読み込めませんでした。');}
+  finally{e.target.value='';}
+});
 
 $('poseSelect').innerHTML=Object.entries(posePresets).map(([id,p])=>`<option value="${id}">${escapeXml(p.ja)} / ${escapeXml(p.en)}</option>`).join('');
 applyLanguage();

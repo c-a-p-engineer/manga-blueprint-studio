@@ -8,7 +8,7 @@ Runtime files are organized by responsibility rather than prototype chronology:
 
 ```text
 web/runtime/
-├─ core/         foundational state, rendering, export/input, event bindings
+├─ core/         foundational state, project storage, rendering, export/input, event bindings
 ├─ authoring/    page/layout/camera and reusable-character authoring
 ├─ assist/       bounded Smart Manga assistance
 ├─ identity/     character identity and appearance handoff
@@ -23,15 +23,18 @@ web/runtime/
 
 The explicit load order in `web/app.js` remains a compatibility contract because later classic-script chunks intentionally extend globals established by earlier chunks. `scripts/runtime-paths.mjs` mirrors those semantic owners for validators, and `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` chunks, missing registrations, duplicate registrations, and unregistered runtime JavaScript.
 
+`core/project-storage.js` loads after `core/foundation.js` and before `core/editor-state.js`. It owns stable work/page identity helpers and browser project persistence; editor state consumes that boundary rather than writing project autosave directly.
+
 This organization is a behavior-preserving structural refactor, not an ES-module conversion. A future module/bundler migration must be handled separately with characterization tests, semantic-equivalence checks, and a cutover/rollback plan.
 
 ## State
 
-Browser state normalizes to `manga-blueprint/0.2`.
+Browser project state normalizes to `manga-blueprint/0.2`. Stable work/page/container fields are compatible additions within that format; old portable files may omit them and receive IDs when loaded.
 
 ```text
 Project
 ├─ meta
+│  ├─ workId
 │  ├─ pageWidth / pageHeight
 │  ├─ readingDirection (rtl | ltr)
 │  ├─ defaultWritingMode (vertical-rl | horizontal-tb)
@@ -40,25 +43,36 @@ Project
 │  ├─ randomPurpose / randomSeed
 │  ├─ randomVariant (balanced | dynamic | emotion)
 │  └─ randomIntensity (stable | standard | bold)
+├─ containers
+│  └─ Container
+│     ├─ id / kind (volume | chapter | folder)
+│     ├─ title / order
+│     └─ parentId
 ├─ characterLibrary
 │  └─ BaseCharacter
 │     ├─ characterId / name / referenceKey / default pose
 │     ├─ identityMode (sheet | description | free)
 │     └─ appearance (summary / hair / eyes / outfit / features)
-└─ Page
-   └─ Panel
-      ├─ rect / order / role
-      ├─ actionIntent
-      ├─ style / camera / background
-      ├─ effects
-      │  └─ sfxWritingMode (inherit | vertical-rl | horizontal-tb)
-      ├─ characters (pose / expression / gaze / placement)
-      ├─ balloons
-      │  └─ writingMode (inherit | vertical-rl | horizontal-tb)
-      └─ assistSeed
+└─ pages
+   └─ Page
+      ├─ id
+      ├─ pageNumber / order
+      ├─ containerId
+      └─ Panel
+         ├─ rect / order / role
+         ├─ actionIntent
+         ├─ style / camera / background
+         ├─ effects
+         │  └─ sfxWritingMode (inherit | vertical-rl | horizontal-tb)
+         ├─ characters (pose / expression / gaze / placement)
+         ├─ balloons
+         │  └─ writingMode (inherit | vertical-rl | horizontal-tb)
+         └─ assistSeed
 ```
 
-`storyTemplate`, `actionIntent`, `defaultWritingMode`, balloon `writingMode`, and SFX `sfxWritingMode` are compatible optional additions. Prototype 0.10 does not change the project schema version. Legacy projects normalize missing writing-mode state to vertical-first behavior.
+`workId` and `Page.id` are stable identities. `pageNumber` and page `order` are mutable presentation/sequence metadata. `containerId` is nullable so a work can remain flat; future volume/chapter/folder organization does not require changing page identity.
+
+`storyTemplate`, `actionIntent`, `defaultWritingMode`, balloon `writingMode`, SFX `sfxWritingMode`, work identity, container references, and page sequence metadata remain compatible optional additions. The current project schema identifier does not change solely for these optional fields.
 
 ## Story action model
 
@@ -98,6 +112,8 @@ Prototype 0.10's integrated apply path then:
 
 No continuing template authority remains after apply. The important contract is that thumbnail number, panel `order`, and applied beat index all express the same reading sequence.
 
+Applying a page template inside the current work preserves the work identity. Replacing page content must not silently turn the current work into a different work.
+
 ### Bounded derivation
 
 `deriveTemplate13()` clones the selected recipe into one temporary derived recipe. It intentionally preserves action/beat sequence while varying a bounded subset of camera distance/angle and emphasis/effect choices. The variation is preview-only until explicit apply.
@@ -107,6 +123,8 @@ No continuing template authority remains after apply. The important contract is 
 Custom templates use `manga-blueprint-studio/custom-story-templates/0.9` in `localStorage`.
 
 A custom template stores normalized panel rectangles, panel role/action intent, pose/expression/gaze without character identity, camera, background, optional dialogue/SFX, and selected effects. Character-specific visual identity and Character Sheet data are excluded. On reapply, geometry scales to current canvas and current reusable base character is used when available.
+
+Custom templates are separate from project autosave. They remain in browser `localStorage` until the dedicated backup/restore phase explicitly defines how local template libraries are bundled.
 
 ## Character identity boundary
 
@@ -138,6 +156,8 @@ Use separately attached Character Sheets only for characters whose identity mode
 Prototype 0.10 treats panel `order` as synchronized semantic state derived from current geometry plus reading direction before committed renders. `readingOrderedPanels16()` groups panels into horizontal reading rows using page-relative Y tolerance, then orders X descending for RTL or ascending for LTR. `renumberPanels()` assigns sequential `order` values.
 
 The synchronized order is shared by canvas badges, Scene Template thumbnail numbering/beat placement, Panel Peek/List, generated prompt, manifest-derived semantics, and exports. Changing text writing direction does not participate in this algorithm.
+
+Page sequence `order` is a separate concept from panel `order`; future multi-page navigation changes page selection without changing per-page panel reading order.
 
 ## Lettering direction
 
@@ -211,4 +231,20 @@ Manifest v3 remains the read-first authority and may record `storyTemplate` prov
 
 ## Persistence / privacy / deployment
 
-`localStorage` stores autosave state and Prototype 0.9 custom templates; `.manga.json` is the portable project artifact. All templates, search, derivation, lettering preview, SFX writing-direction controls, reading-order synchronization, lint, hashing, ZIP generation, appearance guidance, and diagnostics execute locally. GitHub Pages publishes static `web/`, schema, and examples. Validation remains dependency-free.
+Project autosave uses IndexedDB through `web/runtime/core/project-storage.js`.
+
+```text
+IndexedDB: manga-blueprint-studio
+├─ works
+│  └─ workId -> { title, updatedAt, project }
+└─ meta
+   └─ activeWorkId
+```
+
+The project record includes stable `meta.workId`, page IDs, page sequence metadata, and future container references. The editor tracks `selectedPageId` rather than defining the current page as `pages[0]`.
+
+There is intentionally **no migration from legacy browser project-autosave localStorage keys**. The prototype owner accepts reset of that local-only state. Portable `.manga.json` files remain importable and receive missing stable identity fields when necessary.
+
+`localStorage` is still used for language preference and the separate browser-local custom-template library. Moving project autosave to IndexedDB does not imply those unrelated preferences/libraries have moved yet.
+
+All templates, search, derivation, lettering preview, SFX writing-direction controls, reading-order synchronization, lint, hashing, ZIP generation, appearance guidance, diagnostics, and project persistence execute locally. GitHub Pages publishes static `web/`, schema, and examples. No project data is silently uploaded. Validation remains dependency-free.
