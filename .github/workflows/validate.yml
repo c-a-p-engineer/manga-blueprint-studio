@@ -50,6 +50,7 @@ jobs:
           node --check web/app-24.js
           node --check web/app-25.js
           node --check web/app-26.js
+          node --check web/app-27.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -89,3 +90,6 @@ jobs:
 
       - name: Validate template cast meaning
         run: node scripts/validate-template-cast-meaning.mjs
+
+      - name: Validate two-visible templates / quick filters
+        run: node scripts/validate-two-visible-filters.mjs
