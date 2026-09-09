@@ -4,12 +4,14 @@ Visual manga storyboard editor for designing manuscript size, reading direction,
 
 **The human remains the director.** AI, Smart Manga, and templates propose; the user chooses and edits.
 
-## Current prototype: 0.12.9
+## Current prototype: 0.13.0
 
-The current implementation baseline is **Prototype 0.12.9**. Project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
+The current implementation baseline is **Prototype 0.13.0**. Project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
 Current prototype supports:
 
+- multi-page works with add/select/duplicate/delete/reorder, editable page number/title, and per-work active-page restore;
+- stable work/page identity with IndexedDB-backed project persistence;
 - manuscript presets from portrait/social/video sizes through B5/A4/Webtoon/custom;
 - Japanese RTL reading by default plus LTR;
 - geometry-based panel-number synchronization shared by canvas, Panel Peek/List, Scene Templates, prompt, manifest, and export;
@@ -27,22 +29,36 @@ Current prototype supports:
 - AI generation ZIP containing clean PNG + `.manga.json` + prompt + manifest; review ZIP additionally contains annotated PNG;
 - exact text allowlisting so authoring metadata cannot become manga lettering;
 - producer provenance in exported manifests so stale GitHub Pages/cache exports can be distinguished from current `master`;
-- browser-local autosave, Undo/Redo, Japanese-first mobile UI, and English localization.
+- Undo/Redo, Japanese-first mobile UI, and English localization.
 
-See [`docs/PROTOTYPE-0.12.9.md`](docs/PROTOTYPE-0.12.9.md) for the current release baseline and provenance behavior.
+See [`docs/PROTOTYPE-0.13.0.md`](docs/PROTOTYPE-0.13.0.md) for the current multi-page release baseline.
 
 ## Recommended workflow
 
-1. Choose canvas size and RTL/LTR panel reading direction.
-2. Start with Scene Template Studio, Smart Manga, or a visual layout.
-3. Create/select reusable base characters and choose each appearance source.
-4. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
-5. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
-6. Resolve useful Manga Check / framing / action-pose warnings when they match your intent.
-7. Download **AI generation ZIP**.
-8. Press **AIへ渡す文をコピー** and send the ZIP plus the short manifest-first instruction.
-9. Attach Character Sheets separately only for characters whose manifest entry marks them required.
-10. When debugging a suspicious result, inspect `manifest.producer` before assuming the current repository code generated that ZIP.
+1. Open or create a work, then choose/add the page you want to edit.
+2. Choose canvas size and RTL/LTR panel reading direction.
+3. Start with Scene Template Studio, Smart Manga, or a visual layout.
+4. Create/select reusable base characters and choose each appearance source.
+5. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
+6. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
+7. Resolve useful Manga Check / framing / action-pose warnings when they match your intent.
+8. Download **AI generation ZIP** for the currently selected page.
+9. Press **AIへ渡す文をコピー** and send the ZIP plus the short manifest-first instruction.
+10. Attach Character Sheets separately only for characters whose manifest entry marks them required.
+11. When debugging a suspicious result, inspect `manifest.producer` before assuming the current repository code generated that ZIP.
+
+## Multi-page persistence
+
+Prototype 0.13.0 stores complete works in browser IndexedDB and records the active work plus the last selected page for that work.
+
+- page IDs are stable identity and are independent from visible page numbers;
+- duplicate creates a new page ID and fresh panel/placed-instance IDs;
+- page title and page number are ordinary project state and persist in `.manga.json`;
+- project autosave no longer boots from or writes the historical project `localStorage` keys;
+- old browser-local autosave state is intentionally not migrated; portable `.manga.json` import is the compatibility path;
+- browser-local custom Scene Templates continue to use their separate `localStorage` library.
+
+Current generation/export behavior remains **selected-page scoped**. Work-wide/range export and volume/folder UI are later phases.
 
 ## Reading direction vs writing direction
 
@@ -121,13 +137,13 @@ Character Sheet が必要と書かれているキャラクターは、別途添�
 
 ### Producer provenance
 
-Prototype 0.12.9 adds diagnostic producer metadata to each newly generated manifest:
+Prototype 0.13.0 keeps diagnostic producer metadata in each newly generated manifest:
 
 ```json
 {
   "producer": {
     "schema": "manga-blueprint-producer/1",
-    "appVersion": "0.12.9",
+    "appVersion": "0.13.0",
     "gitCommit": "<deployed commit or null>",
     "buildSource": "github-pages",
     "deployedAt": "<ISO timestamp>",
@@ -172,7 +188,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/
 
 ## Data contract
 
-Current application baseline: **Prototype 0.12.9**.
+Current application baseline: **Prototype 0.13.0**.
 
 - project format: `manga-blueprint/0.2`;
 - manifest: `manga-blueprint-export-manifest/3`;
@@ -191,7 +207,7 @@ Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- [`docs/PROTOTYPE-0.12.9.md`](docs/PROTOTYPE-0.12.9.md)
+- [`docs/PROTOTYPE-0.13.0.md`](docs/PROTOTYPE-0.13.0.md)
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json)
 
 ## License
