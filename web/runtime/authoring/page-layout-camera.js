@@ -161,15 +161,28 @@ function confirmReset04(){return !pageHasContent04()||confirm(language==='ja'?'�
 function applyLayout04(id,{ask=true}={}){if(!layoutPresets04[id])return;if(ask&&!confirmReset04())return false;const size=pageSize04(),rects=layoutRects04(id,size.w,size.h);mutate(()=>{currentPage().panels=rects.map((r,i)=>makePanel(r,i+1));project.meta.layoutPreset=id;selectedPanelId=currentPage().panels[0]?.id||null;selectedCharacterId=null;selectedBalloonId=null;renumberPanels()});return true;}
 applyTemplate=function(name){applyLayout04(name)};
 
+function resizeProjectCanvas04(w,h,preset='custom'){
+  const old=pageSize04(),sx=w/old.w,sy=h/old.h,scale=Math.sqrt(sx*sy);
+  for(const page of project.pages){
+    for(const p of page.panels){
+      p.rect={x:p.rect.x*sx,y:p.rect.y*sy,w:p.rect.w*sx,h:p.rect.h*sy};
+      for(const c of p.characters){c.x*=sx;c.y*=sy;c.scale*=scale}
+      for(const b of p.balloons){b.x*=sx;b.y*=sy;b.size*=scale}
+    }
+  }
+  project.meta.pageWidth=w;project.meta.pageHeight=h;project.meta.canvasPreset=preset;
+}
 function applyCanvas04(w,h,preset='custom'){
   w=Math.round(Number(w));h=Math.round(Number(h));if(!Number.isFinite(w)||!Number.isFinite(h)||w<320||h<320||w>4000||h>6000){alert(language==='ja'?'幅320〜4000、高さ320〜6000で指定してください。':'Use width 320–4000 and height 320–6000.');return false}
-  const old=pageSize04(),sx=w/old.w,sy=h/old.h;mutate(()=>{for(const p of currentPage().panels){p.rect={x:p.rect.x*sx,y:p.rect.y*sy,w:p.rect.w*sx,h:p.rect.h*sy};for(const c of p.characters){c.x*=sx;c.y*=sy;c.scale*=Math.sqrt(sx*sy)}for(const b of p.balloons){b.x*=sx;b.y*=sy;b.size*=Math.sqrt(sx*sy)}}project.meta.pageWidth=w;project.meta.pageHeight=h;project.meta.canvasPreset=preset;});return true;
+  const old=pageSize04();if(old.w===w&&old.h===h){mutate(()=>{project.meta.canvasPreset=preset});return true}
+  if(project.pages.length>1&&!confirm(language==='ja'?`原稿サイズは作品共通です。全${project.pages.length}ページを ${w}×${h} に合わせて拡大・縮小します。続行しますか？`:`Canvas size is shared by this work. Resize all ${project.pages.length} pages to ${w}×${h}?`))return false;
+  mutate(()=>resizeProjectCanvas04(w,h,preset));return true;
 }
 
 function choose04(list){return list[Math.floor(Math.random()*list.length)]}
 function smartRandom04(purpose='auto',panelCount='auto',keepSize=true){
   const p=purpose==='auto'?choose04(['action','conversation','gag','daily','climax']):purpose,count=panelCount==='auto'?null:Number(panelCount),byCount={1:['single'],2:['two-columns','two-rows'],3:['action3','three-vertical'],4:['four-vertical','four-grid','conversation','action','climax'],5:['five'],6:['six']},byPurpose={action:['action3','action','climax'],conversation:['conversation','four-grid','three-vertical'],gag:['four-vertical','four-grid','five'],daily:['conversation','four-grid','three-vertical'],climax:['climax','action3','action'],fourkoma:['four-vertical','four-grid']};let candidates=(byPurpose[p]||Object.values(byPurpose).flat()).filter(id=>!count||layoutRects04(id,800,1130).length===count);if(!candidates.length)candidates=byCount[count]||['action3'];const layout=choose04(candidates);
-  if(!keepSize){const preset=choose04(p==='fourkoma'?['standard','portrait45','square']:['standard','portrait45','portrait34','square']),c=canvasPresets04[preset];project.meta.pageWidth=c.w;project.meta.pageHeight=c.h;project.meta.canvasPreset=preset}
+  if(!keepSize){const preset=choose04(p==='fourkoma'?['standard','portrait45','square']:['standard','portrait45','portrait34','square']),c=canvasPresets04[preset];resizeProjectCanvas04(c.w,c.h,preset)}
   const size=pageSize04();currentPage().panels=layoutRects04(layout,size.w,size.h).map((r,i)=>makePanel(r,i+1));project.meta.layoutPreset=layout;renumberPanels();const ordered=[...currentPage().panels].sort((a,b)=>a.order-b.order),roles=p==='gag'?['setup','setup','transition','climax']:p==='conversation'?['exposition','setup','reaction','afterglow']:p==='daily'?['setup','reaction','beat','afterglow']:['setup','transition','reaction','climax'];
   ordered.forEach((pan,i)=>{pan.role=roles[Math.min(i,roles.length-1)]||'setup';if(p==='action'||p==='climax'){const c=[['long','eye-level','three-quarter-front'],['medium','low-angle','side'],['close','eye-level','three-quarter-front'],['extreme-close','low-angle','near-object']][Math.min(i,3)];[pan.camera.distance,pan.camera.angle,pan.camera.viewpoint]=c}else if(p==='conversation'){const c=[['long','eye-level','front'],['medium','over-shoulder','three-quarter-front'],['close','eye-level','three-quarter-front'],['medium','eye-level','front']][Math.min(i,3)];[pan.camera.distance,pan.camera.angle,pan.camera.viewpoint]=c}else if(p==='gag'){pan.camera.distance=i===ordered.length-1?'close':'medium';pan.camera.angle='eye-level';pan.camera.viewpoint='front'}});selectedPanelId=ordered[0]?.id||null;selectedCharacterId=null;selectedBalloonId=null;
 }
