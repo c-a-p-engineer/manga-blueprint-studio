@@ -9,11 +9,11 @@ const editor = read(runtimePaths.editorState);
 const pages = read(runtimePaths.pageNavigation);
 
 if(runtimePaths.pageNavigation!=='web/runtime/authoring/page-navigation.js')throw new Error('pageNavigation runtime owner is not registered');
-for(const key of ['projectStorage','editorState','pageLayoutCamera','pageNavigation']){
+for(const key of ['projectStorage','editorState','eventBindings','pageNavigation','pageLayoutCamera']){
   if(!runtimeLoadOrder.includes(key))throw new Error(`runtimeLoadOrder missing ${key}`);
 }
 const order = Object.fromEntries(runtimeLoadOrder.map((key,index)=>[key,index]));
-if(!(order.projectStorage < order.editorState && order.pageLayoutCamera < order.pageNavigation)){
+if(!(order.projectStorage < order.editorState && order.eventBindings < order.pageNavigation && order.pageNavigation < order.pageLayoutCamera)){
   throw new Error('Multi-page runtime load order is invalid');
 }
 for(const src of ['./runtime/core/project-storage.js','./runtime/authoring/page-navigation.js']){
