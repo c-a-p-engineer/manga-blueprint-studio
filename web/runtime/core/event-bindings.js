@@ -39,12 +39,17 @@ $('importJson').addEventListener('change',async e=>{
         if(!confirm(`「${incoming.meta.title||'(無題)'}」を上書きします。既存のローカル変更は置き換えられます。続行しますか？`))return;
       }else return;
     }
-    pushHistory();
+    if(projectStorage.supported()){
+      await projectStorage.save(incoming);
+      await projectStorage.setActive(incoming.meta.workId);
+      await projectStorage.setActivePage(incoming.meta.workId,incoming.pages[0]?.id||null);
+    }
     project=incoming;
     selectedPageId=project.pages[0]?.id||null;
     selectedPanelId=currentPage()?.panels[0]?.id||null;
     selectedCharacterId=null;
     selectedBalloonId=null;
+    history=[];future=[];
     render();
   }catch(err){console.warn('Project JSON import failed.',err);alert('JSONを読み込めませんでした。');}
   finally{e.target.value='';}
