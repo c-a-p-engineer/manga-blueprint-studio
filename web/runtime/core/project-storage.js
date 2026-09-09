@@ -3,6 +3,7 @@ const PROJECT_DB_VERSION = 1;
 const PROJECT_WORK_STORE = 'works';
 const PROJECT_META_STORE = 'meta';
 const ACTIVE_WORK_META_KEY = 'activeWorkId';
+const activePageMetaKey = workId => `activePageId:${workId}`;
 // Legacy browser project keys such as 'manga-blueprint-studio/0.1' are intentionally not migrated.
 // Portable .manga.json import remains the compatibility path; language/custom-template localStorage is separate.
 
@@ -19,6 +20,7 @@ function ensureProjectIdentity(input){
     page.pageNumber=Number.isInteger(page.pageNumber)&&page.pageNumber>0?page.pageNumber:index+1;
     page.order=Number.isInteger(page.order)&&page.order>0?page.order:index+1;
     page.containerId=page.containerId??null;
+    page.title=typeof page.title==='string'?page.title:'';
   });
   return p;
 }
@@ -32,6 +34,7 @@ function createProjectWithIdentity(template='action3',workId=null){
     page.pageNumber=index+1;
     page.order=index+1;
     page.containerId=null;
+    page.title='';
   });
   return p;
 }
@@ -102,6 +105,23 @@ const projectStorage={
     return record?.project?ensureProjectIdentity(record.project):null;
   },
 
+  async getActivePageId(workId){
+    if(!projectStorageSupported()||!workId)return null;
+    const db=await openProjectDb();
+    const tx=db.transaction(PROJECT_META_STORE,'readonly');
+    const record=await requestResult(tx.objectStore(PROJECT_META_STORE).get(activePageMetaKey(workId)));
+    await transactionDone(tx);
+    return record?.value||null;
+  },
+
+  async setActivePage(workId,pageId){
+    if(!projectStorageSupported()||!workId)return;
+    const db=await openProjectDb();
+    const tx=db.transaction(PROJECT_META_STORE,'readwrite');
+    tx.objectStore(PROJECT_META_STORE).put({key:activePageMetaKey(workId),value:pageId||null});
+    await transactionDone(tx);
+  },
+
   async save(input){
     if(!projectStorageSupported()) throw new Error('IndexedDB is unavailable');
     const project=ensureProjectIdentity(input);
@@ -153,6 +173,7 @@ const projectStorage={
     const metaStore=tx.objectStore(PROJECT_META_STORE);
     const active=await requestResult(metaStore.get(ACTIVE_WORK_META_KEY));
     tx.objectStore(PROJECT_WORK_STORE).delete(workId);
+    metaStore.delete(activePageMetaKey(workId));
     if(active?.value===workId) metaStore.put({key:ACTIVE_WORK_META_KEY,value:null});
     await transactionDone(tx);
   }
