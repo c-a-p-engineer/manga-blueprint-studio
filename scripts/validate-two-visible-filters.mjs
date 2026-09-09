@@ -23,11 +23,14 @@ for(const phrase of [
 
 for(const phrase of [
   'templateQuickFilters27',
-  "data-template-filter-group27=\"visible\"",
-  "data-template-filter-value27=\"2\"",
-  "data-template-filter-group27=\"relationship\"",
-  "data-template-filter-group27=\"dialogue\"",
-  "data-template-filter-group27=\"art\"",
+  "quickFilterButton27('visible','1'",
+  "quickFilterButton27('visible','2'",
+  "quickFilterButton27('relationship','romance'",
+  "quickFilterButton27('relationship','friends'",
+  "quickFilterButton27('relationship','battle'",
+  "quickFilterButton27('dialogue','high'",
+  "quickFilterButton27('art','color'",
+  "quickFilterButton27('art','mono'",
   'templateMatchesQuick27',
   'activeTemplateFilters27',
   'template-filter-chip27.active'
