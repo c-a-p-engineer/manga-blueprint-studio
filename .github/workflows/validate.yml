@@ -29,6 +29,7 @@ jobs:
           node --check scripts/validate-render-brief.mjs
           node --check scripts/validate-producer-provenance.mjs
           node --check scripts/validate-project-storage-foundation.mjs
+          node --check scripts/validate-multi-page-core.mjs
           node --check scripts/validate-version-sync.mjs
           find web/runtime -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
 
@@ -40,6 +41,9 @@ jobs:
 
       - name: Validate project storage foundation
         run: node scripts/validate-project-storage-foundation.mjs
+
+      - name: Validate multi-page core
+        run: node scripts/validate-multi-page-core.mjs
 
       - name: Validate Panel Peek mobile contract
         run: node scripts/validate-panel-peek.mjs

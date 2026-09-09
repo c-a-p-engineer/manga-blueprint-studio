@@ -79,6 +79,7 @@
       "required":["id","panels"],
       "properties": {
         "id":{"type":"string","minLength":1},
+        "title":{"type":"string"},
         "pageNumber":{"type":"integer","minimum":1},
         "order":{"type":"integer","minimum":1},
         "containerId":{"type":["string","null"]},
