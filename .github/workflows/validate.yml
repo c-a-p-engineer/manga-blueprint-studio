@@ -46,6 +46,7 @@ jobs:
           node --check web/app-20.js
           node --check web/app-21.js
           node --check web/app-22.js
+          node --check web/app-23.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
