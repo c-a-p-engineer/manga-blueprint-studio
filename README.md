@@ -4,65 +4,45 @@ Visual manga storyboard editor for designing manuscript size, reading direction,
 
 **The human remains the director.** AI, Smart Manga, and templates propose; the user chooses and edits.
 
-## Prototype 0.10
+## Current prototype: 0.12.9
+
+The current implementation baseline is **Prototype 0.12.9**. Project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
 Current prototype supports:
 
-- manuscript presets: `800×1130 Portrait` (default), 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, custom;
-- RTL Japanese reading by default plus LTR;
-- **panel numbering automatically synchronized from current geometry + selected RTL/LTR direction**, shared by canvas numbers, Panel Peek/List, prompt, and export semantics;
-- **Scene Template thumbnail numbers and applied story beats use that same RTL/LTR order** — beat 1 goes into panel 1, beat 2 into panel 2, and so on;
-- 1–6 panel layouts, action/conversation/climax patterns, 4-koma 1×4 / 2×2 / 4×1;
-- visual layout thumbnails;
-- **Scene Template Studio** with category filters, search, card-style visual previews, use-case descriptions, panel count, and beat flow;
-- shipped scene templates across daily, romance, battle, emotion, comedy, suspense, and character-introduction categories;
-- romance templates including confession, before-kiss, after-kiss, holding hands, and misunderstanding;
-- battle templates including opening standoff, decisive blow, counterattack, aerial attack, throw technique, and awakening/reversal;
-- additional crying, anger, resolve, presence-behind, classroom-talk, smug-failure, and character-introduction templates;
-- optional editable sample dialogue/SFX in Story Templates;
-- bounded template derivation that preserves story flow while varying some camera/emphasis choices;
-- local custom templates saved from the current page; character-specific appearance is not stored, while layout/action/camera/pose/expression/background/dialogue/SFX can be reused and scaled to the current canvas;
-- per-panel `actionIntent` (“what actually happens in this panel?”) stored in `.manga.json` and forwarded as semantic guidance;
-- Panel Peek by long-press or discoverable `ⓘ`, with compact opaque mobile bottom-sheet UI;
-- Panel List / Shot List in detailed or compact mode, plus authoring-only Panel Chips on the editor canvas;
-- Camera consistency check, Crop Guide, and explicit “fit character size to camera” action;
-- advisory Manga Check;
-- Smart Manga with three non-mutating candidates, reproducible seed, balanced/dynamic/emotion variants, and stable/standard/bold intensity;
-- reusable base characters with Character Sheet / text description / no-sheet AI-designed appearance modes;
-- anatomy-readable colored stick figures in editor/review and monochrome clean-AI figures;
-- beginner camera vocabulary plus a simple camera diagram;
-- guided free-text backgrounds plus editable scene presets;
-- balloon presets for speech/thought/shout/whisper/narration/off-screen layouts;
-- **vertical Japanese writing (`vertical-rl`) as the project default**;
-- **horizontal writing (`horizontal-tb`) selectable as project default or per balloon**;
-- **onomatopoeia/SFX writing direction selectable per panel** with `inherit / vertical-rl / horizontal-tb`;
-- editor/review balloon lettering preview while clean AI PNG still excludes balloon/SFX text;
-- prompt `LETTERING DIRECTION` and `SFX LETTERING DIRECTION` guidance kept separate from `TEXT TO RENDER`;
-- borderless/bleed/breakout, expression/gaze, effects and onomatopoeia;
-- AI-safe clean PNG, annotated review PNG, deterministic prompt, `.manga.json` export/import;
-- prompt identity contract is mode-aware: Character Sheets are used only when `CHARACTER IDENTITY GUIDANCE` requires them;
-- AI generation ZIP containing clean PNG + `.manga.json` + prompt + manifest, with annotated PNG excluded;
-- Review / archive ZIP adding annotated PNG under the same export identity;
-- manifest v3 as the read-first handoff authority, including derived balloon/SFX lettering metadata;
-- one-click AI handoff message copy (“extract ZIP and read manifest first”);
-- coordinated filenames `<title>_YYYYMMDD_HHMMSS_<short-sha256>_*` and export UUID/full state hash;
-- browser-local autosave, Undo/Redo, Japanese-first mobile UI with English translation.
+- manuscript presets from portrait/social/video sizes through B5/A4/Webtoon/custom;
+- Japanese RTL reading by default plus LTR;
+- geometry-based panel-number synchronization shared by canvas, Panel Peek/List, Scene Templates, prompt, manifest, and export;
+- vertical Japanese writing (`vertical-rl`) by default with project/per-balloon/per-SFX overrides;
+- 1–6 panel layouts, action/conversation/climax patterns, 4-koma variants, bleed/breakout/effects;
+- Scene Template Studio with category/search, visual cards, beat-flow preview, bounded derivation, custom local templates, two-visible cast-aware templates, and per-panel cast control;
+- Smart Manga with three non-mutating candidates, reproducible seed, emphasis/intensity controls, and editable application;
+- reusable base characters with `sheet` / `description` / `free` identity modes;
+- character appearance summaries that remain authoritative even when optional detail fields are blank;
+- Panel Peek, Panel List / Shot List, Panel Chips, camera/figure-size diagnostics, Crop Guide, and non-blocking Manga Check;
+- explicit action intent, support state, motion phase, near-object depth target, foreshortening, and scene continuity semantics;
+- contact-aware generation contracts for interactions such as hugs;
+- cross-model handoff rules that separate Clean PNG spatial authority, semantic JSON/prompt authority, character identity, art direction, and exact visible text;
+- a concise **CURRENT PAGE RENDER CONTRACT** prepended to generation prompts to reduce prior-conversation and prior-image carryover;
+- AI generation ZIP containing clean PNG + `.manga.json` + prompt + manifest; review ZIP additionally contains annotated PNG;
+- exact text allowlisting so authoring metadata cannot become manga lettering;
+- producer provenance in exported manifests so stale GitHub Pages/cache exports can be distinguished from current `master`;
+- browser-local autosave, Undo/Redo, Japanese-first mobile UI, and English localization.
+
+See [`docs/PROTOTYPE-0.12.9.md`](docs/PROTOTYPE-0.12.9.md) for the current release baseline and provenance behavior.
 
 ## Recommended workflow
 
 1. Choose canvas size and RTL/LTR panel reading direction.
 2. Start with Scene Template Studio, Smart Manga, or a visual layout.
-3. Filter by scene category or search for an intent such as “告白”, “キス”, “反撃”, or “泣く”. Template preview numbers already reflect the selected reading direction.
-4. Apply a Scene Template if desired; its beat 1/2/3… is placed into panel 1/2/3… in that same reading order.
-5. Create/select a reusable base character and choose its appearance source.
-6. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` when a panel needs inspection.
-7. Refine action intent, pose, expression, gaze, camera, background, dialogue/SFX, and effects only where needed.
-8. In the Text tab, keep the default **縦書き** or switch the project / selected balloon to **横書き**. In Effects, override SFX writing direction only where needed.
-9. Resolve useful Manga Check / camera-framing warnings when they match your intent.
-10. Optionally save the finished page pattern as a local custom template for reuse.
-11. Download **AI generation ZIP**.
-12. Press **AIへ渡す文をコピー** and send the short message with the ZIP.
-13. Attach Character Sheets separately only for characters the manifest marks as requiring them.
+3. Create/select reusable base characters and choose each appearance source.
+4. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
+5. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
+6. Resolve useful Manga Check / framing / action-pose warnings when they match your intent.
+7. Download **AI generation ZIP**.
+8. Press **AIへ渡す文をコピー** and send the ZIP plus the short manifest-first instruction.
+9. Attach Character Sheets separately only for characters whose manifest entry marks them required.
+10. When debugging a suspicious result, inspect `manifest.producer` before assuming the current repository code generated that ZIP.
 
 ## Reading direction vs writing direction
 
@@ -85,30 +65,29 @@ Balloon / SFX override
 
 Changing writing direction never changes panel numbering. Scene Template preview numbers and applied beats follow panel reading direction, not writing direction.
 
-## Scene Template Studio vs Smart Manga
+## Visual + semantic contract
 
-**Scene Template Studio** is a recognizable editable rough name with concrete story beats and optional sample text. It includes category/search discovery, visual cards, descriptions/use cases, bounded derivation, and local custom-template reuse. Prototype 0.10 guarantees that template preview number `N`, page panel order `N`, and applied template beat `N` refer to the same reading-position panel.
+Manga Blueprint deliberately separates responsibilities:
 
-**Smart Manga** creates three bounded alternatives from purpose / panel count / seed / intensity and does not mutate the page until you choose one.
+```text
+Clean PNG
+  -> panel geometry, proportions, approximate 2D placement
 
-Both are starting proposals, never continuing authorities after you edit the page.
+.manga.json + generated prompt
+  -> story action, pose meaning, support/motion, camera, depth, scene continuity,
+     background, lettering semantics
 
-## Custom templates
+Character guidance / required external sheets
+  -> character identity and appearance continuity
 
-Custom templates are stored only in the current browser via `localStorage`.
+Art direction
+  -> color/rendering language only
 
-They intentionally do **not** store character-specific visual identity. They reuse normalized panel geometry plus panel role/action intent, camera, pose/expression/gaze, background, dialogue/SFX, and selected manga effects. Reapplying scales geometry to the current canvas and places the currently selected/project base character when available.
+TEXT TO RENDER
+  -> exact visible dialogue/SFX allowlist
+```
 
-## Panel Peek / Panel List
-
-A panel should be understandable without opening every editing tab.
-
-- tap a panel to select it;
-- long-press the panel, or tap its `ⓘ`, to open Panel Peek;
-- Panel Peek shows action, characters, camera, background, dialogue, effects, and framing status;
-- mobile Panel Peek uses an opaque viewport-bounded bottom sheet with fixed header/actions and a scrollable summary body;
-- Page tab can switch between detailed and one-line Panel List views;
-- small Panel Chips are editor-only labels and are never exported to clean AI PNG.
+A specific story action overrides a weaker generic pose description when they conflict. The generated current-page Render Contract also rejects unrelated story/genre/setting carryover from prior conversation turns or prior generated images.
 
 ## Character Sheet is optional
 
@@ -116,11 +95,11 @@ A reusable base character can use:
 
 ```text
 sheet        -> attach a Character Sheet separately
-description  -> no sheet; use text appearance guidance
-free         -> no sheet; let the image model choose a consistent appearance
+description  -> no sheet; text appearance guidance is the identity contract
+free         -> no sheet; let the downstream model choose a simple consistent appearance
 ```
 
-The generation prompt follows `CHARACTER IDENTITY GUIDANCE`. It does **not** claim that all character identity must come from Character Sheets.
+The prompt never treats Character Sheets as universally required.
 
 ## Manifest-first handoff
 
@@ -140,17 +119,40 @@ A short handoff message is enough:
 Character Sheet が必要と書かれているキャラクターは、別途添付した Character Sheet 画像を対応付けて使ってください。
 ```
 
+### Producer provenance
+
+Prototype 0.12.9 adds diagnostic producer metadata to each newly generated manifest:
+
+```json
+{
+  "producer": {
+    "schema": "manga-blueprint-producer/1",
+    "appVersion": "0.12.9",
+    "gitCommit": "<deployed commit or null>",
+    "buildSource": "github-pages",
+    "deployedAt": "<ISO timestamp>",
+    "projectFormat": "manga-blueprint/0.2",
+    "manifestSchema": "manga-blueprint-export-manifest/3",
+    "renderBriefSchema": "manga-blueprint-render-brief/1"
+  }
+}
+```
+
+GitHub Pages stamps the deployed `GITHUB_SHA` into `build-info.json`; local/offline use falls back safely with no commit. Producer metadata is diagnostic and does not participate in project-state identity hashing.
+
 ## AI-safe export
 
-Clean AI PNG removes authoring text such as character names, panel numbers, camera metadata, Panel Chips, Crop Guide, summaries, balloon text, and SFX labels. Exact dialogue/onomatopoeia are passed only under `TEXT TO RENDER`; balloon/SFX writing direction is passed separately as semantic layout guidance.
+Clean AI PNG removes authoring text such as character names, panel numbers, camera metadata, Panel Chips, Crop Guide, summaries, balloon text, and SFX labels. Exact dialogue/onomatopoeia are passed only under `TEXT TO RENDER`; writing direction is passed separately as semantic layout guidance.
 
 `actionIntent` is semantic direction and must never be treated as visible manga text.
 
-For direct image generation use `_ai.zip`; it intentionally excludes annotated PNG.
+## Scene Template Studio vs Smart Manga
 
-## Try it
+**Scene Template Studio** provides recognizable editable scene recipes with explicit beat/action flow, optional sample text, cast expectations, discovery metadata, and bounded variation.
 
-https://c-a-p-engineer.github.io/manga-blueprint-studio/
+**Smart Manga** proposes three bounded alternatives from purpose / panel count / seed / emphasis / intensity and does not mutate the page until one is applied.
+
+Both are starting proposals. After apply, ordinary project state is authoritative.
 
 ## Local use
 
@@ -162,11 +164,23 @@ python3 -m http.server 4173
 
 Open `http://localhost:4173/web/`.
 
+`web/build-info.json` is the local/repository provenance fallback. The GitHub Pages workflow replaces the deployed copy with the exact deployment commit and timestamp.
+
+## Try it
+
+https://c-a-p-engineer.github.io/manga-blueprint-studio/
+
 ## Data contract
 
-Visual image communicates **space**. `.manga.json` communicates **meaning**. Character Sheets or text appearance guidance communicate **identity**.
+Current application baseline: **Prototype 0.12.9**.
 
-Current project format remains `manga-blueprint/0.2`; Prototype 0.10 adds optional `meta.defaultWritingMode`, balloon `writingMode`, and `effects.sfxWritingMode` without a format bump. Manifest remains `manga-blueprint-export-manifest/3`.
+- project format: `manga-blueprint/0.2`;
+- manifest: `manga-blueprint-export-manifest/3`;
+- current-page render brief: `manga-blueprint-render-brief/1`;
+- producer provenance: `manga-blueprint-producer/1`;
+- build metadata: `manga-blueprint-build-info/1`.
+
+Older `Prototype 0.x` labels inside historical feature documents identify the release that introduced a capability; they are not the current runtime version.
 
 Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
 
@@ -177,6 +191,7 @@ Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
+- [`docs/PROTOTYPE-0.12.9.md`](docs/PROTOTYPE-0.12.9.md)
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json)
 
 ## License
