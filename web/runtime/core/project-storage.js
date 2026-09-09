@@ -3,6 +3,8 @@ const PROJECT_DB_VERSION = 1;
 const PROJECT_WORK_STORE = 'works';
 const PROJECT_META_STORE = 'meta';
 const ACTIVE_WORK_META_KEY = 'activeWorkId';
+// Legacy browser project keys such as 'manga-blueprint-studio/0.1' are intentionally not migrated.
+// Portable .manga.json import remains the compatibility path; language/custom-template localStorage is separate.
 
 function ensureProjectIdentity(input){
   const p=normalizeProject(input);
@@ -37,12 +39,7 @@ function createProjectWithIdentity(template='action3',workId=null){
 function cloneProjectAsNewWork(input){
   const p=ensureProjectIdentity(input);
   p.meta.workId=uid('work');
-  const pageIdMap=new Map();
-  p.pages.forEach(page=>{
-    const oldId=page.id;
-    page.id=uid('page');
-    pageIdMap.set(oldId,page.id);
-  });
+  p.pages.forEach(page=>{page.id=uid('page');});
   return p;
 }
 
