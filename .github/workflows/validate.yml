@@ -52,6 +52,7 @@ jobs:
           node --check web/app-26.js
           node --check web/app-27.js
           node --check web/app-28.js
+          node --check web/app-29.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -97,3 +98,6 @@ jobs:
 
       - name: Validate per-panel cast visibility
         run: node scripts/validate-panel-cast-flow.mjs
+
+      - name: Validate generation contract hardening
+        run: node scripts/validate-generation-contract.mjs

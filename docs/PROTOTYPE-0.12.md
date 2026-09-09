@@ -52,6 +52,22 @@ Each beat shows:
 
 This makes scene-wide expected cast, simultaneous visibility, and per-panel staging inspectable before template application. The panel-cast flow is authoring-only metadata and does not become manga lettering or a competing project source of truth.
 
+### Prototype 0.12.7 interaction-aware generation contract
+
+A real ChatGPT / Gemini handoff comparison exposed two independent failure modes: a specific story action could conflict with a generic pose description, and exported clean PNGs could rasterize at the SVG fallback intrinsic size instead of the project canvas.
+
+Prototype 0.12.7 hardens both boundaries:
+
+- `actionIntent` remains authoritative when a generic pose would contradict a more specific event;
+- physical-contact actions add a derived contact contract to the prompt, so a hug cannot degrade into two characters merely standing close;
+- the shipped two-visible hug template now uses explicit approach / hug initiator / hug receiver poses instead of `stand` for every beat;
+- Generation Readiness warns when a two-person hug action is still paired with non-hug poses, without blocking export;
+- description-mode `appearance.summary` and `appearanceText` remain authoritative even when optional `hair`, `eyes`, `outfit`, or `features` subfields are empty;
+- manifest output records action/pose priority, appearance-field semantics, and expected clean-PNG dimensions as derived handoff metadata;
+- PNG export serializes explicit SVG `width` / `height` and draws the image into the full destination canvas, preventing the browser's 300×150 SVG fallback size from shrinking an 800×1130 (or custom) blueprint into the top-left corner.
+
+The PNG fix applies to both clean AI output and annotated review output because both share the same rasterization path.
+
 ## Conversation behavior
 
 Conversation-first templates declare a minimum useful amount of seeded dialogue when **Include sample dialogue and SFX** is enabled. Classroom Talk uses four seeded dialogue beats and explicitly treats the reaction line as an off-panel partner line when only one visible base character is available.
@@ -96,6 +112,8 @@ Generated prompt and manifest now derive explicit output constraints:
 - preserve rendering style when specified;
 - preserve character identity from Character Identity Guidance;
 - do not invent visible participants when a template describes an off-panel partner;
-- render dialogue from the recorded exact text rather than replacing it with newly invented lines.
+- render dialogue from the recorded exact text rather than replacing it with newly invented lines;
+- preserve specific story action and physical contact when generic pose wording would otherwise weaken it;
+- treat empty optional appearance-detail fields as unspecified rather than as a negation of the appearance summary.
 
-Manifest additions are derived metadata (`outputConstraints`, `sceneTemplateContract`) and do not change the existing manifest schema identifier.
+Manifest additions are derived metadata (`outputConstraints`, `sceneTemplateContract`, `renderContract`, `actionPoseIndex`, `appearanceFieldSemantics`) and do not change the existing manifest schema identifier.
