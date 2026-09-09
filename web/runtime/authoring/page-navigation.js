@@ -61,8 +61,16 @@ function renumberPageOrders15(){
 }
 
 function renumberPageNumbers15(){
+  project.pages=orderedPages15();
   renumberPageOrders15();
   project.pages.forEach((page,index)=>{page.pageNumber=index+1;});
+}
+
+function nextAvailablePageNumber15(preferred=1){
+  const used=new Set(project.pages.map(page=>Number(page.pageNumber)).filter(Number.isInteger));
+  let number=Math.max(1,Math.floor(Number(preferred)||1));
+  while(used.has(number))number+=1;
+  return number;
 }
 
 function pageLabel15(page){
@@ -80,6 +88,7 @@ function clonePanelForDuplicate15(panel){
 function clonePageForDuplicate15(source){
   const next=clone(source);
   next.id=uid('page');
+  next.pageNumber=nextAvailablePageNumber15(Math.max(0,...project.pages.map(page=>Number(page.pageNumber)||0))+1);
   next.title=source.title?`${source.title} copy`:'';
   next.panels=(source.panels||[]).map(clonePanelForDuplicate15);
   return next;
@@ -89,7 +98,7 @@ function blankPageFromCurrent15(){
   const source=currentPage();
   const next={
     id:uid('page'),
-    pageNumber:project.pages.length+1,
+    pageNumber:nextAvailablePageNumber15(Math.max(0,...project.pages.map(page=>Number(page.pageNumber)||0))+1),
     order:project.pages.length+1,
     containerId:source?.containerId??null,
     title:'',
@@ -124,8 +133,10 @@ function selectPage15(pageId,{renderNow=true}={}){
 function addPage15(){
   let createdId=null;
   mutate(()=>{
+    const pages=orderedPages15();
     const next=blankPageFromCurrent15();
-    project.pages.push(next);
+    pages.push(next);
+    project.pages=pages;
     renumberPageOrders15();
     createdId=next.id;
     selectedPageId=next.id;
@@ -139,11 +150,12 @@ function duplicatePage15(){
   const source=currentPage();if(!source)return;
   let duplicateId=null;
   mutate(()=>{
-    const pages=project.pages;
+    const pages=orderedPages15();
     const index=pages.findIndex(page=>page.id===source.id);
     const next=clonePageForDuplicate15(source);
     pages.splice(index+1,0,next);
-    renumberPageNumbers15();
+    project.pages=pages;
+    renumberPageOrders15();
     duplicateId=next.id;
     selectedPageId=next.id;
     selectedPanelId=next.panels[0]?.id||null;
@@ -158,10 +170,12 @@ function deletePage15(){
   if(!confirm(language==='ja'?`${pageLabel15(current)} を削除しますか？`:`Delete ${pageLabel15(current)}?`))return;
   let nextId=null;
   mutate(()=>{
-    const index=project.pages.findIndex(page=>page.id===current.id);
-    project.pages.splice(index,1);
-    renumberPageNumbers15();
-    const next=project.pages[Math.min(index,project.pages.length-1)];
+    const pages=orderedPages15();
+    const index=pages.findIndex(page=>page.id===current.id);
+    pages.splice(index,1);
+    project.pages=pages;
+    renumberPageOrders15();
+    const next=pages[Math.min(index,pages.length-1)];
     nextId=next?.id||null;
     selectedPageId=nextId;
     selectedPanelId=next?.panels?.[0]?.id||null;
@@ -172,13 +186,14 @@ function deletePage15(){
 
 function movePage15(delta){
   const current=currentPage();if(!current)return;
-  const pages=project.pages;
+  const pages=orderedPages15();
   const index=pages.findIndex(page=>page.id===current.id);
   const target=index+delta;
   if(target<0||target>=pages.length)return;
   mutate(()=>{
     [pages[index],pages[target]]=[pages[target],pages[index]];
-    renumberPageNumbers15();
+    project.pages=pages;
+    renumberPageOrders15();
   });
 }
 
