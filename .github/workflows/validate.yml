@@ -51,6 +51,7 @@ jobs:
           node --check web/app-25.js
           node --check web/app-26.js
           node --check web/app-27.js
+          node --check web/app-28.js
 
       - name: Validate repository contract
         run: node scripts/validate.mjs
@@ -93,3 +94,6 @@ jobs:
 
       - name: Validate two-visible templates / quick filters
         run: node scripts/validate-two-visible-filters.mjs
+
+      - name: Validate per-panel cast visibility
+        run: node scripts/validate-panel-cast-flow.mjs
