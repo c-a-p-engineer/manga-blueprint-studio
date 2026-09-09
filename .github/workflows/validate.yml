@@ -26,6 +26,7 @@ jobs:
           node --check web/app.js
           node --check scripts/runtime-paths.mjs
           node --check scripts/validate-runtime-layout.mjs
+          node --check scripts/validate-render-brief.mjs
           find web/runtime -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
 
       - name: Validate semantic runtime layout
@@ -78,3 +79,6 @@ jobs:
 
       - name: Validate generation contract hardening
         run: node scripts/validate-generation-contract.mjs
+
+      - name: Validate current-page render brief
+        run: node scripts/validate-render-brief.mjs

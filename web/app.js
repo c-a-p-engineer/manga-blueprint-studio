@@ -29,7 +29,8 @@ const runtimeChunks = [
   ['templates/cast-semantics', './runtime/templates/cast-semantics.js'],
   ['templates/two-visible', './runtime/templates/two-visible.js'],
   ['templates/panel-cast-flow', './runtime/templates/panel-cast-flow.js'],
-  ['handoff/interaction-generation-contract', './runtime/handoff/interaction-generation-contract.js']
+  ['handoff/interaction-generation-contract', './runtime/handoff/interaction-generation-contract.js'],
+  ['handoff/render-brief', './runtime/handoff/render-brief.js']
 ];
 
 for (const [id, src] of runtimeChunks) {

@@ -1,0 +1,174 @@
+// Prototype 0.12.8: concise page render brief and context-isolated handoff.
+// Downstream generators receive a high-signal contract before the detailed prompt,
+// while existing semantic JSON / clean PNG remain the authoritative sources.
+
+Object.assign(i18n.ja,{
+  readinessGuardPoseConflict30:'出来事は「構える / 間合いを測る」ですが、人物ポーズが通常立ちです。Guard stance / 構えるへ変更するとモデル差を減らせます。',
+  readinessBattleToneConflict30:'バトル場面ですが、仕上がりトーンに甘い・恋愛寄りの語が残っています。画風として意図したものか確認してください。場面意味はバトルを優先します。',
+  guideRenderBrief30:'生成時の文脈混入を防ぐ',
+  guideRenderBriefBody30:'AI生成ZIPのPrompt先頭へ「現在ページだけのRender Contract」を追加します。過去の会話・以前の生成画像・別テンプレートの物語を持ち込まず、現在のコマ数・舞台・登場人物・出来事・表示文字だけを使うよう明示します。'
+});
+Object.assign(i18n.en,{
+  readinessGuardPoseConflict30:'The action says the fighters are guarding / measuring distance, but a placed character still uses a neutral stand pose. Use Guard stance to reduce model drift.',
+  readinessBattleToneConflict30:'This is a battle scene, but the visual-tone text still contains sweet/romance-oriented wording. Confirm that this is intentional styling; battle scene semantics remain authoritative.',
+  guideRenderBrief30:'Prevent generation-context carryover',
+  guideRenderBriefBody30:'The AI ZIP prompt starts with a concise current-page Render Contract. It explicitly rejects story, setting, character, and genre carryover from prior conversation turns, prior generated images, or unrelated templates.'
+});
+
+function patchTwoVisibleStandoff30(){
+  const tpl=typeof storyTemplates11!=='undefined'?storyTemplates11.twoVisibleStandoff27:null;
+  if(!tpl?.beats?.length)return;
+  for(const beat of tpl.beats.slice(0,2)){
+    beat.pose='guard';
+    for(const actor of beat.actors27||[])actor.pose='guard';
+  }
+}
+patchTwoVisibleStandoff30();
+
+function usedCharacterIds30(){
+  const ids=[];
+  for(const panel of currentPage().panels||[])for(const ch of panel.characters||[]){
+    if(ch.characterId&&!ids.includes(ch.characterId))ids.push(ch.characterId);
+  }
+  return ids;
+}
+function characterBrief30(characterId){
+  const base=(project.characterLibrary||[]).find(x=>x.characterId===characterId)||{};
+  const appearance=[base.appearance?.summary,base.appearance?.hair,base.appearance?.eyes,base.appearance?.outfit,base.appearance?.features].map(v=>String(v||'').trim()).filter(Boolean);
+  return {
+    characterId,
+    identityMode:base.identityMode||'description',
+    appearance:appearance.length?appearance.join(' / '):'unspecified; infer only a simple consistent design'
+  };
+}
+function exactVisibleText30(){
+  const text=[];
+  for(const panel of [...(currentPage().panels||[])].sort((a,b)=>a.order-b.order)){
+    for(const balloon of panel.balloons||[]){
+      const value=String(balloon.text||'').trim();if(value)text.push(value);
+    }
+    const sfx=String(panel.effects?.sfxText||'').trim();if(sfx)text.push(sfx);
+  }
+  return text;
+}
+function sceneSummary30(){
+  const panels=currentPage().panels||[];
+  const unique=key=>[...new Set(panels.map(p=>String(p.background?.[key]||'').trim()).filter(Boolean))];
+  let relationship='';
+  try{
+    const id=project.meta?.storyTemplate||'';
+    relationship=id&&typeof sceneInfo22==='function'?(sceneInfo22(id)?.relationship||''):'';
+  }catch{}
+  return {relationship,locations:unique('location'),times:unique('timeOfDay'),moods:unique('mood')};
+}
+function renderBriefObject30(){
+  const ordered=[...(currentPage().panels||[])].sort((a,b)=>a.order-b.order);
+  const scene=sceneSummary30();
+  return {
+    schema:'manga-blueprint-render-brief/1',
+    selfContainedPage:true,
+    ignorePriorConversationUnlessRepeated:true,
+    ignorePriorGeneratedImagesUnlessExplicitReference:true,
+    panelCount:ordered.length,
+    readingDirection:project.meta?.readingDirection||'rtl',
+    canvas:{width:pageSize04().w,height:pageSize04().h},
+    scene,
+    cast:usedCharacterIds30().map(characterBrief30),
+    allowedVisibleText:exactVisibleText30(),
+    panels:ordered.map(panel=>({
+      order:panel.order,
+      role:panel.role||'',
+      actionIntent:String(panel.actionIntent||''),
+      camera:{distance:panel.camera?.distance||'',angle:panel.camera?.angle||'',viewpoint:panel.camera?.viewpoint||''},
+      background:{location:panel.background?.location||'',timeOfDay:panel.background?.timeOfDay||'',mood:panel.background?.mood||''},
+      characters:(panel.characters||[]).map(ch=>({characterId:ch.characterId,poseId:ch.poseId,expression:ch.expression?.type||'',gaze:ch.gaze?.target||''}))
+    })),
+    forbiddenInventions:['extra-panels','extra-visible-characters','unlisted-visible-text','replacement-story-or-genre','replacement-setting','titles-or-captions-not-listed-in-TEXT-TO-RENDER']
+  };
+}
+function renderBriefText30(){
+  const brief=renderBriefObject30(),scene=brief.scene;
+  const lines=[
+    'CURRENT PAGE RENDER CONTRACT — READ THIS FIRST:',
+    '- This export is a COMPLETE, SELF-CONTAINED contract for the current manga page.',
+    '- Ignore story, genre, setting, characters, dialogue, props, titles, and visual defaults from prior conversation turns or prior generated images unless they are explicitly repeated inside this package.',
+    `- Render exactly ${brief.panelCount} panel(s), preserving CLEAN PNG geometry and ${brief.readingDirection.toUpperCase()} reading order.`,
+    `- Planned visible cast: exactly ${brief.cast.length} character identity/identities used by this page. Do not invent substitutes or additional visible characters.`,
+    `- Scene relationship/genre contract: ${scene.relationship||'unspecified; infer only from the current panel actions and backgrounds'}.`,
+    `- Scene location(s): ${scene.locations.length?scene.locations.join(' / '):'unspecified'}. Time: ${scene.times.length?scene.times.join(' / '):'unspecified'}. Mood: ${scene.moods.length?scene.moods.join(' / '):'unspecified'}.`,
+    `- Visible text allowlist: ${brief.allowedVisibleText.length?brief.allowedVisibleText.map(x=>JSON.stringify(x)).join(', '):'NONE — render no visible text'}.`,
+    '- Do not add titles, captions, narration, UI, explanatory labels, extra dialogue, or genre/setting substitutions.',
+    '- ART DIRECTION changes rendering language only; it must not replace the current story/scene semantics.'
+  ];
+  lines.push('CURRENT PANEL BEATS:');
+  for(const panel of brief.panels){
+    const cast=panel.characters.map(ch=>`${ch.characterId}:${ch.poseId}`).join(', ')||'none';
+    lines.push(`- Panel ${panel.order}: ${panel.actionIntent||panel.role||'unspecified beat'} | cast ${cast} | camera ${panel.camera.distance}/${panel.camera.angle}/${panel.camera.viewpoint} | location ${panel.background.location||'unspecified'}`);
+  }
+  return lines.join('\n');
+}
+
+const compilePromptBase30=compilePrompt;
+compilePrompt=function(){return `${renderBriefText30()}\n\n${compilePromptBase30()}`;};
+
+function actionNeedsGuard30(text=''){
+  const value=String(text||'').toLowerCase();
+  return /構え|間合いを測|guard stance|holds? (?:a )?stance|measure(?:s|ing)? distance/.test(value);
+}
+function relationship30(){
+  try{
+    const id=project.meta?.storyTemplate||'';
+    return id&&typeof sceneInfo22==='function'?(sceneInfo22(id)?.relationship||''):'';
+  }catch{return'';}
+}
+if(typeof readinessIssues18==='function'){
+  const readinessIssuesBase30=readinessIssues18;
+  readinessIssues18=function(){
+    const issues=readinessIssuesBase30();
+    for(const panel of currentPage().panels||[]){
+      if(actionNeedsGuard30(panel.actionIntent)&&(panel.characters||[]).some(ch=>ch.poseId==='stand'))issues.push({kind:'action-pose',text:`Panel ${panel.order}: ${t('readinessGuardPoseConflict30')}`});
+    }
+    const tone=String(project.meta?.artDirection?.tone||'').toLowerCase();
+    if(relationship30()==='battle'&&/(ほわほわ|甘い|恋愛|romance|romantic|sweet)/.test(tone))issues.push({kind:'style-scene',text:t('readinessBattleToneConflict30')});
+    return issues;
+  };
+}
+
+if(typeof exportManifest08==='function'){
+  const exportManifestBase30=exportManifest08;
+  exportManifest08=function(identity,packageType,files){
+    const manifest=exportManifestBase30(identity,packageType,files);
+    manifest.renderBrief=renderBriefObject30();
+    manifest.contextIsolation={
+      selfContainedPage:true,
+      ignorePriorConversationUnlessRepeated:true,
+      ignorePriorGeneratedImagesUnlessExplicitReference:true,
+      noUnlistedVisibleText:true,
+      noUnlistedPanelsOrCast:true
+    };
+    manifest.crossModelHints ||= {};
+    Object.assign(manifest.crossModelHints,{
+      preferCurrentPageRenderBrief:true,
+      rejectPriorContextCarryover:true,
+      artDirectionDoesNotChangeStoryGenre:true
+    });
+    return manifest;
+  };
+}
+
+function installRenderBriefHelp30(){
+  const dialog=$('helpDialog');if(!dialog||$('guideRenderBriefSection30'))return;
+  const section=document.createElement('section');section.id='guideRenderBriefSection30';section.className='guide-section';
+  section.innerHTML=`<h3 data-i18n="guideRenderBrief30"></h3><p data-i18n="guideRenderBriefBody30"></p>`;
+  ($('guideInteractionContractSection29')||$('guideCrossModel20')||$('guidePoseDepth19'))?.insertAdjacentElement('afterend',section);
+}
+const applyLanguageBase30=applyLanguage;
+applyLanguage=function(){
+  applyLanguageBase30();installRenderBriefHelp30();
+  document.querySelectorAll('#guideRenderBriefSection30 [data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
+  renderReadiness18?.();
+};
+
+installRenderBriefHelp30();
+render();
+document.querySelector('footer')&&(document.querySelector('footer').textContent='Prototype 0.12.8 · current-page render contract');
