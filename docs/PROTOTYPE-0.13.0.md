@@ -21,6 +21,8 @@ A work may contain multiple pages. The Page tab exposes a horizontal page strip 
 
 All ordinary panel/camera/character/background/text/effect editing continues to operate on `currentPage()`, which resolves from the stable `selectedPageId` rather than assuming `pages[0]`.
 
+Page sequence and visible page number are separate. Add/duplicate allocate a non-conflicting visible number, while duplicate/delete/move preserve existing visible page numbers. Only the explicit **Renumber** action rewrites the full visible sequence to `1..N`.
+
 ### Stable identity on duplication
 
 Duplicating a page preserves semantic content but creates fresh identity for mutable instances:
@@ -31,6 +33,14 @@ Duplicating a page preserves semantic content but creates fresh identity for mut
 - new balloon IDs.
 
 Visible page number/title are presentation/project state and remain independent from stable identity.
+
+### Work-wide canvas size
+
+`meta.pageWidth` / `meta.pageHeight` remain work-level state in Prototype 0.13.0 rather than per-page fields.
+
+Changing manuscript/canvas size therefore scales panel geometry, placed-character coordinates/scale, and balloon coordinates/size across **all pages** in the work. When more than one page exists, the direct canvas-size action confirms the work-wide resize before mutation.
+
+This avoids a broken state where the project declares one global canvas size but only the selected page has been rescaled.
 
 ### Active-page restore
 
@@ -79,10 +89,12 @@ Range/work/volume export is a later explicit phase so package semantics do not b
 - active-page IndexedDB APIs and cleanup;
 - selected-page editor routing;
 - page add/duplicate/delete/reorder/renumber/title operations;
+- page-order / visible-page-number independence;
 - duplicate identity regeneration;
 - final-page delete guard;
 - duplicate visible-page-number protection;
 - active-page restoration before persistence enable;
+- work-wide canvas resize semantics;
 - narrow-screen page-manager layout.
 
 The validator runs in the normal `Validate prototype` workflow alongside all previous repository, handoff, template, ordering, lettering, render, and provenance checks.
@@ -104,6 +116,7 @@ The validator runs in the normal `Validate prototype` workflow alongside all pre
 - moving pages between containers;
 - backup/restore ZIP;
 - range / selected-pages / volume / whole-work export;
+- per-page canvas-size overrides;
 - two-page spread semantics;
 - cross-page continuity libraries;
 - panel-first/hybrid generation packages.
