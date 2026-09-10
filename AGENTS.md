@@ -4,7 +4,7 @@
 
 Manga Blueprint Studio is a human-directed manga planning tool. It records manuscript size, reading direction, panel layout, reusable character identity, character appearance policy, story action intent, pose/placement, camera intent, backgrounds, dialogue/SFX, lettering direction, and manga-specific effects, then exports a visual blueprint plus machine-readable semantics for downstream image-generation assistants.
 
-The human is the director. AI, Smart Manga, Scene Templates, bounded derivation, and other assistance are proposal/rendering tools.
+The human is the director. AI, Smart Manga, Story Templates, bounded derivation, and other assistance are proposal/rendering tools.
 
 ## Source of truth
 
@@ -21,7 +21,7 @@ When behavior and schema disagree, determine which contract is stale and update 
 
 ### Human direction first
 
-Assistance must not silently replace recorded panel layout, action intent, pose, character assignment, appearance policy, camera intent, background intent, dialogue, lettering direction, or manga effects. Candidate/template browsing never mutates current page. Explicitly applied Scene Template / Smart Manga output becomes ordinary editable project state.
+Assistance must not silently replace recorded panel layout, action intent, pose, character assignment, appearance policy, camera intent, background intent, dialogue, lettering direction, or manga effects. Candidate/template browsing never mutates current page. Explicitly applied Story Template / Smart Manga output becomes ordinary editable project state.
 
 ### Visual + semantic blueprint
 
@@ -29,9 +29,9 @@ The visual blueprint communicates space. `.manga.json` communicates meaning. Pro
 
 ### Reading direction is explicit
 
-Japanese right-to-left (`rtl`) is default; left-to-right (`ltr`) is supported. Panel numbering, layout/Smart previews, Scene Template thumbnails, Panel List order, generated prompt, and applied Scene Template beat assignment use `meta.readingDirection`.
+Japanese right-to-left (`rtl`) is default; left-to-right (`ltr`) is supported. Panel numbering, layout/Smart previews, Story Template thumbnails, Panel List order, generated prompt, and applied Story Template beat assignment use `meta.readingDirection`.
 
-Panel `order` must stay synchronized with current panel geometry and selected reading direction. For a normal two-column row, RTL numbers the right panel before the left panel; LTR does the opposite. Committed render paths renumber from geometry so canvas numbers, Scene Template preview numbers, Scene Template beat placement, Panel Peek/List, prompt, manifest, and exported semantic order cannot silently disagree after template apply, Smart Manga apply, split, import, or direction changes.
+Panel `order` must stay synchronized with current panel geometry and selected reading direction. For a normal two-column row, RTL numbers the right panel before the left panel; LTR does the opposite. Committed render paths renumber from geometry so canvas numbers, Story Template preview numbers, Story Template beat placement, Panel Peek/List, prompt, manifest, and exported semantic order cannot silently disagree after template apply, Smart Manga apply, split, import, or direction changes.
 
 ### Lettering direction is explicit
 
@@ -58,11 +58,13 @@ Each panel may store `actionIntent`: a short description of what happens when po
 - old projects normalize missing values to an empty string;
 - derived summaries never become a competing source of truth.
 
-### Scene Template Studio
+### Story Template Studio
 
-Prototype 0.9 extends Story Templates into a scene-first authoring studio; Prototype 0.10 aligns its numbering and beat placement with the selected page reading direction.
+**Story Template / ストーリーテンプレート is the single canonical template feature name.** A template may describe one recognizable scene or beat sequence, but “Scene Template” is not a separate template system or alternate feature name. The ordinary word “scene” may still be used for scene/cast semantics and story content where it is not naming the feature.
 
-Shipped categories include romance, battle, emotion, daily, comedy, suspense, character introduction, plus browser-local custom templates. The built-in set includes the original cute-daily / rom-com / surprise / gag / action recipes and additional confession, kiss, holding-hands, misunderstanding, battle, counterattack, aerial, throw, awakening, crying, anger, resolve, suspense, classroom, failure-gag, and character-introduction scenes.
+Prototype 0.9 expands Story Templates into a searchable, story-beat-first authoring studio; Prototype 0.10 aligns its numbering and beat placement with the selected page reading direction.
+
+Shipped categories include romance, battle, emotion, daily, comedy, suspense, character introduction, plus browser-local custom templates. The built-in set includes the original cute-daily / rom-com / surprise / gag / action recipes and additional confession, kiss, holding-hands, misunderstanding, battle, counterattack, aerial, throw, awakening, crying, anger, resolve, suspense, classroom, failure-gag, and character-introduction stories/scenes.
 
 Discovery is authoring-only and may use category filters, search, visual cards, description/use-case text, panel count, and beat-flow preview.
 
@@ -78,9 +80,9 @@ Discovery is authoring-only and may use category filters, search, visual cards, 
 
 ### Bounded template derivation
 
-Prototype 0.9 may derive one temporary variation from a selected scene template.
+Prototype 0.9 may derive one temporary variation from a selected Story Template.
 
-- derivation preserves scene action/beat flow;
+- derivation preserves story action/beat flow;
 - it may vary a bounded subset of camera distance/angle and emphasis/effects;
 - derivation never mutates the page until explicit apply;
 - it is not equivalent to unconstrained random story generation;
@@ -180,7 +182,7 @@ Lint may flag missing action intent, repeated camera distance, all backgrounds u
 
 ### Presets are patterns, not rules
 
-Canvas/layout/background/balloon/scene presets remain editable starting points.
+Canvas/layout/background/balloon/story-template presets remain editable starting points.
 
 - default 800×1130 preset has an unambiguous dimension/purpose label;
 - 4-koma distinguishes at least 1×4 and 2×2;
@@ -219,8 +221,8 @@ Core data is provider-independent. Provider adapters belong only at export bound
 - 0.6: random seed/variant and panel assist provenance;
 - 0.7: identityMode/appearance, randomIntensity, manifest v3;
 - 0.8: optional `meta.storyTemplate`, panel `actionIntent`, story-readable authoring views;
-- 0.9: scene-template discovery/derivation and local custom-template library;
-- 0.10: `meta.defaultWritingMode`, optional balloon `writingMode`, optional `effects.sfxWritingMode`, automatic geometry-based panel-order synchronization, and Scene Template numbering/beat alignment; no project-format or manifest-schema bump;
+- 0.9: Story Template discovery/derivation and local custom-template library;
+- 0.10: `meta.defaultWritingMode`, optional balloon `writingMode`, optional `effects.sfxWritingMode`, automatic geometry-based panel-order synchronization, and Story Template numbering/beat alignment; no project-format or manifest-schema bump;
 - legacy 0.1 / older 0.2 normalize without losing core layout/character/camera/text data.
 
 ## Mobile-first UI
@@ -229,7 +231,7 @@ Japanese is default; English is supported. On narrow screens canvas precedes det
 
 Primary hierarchy:
 
-1. Scene Template Studio / Smart Manga / visual layout;
+1. Story Template Studio / Smart Manga / visual layout;
 2. reusable character + identity source;
 3. Panel Peek / Panel List quick understanding;
 4. selected-panel refinement;
@@ -248,7 +250,7 @@ Runtime ownership is grouped by responsibility:
 - `runtime/assist/` — bounded Smart Manga assistance;
 - `runtime/identity/` — character identity and appearance handoff;
 - `runtime/story/` — story-readable panel semantics;
-- `runtime/templates/` — Scene Template Studio and scene/cast contracts;
+- `runtime/templates/` — Story Template Studio and scene/cast contracts;
 - `runtime/lettering/` — text writing direction;
 - `runtime/ordering/` — reading-order synchronization;
 - `runtime/integration/` — cross-feature integrations whose load order is intentional;
@@ -268,13 +270,13 @@ Relevant changes preserve:
 - repository-contract validation and legacy normalization;
 - dynamic canvas and RTL/LTR;
 - panel numbers automatically align with selected RTL/LTR geometry order across canvas, Panel Peek/List, prompt, manifest, and exports;
-- Scene Template thumbnails use the same RTL/LTR numbering and template beat N is applied to panel order N;
+- Story Template thumbnails use the same RTL/LTR numbering and template beat N is applied to panel order N;
 - vertical Japanese (`vertical-rl`) is the default writing direction, horizontal is selectable, and per-balloon/per-SFX overrides are persisted;
-- lettering direction remains independent from page reading direction;
+- lettering direction remains independent from page reading order;
 - generated prompt and manifest preserve effective balloon/SFX writing direction without promoting metadata to visible manga text;
 - bounded three-candidate Smart Manga with purpose/seed/variant/intensity provenance and story-readable action intent after apply;
-- Scene Template browsing/search/category filtering without project mutation;
-- scene-template visual cards with description/use case/panel count/beat flow;
+- Story Template browsing/search/category filtering without project mutation;
+- story-template visual cards with description/use case/panel count/beat flow;
 - shipped romance/battle/emotion/daily/comedy/suspense/character-introduction recipes;
 - explicit template apply with optional editable dialogue/SFX;
 - bounded derived template variation that preserves action flow;
