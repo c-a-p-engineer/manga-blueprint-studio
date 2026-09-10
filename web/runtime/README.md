@@ -11,7 +11,7 @@ Runtime files are named by responsibility, not by the order in which a prototype
 - `assist/` — bounded Smart Manga assistance
 - `identity/` — character identity and appearance handoff
 - `story/` — story-readable panel semantics and Smart Manga intent
-- `templates/` — Scene Template Studio, template quality, scene/cast contracts
+- `templates/` — Story Template Studio, template quality, and scene/cast contracts
 - `lettering/` — text writing direction
 - `ordering/` — reading-order synchronization
 - `integration/` — cross-feature integration that intentionally depends on earlier owners

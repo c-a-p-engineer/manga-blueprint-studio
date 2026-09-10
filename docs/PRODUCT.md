@@ -2,7 +2,7 @@
 
 ## Problem
 
-Image-generation assistants can render manga-style images, but users should not need cinematography vocabulary, manual coordinates, repeated character entry, or a Character Sheet for every character just to communicate manga direction. They also need to understand **what happens in each panel** without opening every editor field, and they should be able to begin from a recognizable scene such as a confession, a kiss beat, a counterattack, or a reaction without manually inventing every camera/pose choice.
+Image-generation assistants can render manga-style images, but users should not need cinematography vocabulary, manual coordinates, repeated character entry, or a Character Sheet for every character just to communicate manga direction. They also need to understand **what happens in each panel** without opening every editor field, and they should be able to begin from a recognizable story beat such as a confession, a kiss beat, a counterattack, or a reaction without manually inventing every camera/pose choice.
 
 Manga Blueprint Studio lets a human organize local works into pages and optional volume/chapter/folder groups, choose page/layout patterns, reuse character identity, define panel events, refine pose/camera/background/dialogue/effects, inspect the selected page quickly, control manga lettering direction, and export an AI-safe visual reference plus semantic instructions.
 
@@ -11,8 +11,8 @@ Manga Blueprint Studio lets a human organize local works into pages and optional
 1. Open/create a work explicitly from the local Work Library.
 2. Select or add the page to edit and optionally assign it to a volume/chapter/folder.
 3. Choose manuscript size and panel reading direction (`rtl` or `ltr`).
-4. Start from **Scene Template Studio**, Smart Manga, or a visual panel layout.
-5. If using Scene Template Studio, filter/search by scene intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
+4. Start from **Story Template Studio**, Smart Manga, or a visual panel layout.
+5. If using Story Template Studio, filter/search by story intent, inspect description/use case/beat flow, and explicitly apply or derive a bounded variation.
 6. Create/select a reusable base character and choose its appearance source: Character Sheet, text appearance guidance, or no-sheet/AI-designed appearance.
 7. Use Panel Chips / Panel List / Panel Peek to understand the page and identify only the panels that need work.
 8. Refine `actionIntent`, pose, expression, gaze, camera, background, dialogue/SFX, lettering direction, frame/effects.
@@ -76,7 +76,7 @@ Deleting a non-empty container must never silently delete pages. Directly assign
 
 Project persistence uses IndexedDB. The active work and last selected page for each work are browser metadata, not competing project semantics. Startup restores the saved active work and remembered page before normal authoring continues.
 
-Historical project autosave keys in `localStorage` are intentionally not migrated or reused. Portable `.manga.json` import is the compatibility path. Browser-local custom Scene Templates remain a separate `localStorage` concern.
+Historical project autosave keys in `localStorage` are intentionally not migrated or reused. Portable `.manga.json` import is the compatibility path. Browser-local custom Story Templates remain a separate `localStorage` concern.
 
 Backup/restore, selected-range/container/work-wide export, and panel-first generation remain later phases.
 
@@ -92,9 +92,11 @@ Examples:
 
 `actionIntent` exists because pose labels alone do not explain cause, target, or event meaning. It is persisted in `.manga.json`, shown in authoring summaries, indexed in manifest, and added to generated semantic instructions. It is **never** part of `TEXT TO RENDER`.
 
-## Scene Template Studio
+## Story Template Studio
 
-Prototype 0.9 expands Story Templates into a scene-first Template Studio. Prototype 0.10 makes template numbering and applied beat order use the same selected RTL/LTR reading order as the page.
+**Story Template / ストーリーテンプレート is the only canonical template feature name.** A Story Template may represent one recognizable scene or a short beat sequence, but “Scene Template” is not a separate template system or alternate product name. The ordinary word “scene” remains valid for story content, background continuity, and scene/cast semantics.
+
+Prototype 0.9 expands Story Templates into a story-beat-first Template Studio. Prototype 0.10 makes template numbering and applied beat order use the same selected RTL/LTR reading order as the page.
 
 ### Discovery
 
@@ -109,9 +111,9 @@ Categories include romance, battle, emotion, daily, comedy, suspense, character 
 
 Template layout thumbnails number their panels using `meta.readingDirection`. In RTL, the rightmost panel in an ordinary row receives the earlier number; in LTR the leftmost does.
 
-### Shipped scene packs
+### Shipped story packs
 
-The built-in set includes the existing cute-daily / rom-com / surprise / gag / action templates plus scene-oriented additions such as:
+The built-in set includes the existing cute-daily / rom-com / surprise / gag / action templates plus additions such as:
 
 - confession;
 - before-kiss;
@@ -146,7 +148,7 @@ The selected/project reusable base character may be placed when one exists. Temp
 
 **Derive from this template** creates a temporary variation that keeps the same story beats/actions while varying a limited subset of camera distance/angle and emphasis/effect choices. Derivation does not mutate the page until the user explicitly applies it.
 
-The goal is variation without turning a recognizable scene into unconstrained random generation.
+The goal is variation without turning a recognizable story pattern into unconstrained random generation.
 
 ### Custom templates
 
@@ -205,7 +207,7 @@ Warnings are advisory and never block export or rewrite the page automatically.
 
 ## Help and beginner terminology
 
-The header **Help / 使い方** window is maintained and localized. It covers workflow, reading direction, reusable characters, Character-Sheet-free identity, stick-figure colors, Scene Templates, Panel Peek/List, camera aids, background input, and export handoff.
+The header **Help / 使い方** window is maintained and localized. It covers workflow, reading direction, reusable characters, Character-Sheet-free identity, stick-figure colors, Story Templates, Panel Peek/List, camera aids, background input, and export handoff.
 
 Professional terms remain available for interoperability, but Japanese UI pairs them with plain language and explanation, e.g. `Extreme close / 超寄り`, `Long / 引き`, `Low angle / あおり`, `High angle / ふかん`.
 
@@ -213,7 +215,7 @@ Professional terms remain available for interoperability, but Japanese UI pairs 
 
 The product ships named manuscript presets: `800×1130 Portrait` (default), 1:1, 4:5, 3:4, 9:16, 16:9, B5, A4, Webtoon, and custom dimensions.
 
-Japanese right-to-left is default; left-to-right is supported. Panel `order` is derived from current geometry plus selected reading direction on committed render paths. For ordinary rows, RTL numbers right-to-left and LTR numbers left-to-right. The same resulting order drives canvas badges, Scene Template numbering/beat placement, Panel Peek/List, prompt, manifest semantics, and exports.
+Japanese right-to-left is default; left-to-right is supported. Panel `order` is derived from current geometry plus selected reading direction on committed render paths. For ordinary rows, RTL numbers right-to-left and LTR numbers left-to-right. The same resulting order drives canvas badges, Story Template numbering/beat placement, Panel Peek/List, prompt, manifest semantics, and exports.
 
 Common layouts include single, 2-panel, 3-panel, action, 4-koma 1×4 / 2×2 / 4×1, 5/6-panel, conversation, action, and climax patterns. Visual thumbnails require explicit apply rather than destructive browse-time replacement.
 
@@ -233,7 +235,7 @@ The Output tab derives Character Sheet requirements from characters actually use
 
 ## Smart Manga
 
-Smart Manga remains a bounded proposal system distinct from Scene Template Studio.
+Smart Manga remains a bounded proposal system distinct from Story Template Studio.
 
 Inputs include purpose, optional panel count, canvas-size preservation, optional base-character placement, reproducible seed, and intensity (`stable | standard | bold`). One request returns three non-mutating candidates with balanced/dynamic/emotion emphasis. Apply is explicit.
 
@@ -305,11 +307,11 @@ Prototype 0.14.0 keeps these packages scoped to the currently selected page. Mul
 - active page is remembered per work and restored before page-selection persistence is re-enabled;
 - project autosave uses IndexedDB and does not silently bootstrap from historical project `localStorage` autosaves;
 - current generation/export remains selected-page scoped;
-- template browsing/filter/search never mutates current project state;
+- Story Template browsing/filter/search never mutates current project state;
 - template cards expose category, panel count, description, use case, and beat flow;
 - template thumbnail numbering follows selected RTL/LTR direction;
 - template beat N is assigned to panel order N after geometry-based renumbering;
-- shipped romance/battle/emotion/daily/comedy/suspense/character-introduction scene templates are available in both JA and EN UI;
+- shipped romance/battle/emotion/daily/comedy/suspense/character-introduction Story Templates are available in both JA and EN UI;
 - derived template variation preserves story action flow and requires explicit apply;
 - custom templates are browser-local, scale normalized geometry to the current canvas, and never store character-specific visual identity;
 - Story Templates seed valid layout/action/camera and optional editable dialogue/SFX;

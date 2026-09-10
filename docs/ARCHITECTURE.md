@@ -13,7 +13,7 @@ web/runtime/
 ├─ assist/       bounded Smart Manga assistance
 ├─ identity/     character identity and appearance handoff
 ├─ story/        story-readable panel semantics
-├─ templates/    Scene Template Studio and scene/cast contracts
+├─ templates/    Story Template Studio and scene/cast contracts
 ├─ lettering/    text writing direction
 ├─ ordering/     reading-order synchronization
 ├─ integration/  cross-feature integration with intentional order dependencies
@@ -192,7 +192,9 @@ This design avoids hidden recursive deletion and preserves stable page IDs.
 
 `Panel.actionIntent` captures the event/meaning that cannot reliably be inferred from pose alone. It is intentionally short free text. It is consumed by Panel Peek / Panel List / Panel Chips, generation prompt under `STORY ACTION INTENT`, and manifest `panelIntentIndex`. It is not visible manga text and never enters `TEXT TO RENDER`.
 
-## Scene Template Studio
+## Story Template Studio
+
+**Story Template is the canonical template feature name.** “Scene Template” is not a second system. The word “scene” remains valid for content semantics such as scene continuity and scene/cast contracts.
 
 ### Built-in registry
 
@@ -202,7 +204,7 @@ This design avoids hidden recursive deletion and preserves stable page IDs.
 
 ### Discovery views
 
-Template Studio adds category filtering, free-text search, visual cards, layout thumbnails, panel count/category, description/use case, and selected-template beat-flow preview.
+Story Template Studio adds category filtering, free-text search, visual cards, layout thumbnails, panel count/category, description/use case, and selected-template beat-flow preview.
 
 Browsing/searching/selecting changes only transient authoring UI state. It does not mutate the manga page.
 
@@ -269,7 +271,7 @@ Use separately attached Character Sheets only for characters whose identity mode
 
 Prototype 0.10 treats panel `order` as synchronized semantic state derived from current geometry plus reading direction before committed renders. `readingOrderedPanels16()` groups panels into horizontal reading rows using page-relative Y tolerance, then orders X descending for RTL or ascending for LTR. `renumberPanels()` assigns sequential `order` values.
 
-The synchronized order is shared by canvas badges, Scene Template thumbnail numbering/beat placement, Panel Peek/List, generated prompt, manifest-derived semantics, and exports. Changing text writing direction does not participate in this algorithm.
+The synchronized order is shared by canvas badges, Story Template thumbnail numbering/beat placement, Panel Peek/List, generated prompt, manifest-derived semantics, and exports. Changing text writing direction does not participate in this algorithm.
 
 Page sequence `order` is separate from panel `order`. Page reordering changes work sequence without changing per-page panel reading order. Container sibling `order` is another independent sequence used only for work organization.
 
@@ -327,14 +329,14 @@ Smart Manga remains bounded to shipped layouts/direction profiles, with three no
 
 The selected-panel dice preserves panel geometry, role, entered background content, and balloons/dialogue while re-proposing camera/effects/breakout plus placed-character pose/expression/gaze.
 
-Scene Template Studio and Smart Manga intentionally solve different problems: templates provide recognizable scene scripts and local reusable patterns; Smart Manga provides bounded alternative proposals from a purpose.
+Story Template Studio and Smart Manga intentionally solve different problems: templates provide recognizable story/scene scripts and local reusable patterns; Smart Manga provides bounded alternative proposals from a purpose.
 
 ## AI-safe render modes
 
 - editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, authoring labels, and balloon writing-direction text previews;
 - canonical annotated export contains normal authoring metadata defined by the exporter;
 - clean AI export removes authoring text/anatomy colors/balloon and SFX text while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
-- dynamic editor overlays, Work Library, hierarchy UI, and Template Studio UI are never part of canonical export serialization;
+- dynamic editor overlays, Work Library, hierarchy UI, and Story Template Studio UI are never part of canonical export serialization;
 - AI-generation ZIP excludes annotated PNG entirely.
 
 ## Prompt compiler and manifest

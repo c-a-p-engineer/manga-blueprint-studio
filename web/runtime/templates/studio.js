@@ -4,7 +4,7 @@ const DERIVED_TEMPLATE_ID_13='__derived_story_template_13';
 let derivedBaseId13='';
 
 Object.assign(i18n.ja,{
-  templateStudio:'シーンテンプレート',templateStudioLead:'「何を描くか」から選べます。カードで流れを確認してから適用できます。',
+  templateStudio:'ストーリーテンプレート',templateStudioLead:'「何を描くか」から選べます。カードで流れを確認してから適用できます。',
   templateCategory:'カテゴリ',templateCategoryAll:'すべて',templateCategoryRomance:'恋愛',templateCategoryBattle:'バトル',templateCategoryEmotion:'感情',templateCategoryDaily:'日常',templateCategoryComedy:'ギャグ',templateCategorySuspense:'サスペンス',templateCategoryCharacter:'キャラ紹介',templateCategoryCustom:'自作',
   templateSearch:'テンプレートを検索',templateSearchPlaceholder:'例: 告白 / キス / 反撃 / 泣く',templateUseCase:'向いている用途',templateBeats:'流れ',templatePanels:'コマ',templateNoMatch:'条件に合うテンプレートがありません。',
   templateDerive:'🎲 このテンプレから派生',templateDeriveReady:'元の流れを保ったまま、カメラ・表情・演出を少し変えた派生案です。',templateDerivedLabel:'派生案',
@@ -14,7 +14,7 @@ Object.assign(i18n.ja,{
   storyCrying:'泣き顔 3コマ',storyAnger:'怒り爆発 3コマ',storyResolve:'覚悟を決める 3コマ',storyPresence:'背後の気配 3コマ',storyClassroomTalk:'教室トーク 4コマ',storySmugFail:'ドヤ顔失敗 4コマ',storyCharacterIntro:'キャラ初登場 4コマ'
 });
 Object.assign(i18n.en,{
-  templateStudio:'Scene templates',templateStudioLead:'Start from what happens in the scene. Inspect the beat cards before applying.',
+  templateStudio:'Story templates',templateStudioLead:'Start from a recognizable story beat. Inspect the beat cards before applying.',
   templateCategory:'Category',templateCategoryAll:'All',templateCategoryRomance:'Romance',templateCategoryBattle:'Battle',templateCategoryEmotion:'Emotion',templateCategoryDaily:'Daily',templateCategoryComedy:'Comedy',templateCategorySuspense:'Suspense',templateCategoryCharacter:'Character intro',templateCategoryCustom:'Custom',
   templateSearch:'Search templates',templateSearchPlaceholder:'Example: confession / kiss / counterattack / crying',templateUseCase:'Best for',templateBeats:'Beat flow',templatePanels:'panels',templateNoMatch:'No templates match these filters.',
   templateDerive:'🎲 Derive from this template',templateDeriveReady:'A bounded variation that keeps the same story flow while changing some camera, expression, and emphasis choices.',templateDerivedLabel:'Derived variation',
