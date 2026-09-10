@@ -4,12 +4,15 @@ Visual manga storyboard editor for designing manuscript size, reading direction,
 
 **The human remains the director.** AI, Smart Manga, and templates propose; the user chooses and edits.
 
-## Current prototype: 0.14.0
+## Current prototype: 0.15.0
 
-The current implementation baseline is **Prototype 0.14.0**. Project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
+The current implementation baseline is **Prototype 0.15.0**. Project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
 Current prototype supports:
 
+- manga-first editor shell that presents the current work, optional volume/chapter/folder path, and page above the canvas;
+- explorer-style Work Structure tree for direct page navigation through `work → volume/chapter/folder → page`;
+- zero-padded user-facing page codes such as `P001`, `P002`, while canonical page numbers remain numeric;
 - local multi-work library with explicit create/open/rename/duplicate/delete operations;
 - volume/chapter/folder hierarchy inside a work, including nesting, reordering, and current-page assignment;
 - safe group deletion that moves pages/child groups to the deleted group's parent instead of silently deleting pages;
@@ -35,7 +38,7 @@ Current prototype supports:
 - producer provenance in exported manifests so stale GitHub Pages/cache exports can be distinguished from current `master`;
 - Undo/Redo, Japanese-first mobile UI, and English localization.
 
-See [`docs/PROTOTYPE-0.14.0.md`](docs/PROTOTYPE-0.14.0.md) for the current work-library/hierarchy release baseline.
+See [`docs/PROTOTYPE-0.15.0.md`](docs/PROTOTYPE-0.15.0.md) for the current manga-first navigation baseline.
 
 ## Template terminology
 
@@ -43,23 +46,28 @@ See [`docs/PROTOTYPE-0.14.0.md`](docs/PROTOTYPE-0.14.0.md) for the current work-
 
 ## Recommended workflow
 
-1. Open the **Works / 作品** library and create or explicitly open the work you want to edit.
-2. Select/add a page, and optionally assign it to a volume/chapter/folder.
-3. Choose canvas size and RTL/LTR panel reading direction.
-4. Start with Story Template Studio, Smart Manga, or a visual layout.
+1. Open or create the **work / 作品** you want to edit.
+2. Use the context shell above the canvas to choose `P001` / another page, or open **作品構成** to navigate volume/chapter/folder hierarchy in an explorer-style tree.
+3. In **ページ設定**, choose canvas size, RTL/LTR reading direction, Story Template / Smart Manga / layout, and other page-wide drawing settings.
+4. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
 5. Create/select reusable base characters and choose each appearance source.
-6. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
-7. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
-8. Resolve useful Manga Check / framing / action-pose warnings when they match your intent.
-9. Download **AI generation ZIP** for the currently selected page.
-10. Press **AIへ渡す文をコピー** and send the ZIP plus the short manifest-first instruction.
-11. Attach Character Sheets separately only for characters whose manifest entry marks them required.
-12. When debugging a suspicious result, inspect `manifest.producer` before assuming the current repository code generated that ZIP.
+6. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
+7. Resolve useful Manga Check / framing / action-pose warnings when they match your intent.
+8. Download **AI generation ZIP** for the currently selected page.
+9. Press **AIへ渡す文をコピー** and send the ZIP plus the short manifest-first instruction.
+10. Attach Character Sheets separately only for characters whose manifest entry marks them required.
+11. When debugging a suspicious result, inspect `manifest.producer` before assuming the current repository code generated that ZIP.
 
-## Work library, hierarchy, and persistence
+## Work library, hierarchy, navigation, and persistence
 
-Prototype 0.14.0 stores complete works in browser IndexedDB and exposes a local work library.
+Prototype 0.15.0 stores complete works in browser IndexedDB and presents navigation using the manga production hierarchy.
 
+- the application header owns app-wide controls rather than the current work identity;
+- the current work title is shown on its own line and opens the Work Library;
+- breadcrumbs show optional container ancestry plus the current page;
+- user-facing page codes use `P001` minimum three-digit formatting while `pageNumber` remains numeric;
+- Work Structure presents work/container/page hierarchy primarily as an explorer-style tree;
+- detailed page and hierarchy CRUD remain available as collapsible advanced controls;
 - listing/browsing works does not switch the active work;
 - opening/creating/importing a work explicitly sets active-work state;
 - ordinary autosave only saves work contents and cannot silently reactivate an older work after a switch;
@@ -154,13 +162,13 @@ Character Sheet が必要と書かれているキャラクターは、別途添�
 
 ### Producer provenance
 
-Prototype 0.14.0 keeps diagnostic producer metadata in each newly generated manifest:
+Prototype 0.15.0 keeps diagnostic producer metadata in each newly generated manifest:
 
 ```json
 {
   "producer": {
     "schema": "manga-blueprint-producer/1",
-    "appVersion": "0.14.0",
+    "appVersion": "0.15.0",
     "gitCommit": "<deployed commit or null>",
     "buildSource": "github-pages",
     "deployedAt": "<ISO timestamp>",
@@ -205,7 +213,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/
 
 ## Data contract
 
-Current application baseline: **Prototype 0.14.0**.
+Current application baseline: **Prototype 0.15.0**.
 
 - project format: `manga-blueprint/0.2`;
 - manifest: `manga-blueprint-export-manifest/3`;
@@ -224,7 +232,7 @@ Canonical schema: https://c-a-p-engineer.github.io/manga-blueprint-studio/schema
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- [`docs/PROTOTYPE-0.14.0.md`](docs/PROTOTYPE-0.14.0.md)
+- [`docs/PROTOTYPE-0.15.0.md`](docs/PROTOTYPE-0.15.0.md)
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json)
 
 ## License
