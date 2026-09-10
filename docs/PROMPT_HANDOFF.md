@@ -186,7 +186,7 @@ These strings are **instructions**, not manga lettering. They must never become 
 - `rtl` = Japanese manga, right-to-left;
 - `ltr` = left-to-right.
 
-Prototype 0.10 synchronizes panel `order` from current geometry plus this selected direction before committed renders. The resulting order is the common source used by canvas panel numbers, Scene Template thumbnail numbers, Scene Template beat assignment, Panel Peek/List, generated prompt, and exported semantics.
+Prototype 0.10 synchronizes panel `order` from current geometry plus this selected direction before committed renders. The resulting order is the common source used by canvas panel numbers, Story Template thumbnail numbers, Story Template beat assignment, Panel Peek/List, generated prompt, and exported semantics.
 
 For a standard two-column row:
 
@@ -195,7 +195,7 @@ RTL: right panel -> lower order number -> left panel
 LTR: left panel  -> lower order number -> right panel
 ```
 
-When a Scene Template is applied, beat 1 is applied to panel order 1, beat 2 to panel order 2, and so on. Template preview numbering therefore describes the same event sequence that will be placed into the page.
+When a Story Template is applied, beat 1 is applied to panel order 1, beat 2 to panel order 2, and so on. Template preview numbering therefore describes the same event sequence that will be placed into the page.
 
 ## Balloon lettering direction
 
@@ -258,7 +258,7 @@ For non-empty SFX, the generated prompt adds a separate semantic section such as
 
 ```text
 SFX LETTERING DIRECTION:
-- Panel 1 onomatopoeia "ドン": vertical Japanese writing, top-to-bottom with columns ordered right-to-left.
+- Panel 1 onomatopoeia "ドン": vertical Japanese writing, top-to-bottom with columns right-to-left.
 - Panel 3 onomatopoeia "BAM": horizontal writing.
 - SFX writing direction follows the same project default as balloons unless explicitly overridden.
 ```
@@ -302,7 +302,7 @@ Prototype 0.14.0 makes the spatial constraint strength explicit:
 
 ## Story Templates and text
 
-A Scene Template may seed sample dialogue/SFX only when the user enables that option before apply. Once applied, sample text becomes ordinary project dialogue/SFX and therefore appears under `TEXT TO RENDER` unless the user edits/removes it.
+A Story Template may seed sample dialogue/SFX only when the user enables that option before apply. Once applied, sample text becomes ordinary project dialogue/SFX and therefore appears under `TEXT TO RENDER` unless the user edits/removes it.
 
 Template-created balloons and SFX use `inherit`, so they follow the project default writing direction unless the user overrides them later.
 
