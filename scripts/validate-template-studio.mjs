@@ -27,10 +27,13 @@ for(const template of [
   'confession','kissBefore','kissAfter','holdHands','romanceMisunderstanding',
   'battleStandoff','decisiveBlow','counterattack','aerialAttack','throwTechnique','awakening',
   'crying','angerBurst','resolve','presenceBehind','classroomTalk','smugFail','characterIntro'
-])if(!app13.includes(`${template}:{`))throw new Error(`Missing scene template: ${template}`);
+])if(!app13.includes(`${template}:{`))throw new Error(`Missing story template: ${template}`);
 
 for(const category of ['romance','battle','emotion','daily','comedy','suspense','character','custom'])if(!app13.includes(`templateCategory${category[0].toUpperCase()+category.slice(1)}`))throw new Error(`Missing template category: ${category}`);
 
+if(!app13.includes("templateStudio:'ストーリーテンプレート'"))throw new Error('Japanese UI must use the canonical Story Template name');
+if(!app13.includes("templateStudio:'Story templates'"))throw new Error('English UI must use the canonical Story Template name');
+if(app13.includes("templateStudio:'シーンテンプレート'")||app13.includes("templateStudio:'Scene templates'"))throw new Error('Scene Template must not remain as a competing product/feature name');
 if(!app13.includes("const oldApply=$('applyStoryTemplate11')"))throw new Error('0.9 must replace the legacy apply listener so custom geometry can be applied intentionally');
 if(!app13.includes("if(Array.isArray(tpl.normalizedRects))"))throw new Error('Custom template geometry must scale to the current canvas');
 if(!app13.includes("project.meta.storyTemplate=id===DERIVED_TEMPLATE_ID_13"))throw new Error('Applied template provenance must distinguish derived variations');
@@ -38,4 +41,4 @@ if(!app13.includes("if(base)panel.characters=[makeStoryInstance11"))throw new Er
 if(!app14.includes('globalThis.toast=toast'))throw new Error('Template save feedback must be safe even when no prior toast helper exists');
 if(!app14.includes('syncTemplateSelect13()'))throw new Error('Template select labels must refresh on language changes');
 
-console.log('Prototype 0.9 template studio contract validation passed.');
+console.log('Story Template Studio contract validation passed.');
