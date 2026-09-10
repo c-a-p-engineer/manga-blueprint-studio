@@ -1,4 +1,4 @@
-// Prototype 0.12.8: concise page render brief and context-isolated handoff.
+// Prototype 0.14.1: concise page render brief, context-isolated handoff, and explicit reference/preservation contracts.
 // Downstream generators receive a high-signal contract before the detailed prompt,
 // while existing semantic JSON / clean PNG remain the authoritative sources.
 
@@ -38,6 +38,7 @@ function characterBrief30(characterId){
   return {
     characterId,
     identityMode:base.identityMode||'description',
+    referenceKey:String(base.referenceKey||''),
     appearance:appearance.length?appearance.join(' / '):'unspecified; infer only a simple consistent design'
   };
 }
@@ -61,11 +62,40 @@ function sceneSummary30(){
   }catch{}
   return {relationship,locations:unique('location'),times:unique('timeOfDay'),moods:unique('mood')};
 }
+function referenceRoles30(){
+  const roles=[{
+    source:'*_clean.png',
+    role:'spatial-layout',
+    controls:['panel-geometry','panel-proportions','reading-order-geometry','approximate-character-placement','approximate-character-scale','pose-direction'],
+    doesNotControl:['character-appearance','render-style','visible-text']
+  }];
+  for(const ch of usedCharacterIds30().map(characterBrief30)){
+    if(ch.identityMode!=='sheet'||!ch.referenceKey)continue;
+    roles.push({
+      source:`Character Sheet referenceKey=${ch.referenceKey}`,
+      role:'character-identity',
+      characterId:ch.characterId,
+      controls:['face','hair','body-proportions','outfit','distinctive-features'],
+      doesNotControl:['panel-layout','panel-count','pose','camera','story-action']
+    });
+  }
+  return roles;
+}
+function preservationContract30(){
+  return {
+    change:['translate-the-blueprint-into-finished-manga-artwork'],
+    preserveExact:['panel-count','panel-boundaries','panel-proportions','reading-order-geometry','allowlisted-visible-text'],
+    preserveStrong:['character-identity','relative-character-placement','relative-character-scale','story-action-intent','gaze-relationships','physical-contact','camera-intent','scene-continuity'],
+    guidanceOnly:['stick-figure-joint-coordinates','pose-figure-anatomy-details'],
+    doNotInherit:['stick-figure-appearance','authoring-labels','panel-numbers','ui-metadata','review-annotations'],
+    doNotAdd:['extra-panels','extra-visible-characters','unlisted-visible-text','replacement-story-or-genre','replacement-setting','unlisted-titles-or-captions']
+  };
+}
 function renderBriefObject30(){
   const ordered=[...(currentPage().panels||[])].sort((a,b)=>a.order-b.order);
   const scene=sceneSummary30();
   return {
-    schema:'manga-blueprint-render-brief/1',
+    schema:'manga-blueprint-render-brief/2',
     selfContainedPage:true,
     ignorePriorConversationUnlessRepeated:true,
     ignorePriorGeneratedImagesUnlessExplicitReference:true,
@@ -75,6 +105,8 @@ function renderBriefObject30(){
     scene,
     cast:usedCharacterIds30().map(characterBrief30),
     allowedVisibleText:exactVisibleText30(),
+    referenceRoles:referenceRoles30(),
+    preservation:preservationContract30(),
     panels:ordered.map(panel=>({
       order:panel.order,
       role:panel.role||'',
@@ -87,7 +119,7 @@ function renderBriefObject30(){
   };
 }
 function renderBriefText30(){
-  const brief=renderBriefObject30(),scene=brief.scene;
+  const brief=renderBriefObject30(),scene=brief.scene,p=brief.preservation;
   const lines=[
     'CURRENT PAGE RENDER CONTRACT — READ THIS FIRST:',
     '- This export is a COMPLETE, SELF-CONTAINED contract for the current manga page.',
@@ -98,7 +130,24 @@ function renderBriefText30(){
     `- Scene location(s): ${scene.locations.length?scene.locations.join(' / '):'unspecified'}. Time: ${scene.times.length?scene.times.join(' / '):'unspecified'}. Mood: ${scene.moods.length?scene.moods.join(' / '):'unspecified'}.`,
     `- Visible text allowlist: ${brief.allowedVisibleText.length?brief.allowedVisibleText.map(x=>JSON.stringify(x)).join(', '):'NONE — render no visible text'}.`,
     '- Do not add titles, captions, narration, UI, explanatory labels, extra dialogue, or genre/setting substitutions.',
-    '- ART DIRECTION changes rendering language only; it must not replace the current story/scene semantics.'
+    '- ART DIRECTION changes rendering language only; it must not replace the current story/scene semantics.',
+    '',
+    'REFERENCE IMAGE ROLES:',
+    '- CLEAN Manga Blueprint PNG = SPATIAL LAYOUT reference. Preserve exact panel geometry/proportions and strong relative spatial relationships. Do NOT copy stick-figure appearance.',
+    ...brief.referenceRoles.filter(x=>x.role==='character-identity').map(x=>`- ${x.source} = CHARACTER IDENTITY reference for ${x.characterId}. Preserve identity; do NOT take pose, camera, or panel layout from this image.`),
+    '',
+    'CHANGE:',
+    `- ${p.change.join(', ')}.`,
+    'PRESERVE EXACTLY:',
+    `- ${p.preserveExact.join(', ')}.`,
+    'PRESERVE AS STRONG CONSTRAINTS:',
+    `- ${p.preserveStrong.join(', ')}.`,
+    'USE AS GUIDANCE, NOT PIXEL-EXACT ANATOMY:',
+    `- ${p.guidanceOnly.join(', ')}.`,
+    'DO NOT INHERIT:',
+    `- ${p.doNotInherit.join(', ')}.`,
+    'DO NOT ADD:',
+    `- ${p.doNotAdd.join(', ')}.`
   ];
   lines.push('CURRENT PANEL BEATS:');
   for(const panel of brief.panels){
@@ -139,6 +188,8 @@ if(typeof exportManifest08==='function'){
   exportManifest08=function(identity,packageType,files){
     const manifest=exportManifestBase30(identity,packageType,files);
     manifest.renderBrief=renderBriefObject30();
+    manifest.referenceRoles=referenceRoles30();
+    manifest.preservationContract=preservationContract30();
     manifest.contextIsolation={
       selfContainedPage:true,
       ignorePriorConversationUnlessRepeated:true,
@@ -150,7 +201,12 @@ if(typeof exportManifest08==='function'){
     Object.assign(manifest.crossModelHints,{
       preferCurrentPageRenderBrief:true,
       rejectPriorContextCarryover:true,
-      artDirectionDoesNotChangeStoryGenre:true
+      artDirectionDoesNotChangeStoryGenre:true,
+      explicitReferenceRoles:true,
+      separateChangeFromPreservation:true,
+      panelGeometryConstraint:'exact',
+      characterSpatialRelationshipConstraint:'strong',
+      stickFigureJointConstraint:'guidance-only'
     });
     return manifest;
   };
@@ -171,4 +227,4 @@ applyLanguage=function(){
 
 installRenderBriefHelp30();
 render();
-document.querySelector('footer')&&(document.querySelector('footer').textContent='Prototype 0.12.8 · current-page render contract');
+document.querySelector('footer')&&(document.querySelector('footer').textContent='Prototype 0.14.1 · explicit reference + preservation contract');
