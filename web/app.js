@@ -2,7 +2,7 @@
 // keep this order explicit because later chunks intentionally extend earlier behavior.
 const fallbackBuildInfo={
   schema:'manga-blueprint-build-info/1',
-  appVersion:'0.14.0',
+  appVersion:'0.15.0',
   gitCommit:null,
   buildSource:'runtime-fallback',
   deployedAt:null
@@ -51,7 +51,8 @@ const runtimeChunks = [
   ['templates/panel-cast-flow', './runtime/templates/panel-cast-flow.js'],
   ['handoff/interaction-generation-contract', './runtime/handoff/interaction-generation-contract.js'],
   ['handoff/render-brief', './runtime/handoff/render-brief.js'],
-  ['handoff/producer-provenance', './runtime/handoff/producer-provenance.js']
+  ['handoff/producer-provenance', './runtime/handoff/producer-provenance.js'],
+  ['ui/editor-shell', './runtime/ui/editor-shell.js']
 ];
 
 for (const [id, src] of runtimeChunks) {
