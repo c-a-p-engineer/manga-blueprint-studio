@@ -33,7 +33,7 @@
 ### Page, layout, reading and lettering
 - manuscript/canvas presets including portrait/social/video, B5, A4, Webtoon, and custom sizes;
 - explicit RTL/LTR panel reading direction;
-- automatic geometry-based panel numbering synchronized across canvas, Panel Peek/List, Scene Templates, prompt, manifest, and exports;
+- automatic geometry-based panel numbering synchronized across canvas, Panel Peek/List, Story Templates, prompt, manifest, and exports;
 - vertical Japanese (`vertical-rl`) project default with horizontal and per-balloon/per-SFX overrides;
 - 1–6 panel, conversation/action/climax, and 4-koma layout families;
 - clean/review export separation with dynamic canvas dimensions.
@@ -48,7 +48,8 @@
 - contact-aware action/pose resolution for interactions such as hugs;
 - action/pose conflict warnings and scene/style conflict warnings.
 
-### Scene Template Studio / Smart Manga
+### Story Template Studio / Smart Manga
+- **Story Template / ストーリーテンプレート is the single canonical template feature name;** “Scene Template” is not a separate feature name;
 - category/search/template cards with description, use case, panel count, beat flow, and bounded derivation;
 - browser-local custom templates with normalized geometry and no character-specific identity;
 - romance, battle, emotion, daily, comedy, suspense, and character-introduction packs;
@@ -216,7 +217,7 @@
 
 ## Longer-term / optional
 
-- script → scene/beat/page planning assistance;
+- script → story/beat/page planning assistance;
 - revision/diff history beyond current Undo/Redo;
 - collaboration only if privacy/hosting boundaries are intentionally introduced;
 - animatic/audio/timeline features only if the product scope expands beyond manga planning.
