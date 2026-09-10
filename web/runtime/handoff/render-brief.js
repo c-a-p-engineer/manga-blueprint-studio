@@ -1,4 +1,4 @@
-// Prototype 0.14.1: concise page render brief, context-isolated handoff, and explicit reference/preservation contracts.
+// Prototype 0.14.0: concise page render brief, context-isolated handoff, and explicit reference/preservation contracts.
 // Downstream generators receive a high-signal contract before the detailed prompt,
 // while existing semantic JSON / clean PNG remain the authoritative sources.
 
@@ -227,4 +227,4 @@ applyLanguage=function(){
 
 installRenderBriefHelp30();
 render();
-document.querySelector('footer')&&(document.querySelector('footer').textContent='Prototype 0.14.1 · explicit reference + preservation contract');
+document.querySelector('footer')&&(document.querySelector('footer').textContent='Prototype 0.14.0 · explicit reference + preservation contract');
