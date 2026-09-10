@@ -2,7 +2,7 @@
 // keep this order explicit because later chunks intentionally extend earlier behavior.
 const fallbackBuildInfo={
   schema:'manga-blueprint-build-info/1',
-  appVersion:'0.14.0',
+  appVersion:'0.14.1',
   gitCommit:null,
   buildSource:'runtime-fallback',
   deployedAt:null
