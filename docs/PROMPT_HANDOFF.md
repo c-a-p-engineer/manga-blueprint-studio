@@ -51,7 +51,7 @@ The manifest retains export/package identity, file roles, instructions, characte
 
 ### Reference role contract
 
-Prototype 0.14.1 adds explicit per-reference ownership at the handoff boundary.
+Prototype 0.14.0 adds explicit per-reference ownership at the handoff boundary.
 
 The clean blueprint and every required Character Sheet are assigned separate roles. Each role declares both what that reference controls and what it must **not** control.
 
@@ -92,7 +92,7 @@ This prevents a pose blueprint from being copied as appearance and prevents a Ch
 
 ### Preservation contract
 
-Prototype 0.14.1 also separates transformation scope from invariants.
+Prototype 0.14.0 also separates transformation scope from invariants.
 
 The render brief emits five constraint levels:
 
@@ -294,7 +294,7 @@ Clean PNG is the spatial reference. Stick figures communicate pose/placement, no
 
 Editor-only overlays such as Panel Chips, `ⓘ`, Crop Guide, and balloon text previews do not enter clean PNG. Balloon/SFX writing direction is communicated through `.manga.json`, prompt, and derived manifest metadata instead of rendering authoring lettering labels into the AI spatial reference.
 
-Prototype 0.14.1 makes the spatial constraint strength explicit:
+Prototype 0.14.0 makes the spatial constraint strength explicit:
 
 - panel geometry and proportions: **exact**;
 - character-to-panel and character-to-character spatial relationships: **strong**;
