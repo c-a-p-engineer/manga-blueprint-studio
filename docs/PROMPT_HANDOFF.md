@@ -49,6 +49,61 @@ The manifest retains export/package identity, file roles, instructions, characte
 
 `instructions` identifies manifest itself as `readFirst`, clean PNG as `primaryVisual`, project JSON as `semanticContract`, prompt file as `generationInstructions`, and states `annotatedReviewAllowedForGeneration: false`.
 
+### Reference role contract
+
+Prototype 0.14.1 adds explicit per-reference ownership at the handoff boundary.
+
+The clean blueprint and every required Character Sheet are assigned separate roles. Each role declares both what that reference controls and what it must **not** control.
+
+Example:
+
+```json
+{
+  "referenceRoles": [
+    {
+      "source": "*_clean.png",
+      "role": "spatial-layout",
+      "controls": [
+        "panel-geometry",
+        "panel-proportions",
+        "reading-order-geometry",
+        "approximate-character-placement",
+        "approximate-character-scale",
+        "pose-direction"
+      ],
+      "doesNotControl": [
+        "character-appearance",
+        "render-style",
+        "visible-text"
+      ]
+    },
+    {
+      "source": "Character Sheet referenceKey=hero",
+      "role": "character-identity",
+      "characterId": "hero",
+      "controls": ["face", "hair", "body-proportions", "outfit", "distinctive-features"],
+      "doesNotControl": ["panel-layout", "panel-count", "pose", "camera", "story-action"]
+    }
+  ]
+}
+```
+
+This prevents a pose blueprint from being copied as appearance and prevents a Character Sheet pose/background from silently overriding the authored manga composition.
+
+### Preservation contract
+
+Prototype 0.14.1 also separates transformation scope from invariants.
+
+The render brief emits five constraint levels:
+
+- `CHANGE` — what the downstream model is expected to transform;
+- `PRESERVE EXACTLY` — panel count, boundaries/proportions, reading-order geometry, and allowlisted visible text;
+- `PRESERVE AS STRONG CONSTRAINTS` — character identity, relative placement/scale, story action, gaze/contact, camera intent, and scene continuity;
+- `USE AS GUIDANCE` — stick-figure joint coordinates and simplified pose-figure anatomy;
+- `DO NOT INHERIT / DO NOT ADD` — authoring artifacts and unsupported inventions.
+
+The important distinction is that panel geometry is exact, while stick-figure joints are not pixel-exact anatomy. This allows a downstream renderer to preserve composition without forcing malformed anatomy when a finished character body replaces the planning figure.
+
 ### Character guidance
 
 `characterGuidance` is derived from reusable characters actually used on the page and contains identity mode, reference key, appearance guidance, and Character Sheet requirement/status.
@@ -238,6 +293,12 @@ Forbidden as visible text includes:
 Clean PNG is the spatial reference. Stick figures communicate pose/placement, not appearance.
 
 Editor-only overlays such as Panel Chips, `ⓘ`, Crop Guide, and balloon text previews do not enter clean PNG. Balloon/SFX writing direction is communicated through `.manga.json`, prompt, and derived manifest metadata instead of rendering authoring lettering labels into the AI spatial reference.
+
+Prototype 0.14.1 makes the spatial constraint strength explicit:
+
+- panel geometry and proportions: **exact**;
+- character-to-panel and character-to-character spatial relationships: **strong**;
+- simplified stick-figure joints/anatomy: **guidance only**.
 
 ## Story Templates and text
 
