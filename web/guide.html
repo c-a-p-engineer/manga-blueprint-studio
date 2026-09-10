@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>使い方 — Manga Blueprint Studio</title>
+  <meta name="description" content="Manga Blueprint Studio の現在の使い方。作品、巻・章・フォルダ、P001ページ、コマ編集、AI生成ZIPまでを漫画制作の流れに沿って説明します。" />
+  <link rel="stylesheet" href="./guide.css" />
+</head>
+<body>
+  <header class="guide-header">
+    <div>
+      <a class="brand" href="./">Manga Blueprint Studio</a>
+      <div class="subtitle">使い方 / User Guide</div>
+    </div>
+    <nav class="header-actions" aria-label="Guide actions">
+      <a class="primary-link" href="./">エディタに戻る</a>
+      <a href="https://github.com/c-a-p-engineer/manga-blueprint-studio">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="guide-layout">
+    <aside class="toc" aria-label="目次">
+      <strong>目次</strong>
+      <a href="#concept">まずこれだけ</a>
+      <a href="#screen">画面の見方</a>
+      <a href="#structure">作品構成</a>
+      <a href="#page-settings">ページ設定</a>
+      <a href="#tabs">各編集タブ</a>
+      <a href="#story-tools">Story Template / Smart Manga</a>
+      <a href="#character">キャラクター</a>
+      <a href="#direction">読み方向・文字方向</a>
+      <a href="#handoff">AIへ渡す</a>
+      <a href="#limits">現在未対応</a>
+      <a href="#trouble">困ったとき</a>
+    </aside>
+
+    <main class="guide-main">
+      <section class="hero" id="concept">
+        <p class="eyebrow">漫画のページ設計から始める</p>
+        <h1>Manga Blueprint Studio の使い方</h1>
+        <p>このツールは「AIに漫画を丸投げする」画面ではなく、<strong>作品 → ページ → コマ</strong>の順で漫画の設計を決め、その設計図をAIへ渡すためのエディタです。</p>
+        <pre class="flow"><code>作品
+  → 必要なら 巻 / 章 / フォルダ
+    → P001, P002, ...
+      → ページ設定 / コマ割り
+        → コマ・キャラ・背景・文字・演出
+          → 選択中ページの AI生成ZIP</code></pre>
+        <div class="callout"><strong>巻・章・フォルダは任意です。</strong> 短い漫画なら「作品 → P001 → P002 …」だけで使えます。</div>
+      </section>
+
+      <section>
+        <h2>最初の5分</h2>
+        <ol class="steps">
+          <li><strong>作品を開く / 作る</strong><span>作品名をタップすると作品一覧を開けます。</span></li>
+          <li><strong>P001を選ぶ</strong><span>キャンバス上のページバーか「作品構成」からページを選びます。</span></li>
+          <li><strong>ページ設定を決める</strong><span>原稿サイズ、読み方向、画風、コマ割り、ストーリーテンプレートなどを決めます。</span></li>
+          <li><strong>コマをタップして中身を詰める</strong><span>人物、カメラ、背景、吹き出し、演出を必要なところだけ編集します。</span></li>
+          <li><strong>出力 → AI生成ZIP</strong><span>現在の1ページをZIPにして、表示される短い受け渡し文と一緒に画像生成AIへ渡します。</span></li>
+        </ol>
+      </section>
+
+      <section id="screen">
+        <h2>画面の見方</h2>
+        <div class="card-grid">
+          <article class="card"><h3>① アプリヘッダー</h3><p>「使い方」「元に戻す」「やり直す」「日本語 / English」など、アプリ全体の操作だけを置いています。</p></article>
+          <article class="card"><h3>② 作品・ページ位置</h3><p>作品名、パンくず、現在ページ <code>P001</code>、前後移動、ページ追加、作品構成があります。ここが「今どこを編集しているか」の場所です。</p></article>
+          <article class="card"><h3>③ 漫画キャンバス</h3><p>現在ページのコマ割りと人物・吹き出しなどを確認します。コマや人物をタップすると編集対象になります。</p></article>
+          <article class="card"><h3>④ 下の編集タブ</h3><p>ページ設定 / コマ / キャラ / 背景 / 文字 / 演出 / 出力。現在のページや選択中のコマを具体的に編集します。</p></article>
+        </div>
+      </section>
+
+      <section id="structure">
+        <h2>作品構成：ファイルエクスプローラー感覚でページを探す</h2>
+        <p><strong>作品構成</strong>は、漫画の階層を一覧するメインのナビゲーションです。</p>
+        <pre><code>ロボ漫画
+├─ P001  表紙
+├─ 第1巻
+│  ├─ 第1章
+│  │  ├─ P002  登場
+│  │  └─ P003  対峙
+│  └─ P004
+└─ 資料用フォルダ
+   └─ P005</code></pre>
+        <p>ページをタップするとそのページへ移動します。巻・章・フォルダの作成や移動など細かい操作は、同じ画面の詳細操作を開いて行います。</p>
+        <div class="callout"><strong>P001とは？</strong> ページ番号1を見やすく <code>P001</code> と表示しているだけです。8ページ目は <code>P008</code>、42ページ目は <code>P042</code>。ページ名は任意です。</div>
+      </section>
+
+      <section id="page-settings">
+        <h2>ページ設定：そのページをどう作るか</h2>
+        <p><strong>ページ設定</strong>はページを探す場所ではなく、今開いているページの原稿・コマ割り・全体方向を決める場所です。</p>
+        <div class="card-grid">
+          <article class="card"><h3>原稿サイズ</h3><p>標準縦長、SNS向け比率、B5/A4、Webtoon、カスタムなどを選べます。</p></article>
+          <article class="card"><h3>読み方向</h3><p>日本漫画の右→左（RTL）が既定。左→右（LTR）にもできます。コマ番号と読み順に反映されます。</p></article>
+          <article class="card"><h3>コマ割り</h3><p>1〜6コマ、4コマ、会話、アクション、クライマックスなどのレイアウトから開始できます。</p></article>
+          <article class="card"><h3>画風・仕上げ</h3><p>カラー/白黒、アニメ/漫画/鉛筆/インクなど、線、陰影、描き込み、背景仕上げ、追加指示を作品全体の描き方として指定できます。</p></article>
+        </div>
+        <p>「追加の画風・仕上げ指示（任意）」は、例えば <code>線を細めに。淡い色合い。影は控えめ。</code> のように普通の日本語で書いて構いません。</p>
+      </section>
+
+      <section id="tabs">
+        <h2>各編集タブ</h2>
+        <div class="feature-table" role="table" aria-label="編集タブの役割">
+          <div class="feature-row feature-head" role="row"><strong>タブ</strong><strong>何を決める？</strong></div>
+          <div class="feature-row" role="row"><strong>ページ設定</strong><span>原稿サイズ、読み方向、画風、コマ割り、ページ全体の開始パターン</span></div>
+          <div class="feature-row" role="row"><strong>コマ</strong><span>そのコマで何が起きるか、カメラ、構図、枠、断ち切り、ブチ抜きなど</span></div>
+          <div class="feature-row" role="row"><strong>キャラ</strong><span>登場人物、見た目の参照方法、ポーズ、表情、視線、位置・大きさ</span></div>
+          <div class="feature-row" role="row"><strong>背景</strong><span>場所、時間、天気、雰囲気、描き込み量、背景の見せ方</span></div>
+          <div class="feature-row" role="row"><strong>文字</strong><span>吹き出し、話者、セリフ、縦書き/横書き</span></div>
+          <div class="feature-row" role="row"><strong>演出</strong><span>集中線・スピード線・衝撃表現、オノマトペ/SFX</span></div>
+          <div class="feature-row" role="row"><strong>出力</strong><span>現在ページをAI生成用または確認用パッケージとして出力</span></div>
+        </div>
+      </section>
+
+      <section id="story-tools">
+        <h2>ストーリーテンプレートと Smart Manga の違い</h2>
+        <div class="compare">
+          <article><h3>ストーリーテンプレート</h3><p>「告白」「反撃」「驚く」「キャラ登場」のような、<strong>意味の分かる定番の展開</strong>から始めたいときに使います。</p><p>コマ割り、出来事、カメラ、ポーズ、背景、演出、任意のサンプル台詞などをまとめて提案します。</p></article>
+          <article><h3>Smart Manga</h3><p>「こういう目的のページがほしい」から、<strong>複数の少し違う候補</strong>を見たいときに使います。</p><p>候補を見ただけでは現在ページは変わりません。採用した候補だけを明示的に適用します。</p></article>
+        </div>
+        <p><strong>Scene Template / シーンテンプレートという別機能はありません。</strong> 正式名称はストーリーテンプレートです。</p>
+      </section>
+
+      <section id="character">
+        <h2>キャラクター：Character Sheet は必須ではない</h2>
+        <p>再利用キャラクターの見た目は3方式から選べます。</p>
+        <div class="card-grid">
+          <article class="card"><h3>Character Sheet</h3><p>別途用意したキャラクターシートを正本として使います。必要な場合だけ生成時に別添します。</p></article>
+          <article class="card"><h3>文章で指定</h3><p>髪、服、体格、特徴などを日本語の説明で固定します。Character Sheetは不要です。</p></article>
+          <article class="card"><h3>AIにおまかせ</h3><p>簡単な外見を生成AI側に決めさせます。ページ内では同じ人物として一貫させる前提です。</p></article>
+        </div>
+        <div class="callout">キャンバスの棒人間は<strong>見た目ではなくポーズ・位置・大きさの設計図</strong>です。</div>
+      </section>
+
+      <section id="direction">
+        <h2>読み方向と文字方向は別</h2>
+        <div class="compare">
+          <article><h3>コマの読み方向</h3><p><code>rtl</code> = 日本漫画の右→左。<code>ltr</code> = 左→右。コマ番号と読む順番を決めます。</p></article>
+          <article><h3>文字の書き方向</h3><p><code>vertical-rl</code> = 縦書き日本語（既定）。<code>horizontal-tb</code> = 横書き。吹き出しやSFXごとに上書きもできます。</p></article>
+        </div>
+        <p>縦書きに変えても、漫画のコマ順は変わりません。</p>
+      </section>
+
+      <section>
+        <h2>カメラ用語が分からないとき</h2>
+        <p>英語の専門語はAIとの相互運用のため一部残りますが、日本語の意味を主に考えれば構いません。</p>
+        <div class="card-grid">
+          <article class="card"><h3>Extreme close / 超寄り</h3><p>目・口・手・拳など一部分を大きく見せる。緊張、驚き、決めに向く。</p></article>
+          <article class="card"><h3>Long / 引き</h3><p>全身と周囲を見せる。人物の位置関係や動作を読みやすくする。</p></article>
+          <article class="card"><h3>Low angle / あおり</h3><p>下から見上げる。強さ、巨大感、迫力、威圧感を出しやすい。</p></article>
+          <article class="card"><h3>High angle / ふかん</h3><p>上から見下ろす。位置関係や弱さ・孤立を見せやすい。</p></article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Panel Peek / コマ一覧 / Manga Check</h2>
+        <p><strong>Panel Peek</strong> はコマの <code>ⓘ</code> または長押しから、出来事・人物・カメラ・背景・台詞・演出などをまとめて確認できます。</p>
+        <p><strong>コマ一覧</strong>はページ全体を読むための一覧です。毎回すべての設定欄を開かなくてもコマの意味を確認できます。</p>
+        <p><strong>Manga Check</strong>は助言です。出来事が空、カメラが単調、背景が空、人物サイズとカメラ指定が矛盾していそう、といった点を知らせますが、勝手に直したり出力を止めたりしません。</p>
+      </section>
+
+      <section id="handoff">
+        <h2>AIへ渡す</h2>
+        <div class="callout important"><strong>現在の出力単位は「選択中の1ページ」です。</strong> 複数ページ作品を作れても、まだ作品全部を1つの生成ZIPへまとめる機能ではありません。</div>
+        <h3>AI生成ZIP</h3>
+        <p>画像生成するときはこちらを使います。</p>
+        <pre><code>&lt;prefix&gt;_clean.png
+&lt;prefix&gt;.manga.json
+&lt;prefix&gt;_prompt.txt
+&lt;prefix&gt;_manifest.json</code></pre>
+        <p><code>*_manifest.json</code> が最初に読むファイルです。AIへ渡す短い文章も「まずmanifestを読んで」と指示する形になっています。</p>
+        <h3>確認用 / Review ZIP</h3>
+        <p>同じ意味データに注釈付きPNGを加えた確認・保存向けパッケージです。注釈PNGは制作メタ情報を含むため、通常の画像生成入力にはAI生成ZIPを使います。</p>
+        <h3>ファイルごとの役割</h3>
+        <ul>
+          <li><strong>Clean PNG</strong>：コマ形状、配置、大きさ、ポーズ方向など空間。</li>
+          <li><strong>.manga.json + prompt</strong>：何が起こるか、カメラ、背景、文字方向など意味。</li>
+          <li><strong>Character guidance / 必要なCharacter Sheet</strong>：人物の見た目。</li>
+          <li><strong>画風・仕上げ</strong>：どんな描き方にするか。</li>
+          <li><strong>TEXT TO RENDER</strong>：最終漫画に実際に描いてよいセリフ/SFX。</li>
+        </ul>
+      </section>
+
+      <section id="limits">
+        <h2>現在まだ対応していないもの</h2>
+        <p>以下はロードマップ上の次段階以降です。今の画面に似たデータがあっても「もう使える」とは扱いません。</p>
+        <ul>
+          <li>作品全体を完全復元する Backup / Restore ZIP</li>
+          <li>「P003〜P005」「第1巻」「作品全体」などの複数ページAI出力</li>
+          <li>コマ単位の Panel-first 生成パッケージと自動ページ合成</li>
+          <li>場所・小物・衣装などをページ跨ぎで固定する汎用Reference Asset</li>
+          <li>180度線、視線ベクトル、Eye-flow、Gutter、見開きなどの高度な漫画演出契約</li>
+          <li>生成後の日本語文字を決定論的に最終組版する機能</li>
+        </ul>
+      </section>
+
+      <section id="trouble">
+        <h2>困ったとき</h2>
+        <details><summary>別ページが見つからない</summary><p>キャンバス上のページ列か「作品構成」を開いてください。</p></details>
+        <details><summary>巻や章を作らないといけない？</summary><p>不要です。ページを作品直下に置いたまま使えます。</p></details>
+        <details><summary>P001の意味が分からない</summary><p>ページ番号1の見やすい表記です。内部データでは数値の1として管理されています。</p></details>
+        <details><summary>AIがキャラ名やカメラ注記まで絵に描いた</summary><p>通常は「AI生成ZIP」のclean PNGを使ってください。注釈付きPNGは確認用です。正確な表示文字はpromptのTEXT TO RENDERだけが許可対象です。</p></details>
+        <details><summary>Character Sheetを作りたくない</summary><p>キャラクターの見た目方式を「文章で指定」または「AIにおまかせ」にしてください。</p></details>
+        <details><summary>英語の項目が分からない</summary><p>日本語UIでは専門語に日本語説明を添える方針です。主要な操作面に説明のない英語だけが残っている場合はUIの改善対象です。</p></details>
+      </section>
+
+      <section class="end-links">
+        <h2>続ける</h2>
+        <a class="primary-link big" href="./">エディタを開く</a>
+        <a href="https://github.com/c-a-p-engineer/manga-blueprint-studio/blob/master/docs/ROADMAP.md">開発ロードマップ</a>
+        <a href="https://github.com/c-a-p-engineer/manga-blueprint-studio/blob/master/docs/USER-GUIDE.md">Markdown版ユーザーガイド</a>
+      </section>
+    </main>
+  </div>
+
+  <footer>Prototype 0.15.1 · Manga Blueprint Studio User Guide</footer>
+</body>
+</html>

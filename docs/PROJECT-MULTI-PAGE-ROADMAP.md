@@ -1,181 +1,359 @@
-# Project / multi-page / portability roadmap
+# Project / multi-page / portability design notes
 
-Planning document. Implementation details remain subject to the canonical contracts in `AGENTS.md`, `docs/PRODUCT.md`, schema, architecture, and shipped code.
+This document records **design decisions and constraints** for the multi-page/backup/export line of work.
+
+Current delivery status belongs only in [`ROADMAP.md`](ROADMAP.md). Do not maintain a second phase-status truth here.
+
+## Current shipped foundation
+
+The current runtime already ships:
+
+- stable `meta.workId`;
+- stable `Page.id` and `Container.id`;
+- numeric `pageNumber` plus page `order` / optional title;
+- optional `Page.containerId`;
+- `volume | chapter | folder` containers with optional parent references;
+- multi-work IndexedDB persistence;
+- multi-page authoring;
+- explorer-style Work Structure;
+- visible page codes such as `P001` derived from numeric page numbers;
+- selected-page generation/review export.
+
+Current canonical serialized project format remains:
+
+```text
+manga-blueprint/0.2
+```
+
+The hierarchy/identity additions are compatible optional fields inside that format; there is no planned `manga-blueprint/next` migration merely for the current work/page model.
 
 ## Key decisions
 
-- Keep JSON as the canonical machine-readable project state and restore format. YAML may be generated as a human/model-facing handoff projection, but must not become a second source of truth.
-- Treat the current `pages[]` schema as the multi-page foothold, but remove runtime dependence on `project.pages[0]` before advertising multi-page support.
-- Model directory-like organization as Work → optional Containers → Pages. Containers should support at least `volume`, `chapter`, and `folder`, with optional parent references, while pages remain flat records with stable IDs and container references.
-- Separate backup/restore packages from generation/review packages. A generation ZIP is not a complete backup.
-- Multi-page generation never means “ask one image model to render every page in one image.” Root batch instructions coordinate page order and continuity; each page keeps an independently renderable page contract.
-- Panel-first generation is an export/orchestration contract, not a hard dependency on one provider. Normal panels are independent generation units; cross-panel breakout/shared-canvas/spread cases become explicit generation groups.
-- Generated-result semantic validation is **not on the active roadmap**. Keep only deterministic integrity/composition checks that are naturally required by export, import, backup, and deterministic page composition.
-- No migration path is required for the current browser `localStorage` state. The current user accepts discarding/resetting that local-only prototype state when the new storage model ships. File import compatibility remains a separate concern.
-- Import/restore must never silently overwrite an existing work. A same-`workId` conflict requires an explicit user choice.
+### JSON remains canonical
 
-## Sequencing rule
+Keep JSON as the canonical machine-readable project/restore format.
 
-Roadmap priority and implementation order are different concepts.
+YAML may be generated as a human/model-facing derived handoff view if it becomes useful, but it must not become a competing source of truth.
 
-- **Strategic priority** answers: “Which capability matters most to the product outcome?”
-- **Implementation order** answers: “What must be built first so the strategic capability can be implemented once, cleanly, and safely?”
+Reasons:
 
-A feature can remain the top strategic priority while lower-priority enabling work is implemented first. Dependencies, data ownership, irreversible schema choices, and rework risk outrank headline priority when choosing execution order.
+- native browser JSON support;
+- existing JSON Schema validation;
+- deterministic serialization/hashing is simpler;
+- current compatibility machinery already targets JSON;
+- YAML adds parser/scalar typing edge cases without solving generation reliability.
 
-Use this ordering rule:
+### Work hierarchy remains referential
 
-1. Identify the target capability and acceptance criteria.
-2. Build a dependency graph: data model/storage → domain behavior → export/orchestration → presentation/polish.
-3. Pull forward only prerequisites whose later addition would force meaningful rework or data migration.
-4. Do not pull unrelated “nice to have” tasks forward merely because they are nearby.
-5. Prefer a thin vertical slice when prerequisites are optional or reversible; prefer foundation-first when the target would otherwise be built on throwaway state/API assumptions.
+Do not force every work into a volume hierarchy.
 
-Example: Panel-first is strategically S, but multi-work/page identity and export scope come first because panel outputs need stable `workId/pageId/panelId`, a destination page, and explicit export scope. Eye-flow is useful but does not block panel-first, so it stays later.
-
-## Phase plan
-
-| Phase | Priority | Goal | Main work | Verification / exit criteria |
-|---|---|---|---|---|
-| 0. Storage and identity foundation | S | Make multiple works/pages/assets safe to persist | Introduce stable `workId`, `pageId`, container IDs and ordering; add a storage abstraction suitable for multiple works and future binary references; move to IndexedDB or an equivalent structured browser store. **Do not build legacy localStorage migration.** | New storage can create/reopen multiple works and selected pages; reset from the old prototype state is acceptable; no silent overwrite |
-| 1. True multi-page core | S | Turn existing `pages[]` from schema-only capability into runtime behavior | Replace `currentPage = project.pages[0]` assumptions with selected page state; add page create/duplicate/delete/reorder/rename; separate page number from stable ID; page thumbnail/list navigation; undo/redo remains page-safe | User can create, switch, edit, reorder and reopen 10+ pages; edits affect only selected page |
-| 2. Work / volume / folder organization | S | Support `作品 > ページ` and `作品 > 巻/章/フォルダ > ページ` | Add work library screen; optional hierarchical containers (`volume`, `chapter`, `folder`); move/reorder pages between containers; duplicate/rename work; compact tree/list UI for mobile | Both flat and grouped works are representable without data duplication; page IDs survive moves; numbering can be regenerated without changing IDs |
-| 3. Portable backup / restore | S | Make projects fully recoverable and transferable | Add dedicated `*.manga-backup.zip`; `backup-manifest.json`; canonical project JSON; local templates; explicitly included reference assets; content hashes/checksums; restore preview; transactional restore | Backup downloaded in one browser can restore into a clean browser; corrupted/mismatched ZIP fails before mutation; generation ZIP is never accepted as a full backup by mistake |
-| 4. Scoped export and multi-page handoff | S | Export exactly the pages the user intends | Export scope UI: selected page / explicit page list / range / container / whole work; preserve original work/container/page IDs and page numbers; single-page package remains self-contained; multi-page bundle gets root batch manifest plus per-page manifests/prompts; spread pair as explicit special scope | Page 7-only export contains no hidden page 6/8 semantics; `3-5,8` exports exactly four pages; multi-page root manifest enumerates every included page and per-page file path |
-| 5. Panel-first / hybrid generation packages | S | Reduce whole-page instruction failure without losing manga-specific cross-panel effects | Emit per-panel generation units; clean cropped panel blueprint + panel contract + references; explicit `generationGroupId` for breakout/shared background/spread; deterministic compositor recipe/geometry; provider capability declarations; output naming contract | A consumer can generate each normal panel independently and reconstruct the exact page geometry; grouped effects do not get split accidentally; page-first export remains available during migration |
-| 6. Cross-page continuity and reference assets | A | Make long works visually and semantically stable | Reference Asset Library for character/location/prop/outfit/style/pose/lighting; continuity state across selected page range; prop/costume/location state transitions; previous-page/next-page anchors; container/work-level defaults with page overrides | Repeated character/location/prop references resolve to stable IDs; page-local overrides do not mutate work defaults; continuity checks can identify unexplained state changes |
-| 7. Manga direction expansion | A/B | Build on the new project/page model | 180-degree axis/eyeline, perspective/lens, eye-flow, gutter transition semantics, page-turn/reveal intent, spreads/binding-safe zones, deterministic lettering, advanced panel geometry | Features operate across page boundaries without breaking single-page generation or backup compatibility |
-
-## Proposed data-shape direction
-
-Do not force `volume` into every work. Keep pages flat and containers referential so moving a page does not rewrite its identity.
+Current data shape:
 
 ```json
 {
-  "format": "manga-blueprint/next",
+  "format": "manga-blueprint/0.2",
   "meta": {
     "workId": "work-uuid",
     "title": "作品名"
   },
   "containers": [
-    {"id": "vol-1", "kind": "volume", "title": "第1巻", "order": 1, "parentId": null}
+    {
+      "id": "vol-1",
+      "kind": "volume",
+      "title": "第1巻",
+      "order": 1,
+      "parentId": null
+    }
   ],
   "pages": [
-    {"id": "page-uuid", "pageNumber": 1, "order": 1, "containerId": "vol-1", "panels": []}
+    {
+      "id": "page-uuid",
+      "pageNumber": 1,
+      "order": 1,
+      "containerId": "vol-1",
+      "panels": []
+    }
   ]
 }
 ```
 
-A flat work simply uses `containerId: null`. Future chapter/folder nesting can use `parentId` without changing page identity.
+A flat work uses `containerId: null`.
 
-## Export scopes
+Pages stay flat records with stable IDs; moving a page changes only its organizational reference. Container nesting uses `parentId` without rewriting page identity.
 
-| Scope | Package behavior |
-|---|---|
-| Selected page | Current Render Contract + one page manifest/prompt; self-contained |
-| Explicit pages / range | Root batch manifest lists exact selected page IDs/numbers; each page remains independently renderable |
-| Container / volume | Same multi-page structure plus container continuity/defaults |
-| Whole work | Work contract + all selected containers/pages; still processed page-by-page by downstream generators |
-| Spread | Explicit two-page shared-canvas generation group; not treated as two unrelated panels/pages |
+### Display page code is not identity
 
-## Prompt hierarchy
+`P001` is UI/file-display formatting derived from numeric `pageNumber`.
 
-### Single page
+- `pageNumber` remains mutable presentation/sequence metadata;
+- `Page.id` remains stable identity;
+- a page move/rename/renumber must not replace its stable ID.
 
-Use the existing current-page contract model: ignore unrelated prior context, preserve exact page geometry/cast/text, and render only that page.
+### Navigation follows manga hierarchy
 
-### Multiple pages
+Current UI presents:
 
-Use a two-level contract:
+```text
+Work
+  → optional container path
+    → P001
+      → page settings / panel layout
+        → selected-panel authoring
+```
 
-1. **Batch / work contract** — work identity, selected page order, shared references, continuity constraints, output naming, and “process one page at a time” rule.
-2. **Page contract** — the existing self-contained page render contract, plus only the continuity inputs intentionally inherited from the batch contract.
+The app header remains app-level. Work/page context lives above the canvas. Work Structure is the primary explorer-style hierarchy navigator. Detailed page/container CRUD is advanced editing rather than the main mental model.
 
-Do not concatenate every page into one giant generation prompt. The root prompt is orchestration; page prompts remain execution units.
+This shell is a prerequisite for future backup/export scope UX because users must understand which work/page/container is active before selecting a package scope.
 
-### Panel-first
+### Backup and generation packages are different products
 
-Add a third level only when panel-first is selected:
+A generation ZIP is not a complete project backup.
 
-1. Batch/work contract
-2. Page contract
-3. Panel or generation-group contract
+Backup/restore packages must have their own schema, manifest, integrity checks, and restore semantics.
 
-The panel contract must repeat all information required to render that panel without relying on previous conversational turns.
+### Multi-page generation is orchestration, not one giant image prompt
 
-## JSON vs YAML
+Multi-page export must not mean “ask one image model to render every page in one image.”
 
-Recommendation: **do not migrate canonical project state from JSON to YAML.**
+Use a hierarchy of self-contained contracts:
 
-Reasons:
+1. work/batch orchestration contract;
+2. per-page render contract;
+3. per-panel/generation-group contract only when Panel-first is selected.
 
-- the browser already has native JSON parse/stringify support;
-- JSON Schema validation and current compatibility machinery already exist;
-- deterministic serialization/hashing and backup verification are simpler;
-- YAML requires another parser and has more scalar/typing edge cases;
-- changing canonical format would create migration cost without solving the actual generation-reliability problem.
+The root contract controls selected-page order, shared references/continuity, naming, and orchestration. Each page remains independently renderable.
 
-YAML remains useful as an optional generated handoff view such as `page-contract.yaml`. It is derived from canonical JSON and is not a competing source of truth.
+### Panel-first is provider-independent
 
-## Backup ZIP contract
+Panel-first is an export/orchestration contract, not a hard dependency on ChatGPT, Gemini, or one API.
 
-Suggested structure:
+- ordinary panels may become independent generation units;
+- cross-panel breakout/shared background/spread cases become explicit shared generation groups;
+- deterministic composition reassembles output using authored geometry;
+- provider-specific adapters remain at the boundary.
+
+### Generated-result semantic grading is not required
+
+Do not add an AI semantic/aesthetic result-validator as a core delivery gate.
+
+Keep deterministic checks that protect file integrity and composition:
+
+- schema/version;
+- expected files;
+- checksums;
+- selected scope/IDs;
+- image dimensions;
+- crop/output naming;
+- compositor placement/final dimensions.
+
+### No legacy browser project-autosave migration
+
+Historical project-autosave `localStorage` does not require a migration path. Portable `.manga.json` remains the compatibility route.
+
+This decision does not remove compatibility requirements for user-imported files.
+
+### Import/restore never silently overwrites
+
+Same-title works may coexist. Title equality is not identity conflict.
+
+Only same `workId` is a true work-identity conflict.
+
+Conflict UI must require an explicit choice:
+
+- import as another work;
+- overwrite the existing work after destructive confirmation;
+- cancel.
+
+## Sequencing rule
+
+Strategic priority and implementation order differ.
+
+Use this reasoning:
+
+1. define the target capability and observable acceptance criteria;
+2. map dependencies: identity/storage → domain behavior → export/orchestration → presentation/polish;
+3. pull forward only prerequisites whose later addition would force meaningful rework, schema churn, or migration;
+4. do not pull unrelated “nice to have” work forward merely because it is adjacent;
+5. use a thin vertical slice when foundations are optional/reversible;
+6. use foundation-first when the target would otherwise be built on throwaway state/ownership assumptions.
+
+Example: Panel-first is strategically high priority, but stable work/page/panel identity and explicit export scope come first because every panel result needs an unambiguous destination and package identity.
+
+## Backup / restore contract direction
+
+Candidate dedicated package:
 
 ```text
 <work>.manga-backup.zip
 ├─ backup-manifest.json
 ├─ project.manga.json
 ├─ templates/
-│  └─ custom-templates.json
+│  └─ custom-templates.json      # only when explicitly included
 ├─ assets/
-│  ├─ index.json
+│  ├─ index.json                 # future reference assets
 │  └─ <sha256>.<ext>
-└─ thumbnails/              # optional/rebuildable
+└─ thumbnails/                   # optional/rebuildable
 ```
 
-`backup-manifest.json` should include backup schema/version, producer provenance, work ID, creation time, included assets/templates, file hashes, and compatibility range.
+### Backup manifest should include
 
-### Restore/import conflict behavior
+- backup schema/version;
+- producer provenance;
+- work ID/title;
+- creation timestamp;
+- compatibility range;
+- included files/libraries/assets;
+- file roles;
+- logical counts;
+- content hashes.
 
-1. Read/validate backup manifest before mutating storage.
-2. Validate required files and hashes.
-3. Parse the project in memory and show an import summary.
-4. If no existing `workId` matches, import normally.
-5. If the same `workId` already exists, show a blocking conflict dialog with:
-   - **別作品として取り込む** — generate a new `workId`; preserve page/content identity only where safe for the copied work.
-   - **既存作品を上書き** — destructive replace; require explicit confirmation showing work title, existing page count, imported page count, and that local changes will be replaced.
-   - **キャンセル**.
-6. Never infer overwrite from title equality alone. Same title with a different `workId` may coexist.
-7. Write transactionally; on failure leave the existing library untouched.
-8. Reopen the restored work/page and run canonical structural validation.
+### Restore flow
 
-No import/restore path silently overwrites an existing work.
+1. inspect `backup-manifest.json` before mutating storage;
+2. verify required files and hashes;
+3. parse project in memory;
+4. validate compatible schema/structure/counts;
+5. show restore summary: work title/ID, pages, containers, characters, optional libraries/assets;
+6. if no same `workId` exists, import normally;
+7. if same `workId` exists, require explicit conflict choice;
+8. perform write transactionally;
+9. on failure, leave the existing library untouched;
+10. open the restored work/current page and run structural checks.
 
-## Provider feasibility for panel-first
+### Same-work conflict choices
 
-The contract supports three usage classes rather than hard-coding one provider:
+**別作品として取り込む**
 
-- **Interactive assistant** — ChatGPT or Gemini can receive one panel package at a time and generate/edit that panel. Suitable for manual or agent-guided iteration.
-- **Workspace/code agent** — Codex can iterate files, invoke image-generation capability when available, name outputs, run a compositor, and perform file/image QA. This is the strongest fit for unattended package execution.
-- **API adapter** — Gemini API / OpenAI image-generation APIs can automate panel generation, but remain opt-in adapters because they introduce credentials, privacy boundaries, quotas, and possible usage cost.
+- generate a new work ID;
+- remap container/page/panel/placed-instance identities as required for an independent copy;
+- preserve semantic content.
 
-## Deterministic checks retained
+**既存作品を上書き**
 
-Removing generated-result semantic validation does **not** remove checks required for reliable file operations. Keep deterministic checks for:
+- destructive replace;
+- show existing/imported work title and useful counts;
+- state that local changes will be replaced;
+- require explicit confirmation.
 
-- backup file hashes and schema/version;
-- selected export scope and IDs;
-- expected image dimensions;
-- panel crop/output naming;
-- deterministic compositor placement and final page dimensions.
+**キャンセル**
 
-These are integrity checks, not AI-output quality grading.
+- no storage mutation.
+
+## Scoped export direction
+
+Future scope choices:
+
+| Scope | Package behavior |
+|---|---|
+| Current page | Existing self-contained current-page contract |
+| Explicit pages / range | Root batch manifest lists exact selected IDs/numbers; each page remains independently renderable |
+| Container / volume / chapter | Same multi-page structure plus container-level continuity/defaults where defined |
+| Whole work | Work contract + all included pages/containers; still processed page-by-page |
+| Spread | Explicit two-page shared-canvas generation group, not two unrelated pages |
+
+Requirements:
+
+- page 7-only export must not secretly carry page 6/8 story semantics;
+- a request such as `3-5,8` exports exactly four pages;
+- root manifest enumerates every included page and path;
+- original stable IDs/page numbers remain represented;
+- single-page packages remain self-contained.
+
+## Prompt hierarchy
+
+### Single page
+
+Current selected-page contract remains self-contained and rejects unrelated prior-conversation/prior-image carryover.
+
+### Multiple pages
+
+Use two levels:
+
+1. **Batch/work contract** — work identity, selected page order, shared references/continuity, naming, process-one-page-at-a-time rule.
+2. **Page contract** — current self-contained page render contract plus only intentionally inherited continuity inputs.
+
+Do not concatenate every page into one giant execution prompt.
+
+### Panel-first
+
+Add a third level only when selected:
+
+1. batch/work contract;
+2. page contract;
+3. panel or generation-group contract.
+
+Each ordinary panel contract repeats everything necessary to render that unit without relying on previous chat turns.
+
+## Panel-first / hybrid package direction
+
+Each isolated panel unit should be able to contain:
+
+- work/page/panel stable IDs;
+- display page code/number;
+- clean cropped spatial reference;
+- exact panel crop/placement rectangle;
+- story action and camera/pose/background/text semantics;
+- required character/reference roles;
+- expected output dimensions/name;
+- compositor metadata.
+
+Shared cases should use explicit generation groups, for example:
+
+- character breakout spanning panels;
+- shared background across panels;
+- intentional cross-panel composition;
+- two-page spread.
+
+A deterministic compositor should reconstruct the authored page without requiring an image model to guess the original page geometry.
+
+## Provider feasibility
+
+### Interactive assistant
+
+ChatGPT or Gemini can receive one page/panel package at a time for manual/agent-guided generation.
+
+### Workspace/code agent
+
+A code/workspace agent can iterate package files, invoke image-generation capability when available, enforce output naming, run deterministic compositor checks, and inspect resulting files.
+
+### API adapter
+
+OpenAI/Gemini/etc. image-generation APIs may automate generation, but adapters remain explicit/optional because they add credentials, quotas, privacy boundaries, and possible cost.
+
+Core project state does not depend on a provider.
+
+## Cross-page reference/continuity direction
+
+Future reusable reference classes may include:
+
+- characters;
+- locations;
+- props;
+- outfits;
+- vehicles;
+- style references;
+- poses;
+- lighting.
+
+Potential continuity semantics:
+
+- stable reference ID;
+- lock vs soft-reference behavior;
+- previous/next-page anchors;
+- state transitions for prop/outfit/location;
+- work/container defaults with page overrides;
+- explicit package inclusion;
+- no silent private-asset upload.
 
 ## Compatibility constraints
 
-- Existing `manga-blueprint/0.2` files should continue to import where practical; this is file-format compatibility, not browser-local-state migration.
-- Existing `pages[]` is the multi-page foothold; do not rewrite the model solely for hierarchy aesthetics.
-- `pageNumber` is mutable presentation/order metadata; `pageId` is stable identity.
-- Work/container/page moves must never change panel or character stable IDs unless explicitly duplicating content.
-- Local custom templates and future reference assets need explicit ownership (`global` vs `work`) before backup behavior is finalized.
-- Multi-page features must preserve provider independence and the no-silent-upload privacy invariant.
+- existing `manga-blueprint/0.2` files should continue to import where practical;
+- current `pages[]` + stable identity model is the foundation; do not rewrite it for hierarchy aesthetics;
+- `pageNumber` is mutable display/order metadata; `Page.id` is stable identity;
+- work/container/page moves do not change stable IDs unless content is explicitly duplicated;
+- custom Story Template ownership and future Reference Asset ownership must be explicit before backup bundling is finalized;
+- provider independence and no-silent-upload remain cross-phase invariants.
+
+## Status
+
+See [`ROADMAP.md`](ROADMAP.md) for what is shipped, next, and planned. This file intentionally does not own changing phase status.

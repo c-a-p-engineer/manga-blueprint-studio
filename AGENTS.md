@@ -2,299 +2,208 @@
 
 ## Mission
 
-Manga Blueprint Studio is a human-directed manga planning tool. It records manuscript size, reading direction, panel layout, reusable character identity, character appearance policy, story action intent, pose/placement, camera intent, backgrounds, dialogue/SFX, lettering direction, and manga-specific effects, then exports a visual blueprint plus machine-readable semantics for downstream image-generation assistants.
+Manga Blueprint Studio is a human-directed manga planning tool. It lets the user organize a work into optional volumes/chapters/folders and pages, design each manga page, describe what happens in each panel, and hand a visual + semantic blueprint to downstream image-generation assistants.
 
-The human is the director. AI, Smart Manga, Story Templates, bounded derivation, and other assistance are proposal/rendering tools.
+The human is the director. Story Templates, Smart Manga, diagnostics, and downstream image models are assistance/rendering tools; they do not silently replace authored intent.
 
 ## Source of truth
 
-1. `AGENTS.md`
-2. `docs/PRODUCT.md`
-3. `schema/manga-blueprint.schema.json`
-4. `docs/ARCHITECTURE.md`
-5. implementation under `web/`
-6. `docs/ROADMAP.md`
+Use these authorities in order for their respective concerns:
 
-When behavior and schema disagree, determine which contract is stale and update intentionally.
+1. `AGENTS.md` — repository rules and cross-cutting invariants.
+2. `docs/PRODUCT.md` — current user-visible behavior and product contract.
+3. `schema/manga-blueprint.schema.json` — serialized project data contract.
+4. `docs/ARCHITECTURE.md` — runtime ownership, state, persistence, and implementation boundaries.
+5. implementation under `web/` — shipped behavior when a document is stale.
+6. `docs/PROMPT_HANDOFF.md` — AI generation/review package and prompt contract.
+7. `docs/ROADMAP.md` — current delivery status and future phases.
+8. `docs/USER-GUIDE.md` and `web/guide.html` — derived user guidance; they must match the product contract but are not higher authority than it.
+
+`docs/README.md` is the documentation map. Dated research notes, baseline notes, and old `PROTOTYPE-*` files are historical evidence, not current runtime authority.
+
+When implementation, schema, and documentation disagree, do not pick one by habit. Determine which source is stale, update it intentionally, and keep the current release internally consistent.
+
+## Current product model
+
+The primary user model is:
+
+```text
+Work / 作品
+  → optional Volume / Chapter / Folder
+    → Page (P001, P002, ...)
+      → page settings / panel layout
+        → panel direction / character / background / text / effects
+          → selected-page AI handoff
+```
+
+The optional hierarchy is organizational. Pages remain stable entities and may live directly under the work.
+
+### Manga-first editor shell
+
+Navigation and editing responsibilities must remain distinct.
+
+- the application header owns app-level actions such as Help, Undo/Redo, and language;
+- the active work title is shown separately from app-level actions;
+- the breadcrumb shows the active container path plus the current page;
+- visible page labels use minimum three-digit codes such as `P001`; canonical `pageNumber` remains numeric;
+- previous/next/add/direct-page navigation lives above the manga canvas;
+- **Work Structure / 作品構成** is the primary explorer-style navigation for `work → optional containers → page`;
+- detailed page/container CRUD may exist as advanced controls, but must not replace the explorer as the primary mental model;
+- **Page settings / ページ設定** owns manuscript size, reading direction, page-wide style/layout and related current-page configuration; it is not the primary work/page navigator.
+
+Do not move work identity, hierarchy navigation, or page selection back into one oversized header button or database-like form as the main path.
 
 ## Core invariants
 
+### Stable identity and local persistence
+
+- `meta.workId`, `Container.id`, `Page.id`, panel IDs, placed-character instance IDs, and balloon IDs are identity, not display labels.
+- page numbers/titles, work/container titles, ordering, and parent/container references are mutable presentation/organization metadata.
+- moving a page between containers must not change page identity.
+- duplicating a page or work regenerates the mutable instance IDs required to keep the copy independent.
+- project persistence uses IndexedDB.
+- saving work contents must not silently change `activeWorkId`; activation is explicit.
+- the last active page is remembered per work.
+- historical browser project-autosave `localStorage` is intentionally not migrated. Portable `.manga.json` import remains the compatibility path.
+- browser-local custom Story Templates may continue to use their separate local storage until backup/restore explicitly includes them.
+
+### Destructive actions
+
+- deleting the final remaining page is rejected;
+- deleting a non-empty container must not silently delete its pages;
+- container deletion re-homes directly assigned pages and direct child containers to the deleted container's parent before removing the container;
+- same-`workId` import/restore must never silently overwrite an existing work;
+- import-as-new receives fresh work/container/page/panel/placed-instance identity with references remapped;
+- destructive overwrite requires explicit confirmation.
+
 ### Human direction first
 
-Assistance must not silently replace recorded panel layout, action intent, pose, character assignment, appearance policy, camera intent, background intent, dialogue, lettering direction, or manga effects. Candidate/template browsing never mutates current page. Explicitly applied Story Template / Smart Manga output becomes ordinary editable project state.
+Assistance must not silently replace recorded panel layout, action intent, pose, character assignment, appearance policy, camera intent, background intent, dialogue/SFX, lettering direction, or manga effects.
 
-### Visual + semantic blueprint
+- Story Template browsing/filtering/preview is non-mutating;
+- Smart Manga candidates are non-mutating until explicit apply;
+- applied assistance becomes ordinary editable project state;
+- diagnostics are advisory and do not block export or auto-fix content merely because a warning exists.
 
-The visual blueprint communicates space. `.manga.json` communicates meaning. Project-level character guidance and, only when required, separately attached Character Sheets communicate identity.
+### Story Template terminology
 
-### Reading direction is explicit
+**Story Template / ストーリーテンプレート is the single canonical template feature name.** “Scene Template” is not a second product feature or alias. The ordinary word “scene” remains valid for scene continuity and story content.
 
-Japanese right-to-left (`rtl`) is default; left-to-right (`ltr`) is supported. Panel numbering, layout/Smart previews, Story Template thumbnails, Panel List order, generated prompt, and applied Story Template beat assignment use `meta.readingDirection`.
+`meta.storyTemplate` is provenance only after apply, not continuing authority.
 
-Panel `order` must stay synchronized with current panel geometry and selected reading direction. For a normal two-column row, RTL numbers the right panel before the left panel; LTR does the opposite. Committed render paths renumber from geometry so canvas numbers, Story Template preview numbers, Story Template beat placement, Panel Peek/List, prompt, manifest, and exported semantic order cannot silently disagree after template apply, Smart Manga apply, split, import, or direction changes.
+### Reading order and writing direction
 
-### Lettering direction is explicit
+Panel reading direction and lettering direction are separate.
 
-Prototype 0.10 separates **page reading direction** from **text writing direction**.
-
-- project default writing mode is `vertical-rl` (Japanese vertical writing);
-- `horizontal-tb` is available;
-- each balloon may use `inherit`, `vertical-rl`, or `horizontal-tb`;
-- each panel's onomatopoeia/SFX may use `effects.sfxWritingMode: inherit | vertical-rl | horizontal-tb`;
-- `inherit` follows `meta.defaultWritingMode` for both balloons and SFX;
-- changing lettering direction must not change panel reading order;
-- editor/review may preview balloon writing direction, while clean AI PNG remains free of balloon/SFX text;
-- prompt carries effective balloon and SFX lettering direction alongside exact `TEXT TO RENDER` strings;
-- manifest v3 may carry derived lettering metadata for balloons and onomatopoeia without changing its schema identifier;
-- legacy projects without these fields normalize to vertical-first behavior without a project-format bump.
+- `meta.readingDirection`: `rtl | ltr`; Japanese RTL is default.
+- `meta.defaultWritingMode`: `vertical-rl | horizontal-tb`; vertical Japanese is default.
+- balloon/SFX writing mode may override or inherit the project default.
+- changing writing direction must not change panel reading order.
+- committed render paths keep panel `order` synchronized with geometry + reading direction so canvas, Story Template beat order, Panel Peek/List, prompt, manifest, and exports agree.
 
 ### Story action intent
 
-Each panel may store `actionIntent`: a short description of what happens when pose alone is insufficient.
+`Panel.actionIntent` describes what happens in a panel when pose alone is insufficient.
 
 - it is semantic source data;
-- it may appear in Panel Peek, Panel List, manifest index, and prompt;
-- it is never visible manga text and never belongs in `TEXT TO RENDER`;
-- old projects normalize missing values to an empty string;
-- derived summaries never become a competing source of truth.
+- it may appear in authoring views, prompt, and manifest indexes;
+- it is never visible manga text and never belongs in `TEXT TO RENDER`.
 
-### Story Template Studio
+### Character identity boundary
 
-**Story Template / ストーリーテンプレート is the single canonical template feature name.** A template may describe one recognizable scene or beat sequence, but “Scene Template” is not a separate template system or alternate feature name. The ordinary word “scene” may still be used for scene/cast semantics and story content where it is not naming the feature.
+Reusable base-character identity and placed pose instances are separate.
 
-Prototype 0.9 expands Story Templates into a searchable, story-beat-first authoring studio; Prototype 0.10 aligns its numbering and beat placement with the selected page reading direction.
+- `sheet`: separately attached Character Sheet required;
+- `description`: no sheet required; appearance guidance is the identity contract;
+- `free`: no sheet required; downstream model may choose a simple consistent appearance.
 
-Shipped categories include romance, battle, emotion, daily, comedy, suspense, character introduction, plus browser-local custom templates. The built-in set includes the original cute-daily / rom-com / surprise / gag / action recipes and additional confession, kiss, holding-hands, misunderstanding, battle, counterattack, aerial, throw, awakening, crying, anger, resolve, suspense, classroom, failure-gag, and character-introduction stories/scenes.
+Stick figures communicate body relationship, pose, placement, approximate scale, and direction. They do not define character appearance.
 
-Discovery is authoring-only and may use category filters, search, visual cards, description/use-case text, panel count, and beat-flow preview.
+### AI-safe visual/text boundary
 
-- browsing/filtering/searching/preview does not mutate project;
-- template thumbnail numbering follows `meta.readingDirection`;
-- template beat 1 is applied to panel order 1, beat 2 to panel order 2, and so on after geometry-based renumbering;
-- applying over authored content requires confirmation;
-- user can disable sample dialogue/SFX before apply;
-- sample text becomes normal editable dialogue/SFX after apply;
-- template-created balloons and SFX inherit the project writing-mode default unless later overridden;
-- selected/first reusable base character may be placed when available;
-- `meta.storyTemplate` records provenance only, not continuing authority.
+Clean AI PNG communicates spatial composition. `.manga.json` + prompt communicate meaning. Character guidance/required external Character Sheets communicate identity. Art direction controls rendering language. Exact visible text comes only from the explicit renderable-text allowlist.
 
-### Bounded template derivation
-
-Prototype 0.9 may derive one temporary variation from a selected Story Template.
-
-- derivation preserves story action/beat flow;
-- it may vary a bounded subset of camera distance/angle and emphasis/effects;
-- derivation never mutates the page until explicit apply;
-- it is not equivalent to unconstrained random story generation;
-- applied derived state becomes ordinary editable project state.
-
-### Browser-local custom templates
-
-Users may save the current page pattern to local template storage.
-
-Custom template storage may include normalized panel geometry, role, action intent, pose/expression/gaze, camera, background, dialogue/SFX, and selected effects. It must **not** store character-specific visual identity or Character Sheet data.
-
-- custom geometry is normalized and scales to the current canvas on reapply;
-- current selected/project reusable base character is used when available;
-- custom templates live only in browser `localStorage` unless future explicit import/export is added;
-- custom template library contents are not automatically embedded into `.manga.json`, prompt, manifest, or ZIP;
-- once applied, resulting ordinary project state may be exported normally.
-
-### Smart Manga is story-readable too
-
-Smart Manga remains bounded, previewable, reproducible, and editable.
-
-- one request returns three candidates;
-- purpose/panel count constrain shipped layouts;
-- seed is stored as `meta.randomSeed`;
-- emphasis is stored as `meta.randomVariant` (`balanced | dynamic | emotion`);
-- intensity is stored as `meta.randomIntensity` (`stable | standard | bold`);
-- numbering follows reading direction;
-- optional base placement is explicit;
-- applied candidates receive a short purpose/beat-derived `actionIntent` for panels where action intent is still empty;
-- applying Smart Manga clears `meta.storyTemplate`, because Smart Manga becomes the current provenance source;
-- every result remains editable.
-
-The selected-panel dice is narrower: preserve geometry, background content, balloons/dialogue, role, and existing action intent while re-proposing camera/effects/breakout plus pose/expression/gaze. It remains undoable.
-
-### Reusable character identity
-
-`characterLibrary` stores project-level reusable identity definitions. Placed instances inherit `characterId`, display name, and reference key but own panel-specific pose/expression/gaze/placement.
-
-Identity modes:
-
-1. `sheet` — external Character Sheet required; `referenceKey` maps it.
-2. `description` — no sheet required; text appearance guidance is identity contract.
-3. `free` — no sheet required; downstream model may choose a simple consistent design.
-
-Appearance fields remain guided free text. Localized presets write semantic values in selected UI language. In `free` mode inactive appearance-detail inputs are disabled.
-
-Legacy bases with a reference key normalize to `sheet`; those without one normalize to `description`.
-
-### Character Sheet diagnostics are derived
-
-Output/manifest derive requirements from used characters:
-
-- `sheet` + key: request separately attached sheet;
-- `sheet` + empty key: warn mapping incomplete;
-- `description` / `free`: sheet not required.
-
-Export is not blocked. Do not claim an external file is bundled when only a reference key is stored.
-
-### Prompt identity wording follows identity mode
-
-Generated prompts must not say identity “comes only from Character Sheets.” Character identity follows `CHARACTER IDENTITY GUIDANCE`; Character Sheets are used only for characters whose identity mode requires them.
-
-### Stick figures are pose references
-
-Stick figures communicate body relation, pose, position, approximate scale, and direction, not appearance. Editor/review may color-code anatomy. Clean AI PNG keeps pose figures monochrome.
-
-### Beginner terminology bridge
-
-Professional terms remain for interoperability, but Japanese UI pairs them with plain-language labels/explanations (`Extreme close / 超寄り`, `Low angle / あおり`, etc.). Help is maintained and localized.
-
-### Panel Peek / Panel List / Panel Chips are authoring views
-
-Users must understand a page without opening every editor tab.
-
-- long-press or visible `ⓘ` opens Panel Peek;
-- Panel Peek summarizes action, characters, camera, background, dialogue, effects, and framing diagnostic;
-- mobile Panel Peek is opaque and viewport-bounded, with fixed header/actions and scrollable semantic body;
-- Panel List supports detailed and compact reading-order views;
-- Panel Chips provide canvas-level at-a-glance meaning;
-- these overlays are authoring metadata and do not enter clean AI output.
-
-Long-press is never the only discoverability path.
-
-### Camera semantics and visual scale should not contradict silently
-
-The editor compares selected camera distance with estimated figure-to-panel fill.
-
-- obvious conflicts are warned;
-- warnings never mutate state automatically;
-- explicit “fit character size to camera” may adjust figure scale through undoable mutation;
-- dotted Crop Guide is authoring-only and excluded from clean AI PNG;
-- thresholds are heuristic assistance, not a second camera model.
-
-### Manga Check is advisory
-
-Lint may flag missing action intent, repeated camera distance, all backgrounds unspecified, repeated expression, or camera/figure-scale conflict. It never blocks export or rewrites content automatically.
-
-### Presets are patterns, not rules
-
-Canvas/layout/background/balloon/story-template presets remain editable starting points.
-
-- default 800×1130 preset has an unambiguous dimension/purpose label;
-- 4-koma distinguishes at least 1×4 and 2×2;
-- layout thumbnails derive from canonical geometry and require explicit apply;
-- background presets write localized semantic values then remain free-editable;
-- balloon presets preserve existing text when modifying selected balloon.
-
-### AI-safe text boundary
-
-Editor/review may show names, panel numbers, camera metadata, summaries, action notes, background notes, Panel Chips/Crop Guide, SFX metadata, and balloon text preview in its selected writing direction. These are authoring information.
-
-Clean AI PNG omits authoring labels and balloon/SFX text. Prompt permits visible text only under exact `TEXT TO RENDER` entries and carries balloon/SFX lettering direction separately. Action intent is semantic guidance, never lettering.
+Clean AI output must not expose authoring labels such as character names, Character IDs, panel numbers, camera labels, action notes, Panel Chips, Crop Guide labels, or editor UI text.
 
 ### Manifest-first handoff
 
-`manga-blueprint-export-manifest/3` remains read-first authority. It records export/package identity, file roles, clean primary visual, semantic JSON, generation prompt, `annotatedReviewAllowedForGeneration: false`, character guidance/Sheet requirements, Story Template provenance, panel intent index, lettering metadata, and compact user message.
+`manga-blueprint-export-manifest/3` is the read-first authority for the current export package.
 
-### Export package separation
+Current generation/review export is **selected-page scoped** until the scoped-export phase intentionally introduces selected pages/ranges/containers/work-wide packages.
 
-Same serialized project state shares timestamp/hash/UUID identity.
+- AI generation ZIP: clean PNG + `.manga.json` + prompt + manifest; no annotated PNG.
+- Review/archive ZIP: same state-linked materials plus annotated PNG.
+- annotated review is not the default generation input.
 
-1. AI generation ZIP (`ai-generation`) = clean PNG + `.manga.json` + prompt + manifest. **No annotated PNG.**
-2. Review/archive ZIP (`review-archive`) = same state-linked materials + annotated PNG.
+Provider-specific behavior belongs at the export/adapter boundary; core project state remains provider-independent and local-first.
 
-Failed/empty PNG encoding fails export. UI must not display stale export identity after project mutation.
+## Documentation synchronization contract
 
-### Provider independence / privacy
+Documentation is part of the shipped product contract. A user-visible or contract-visible change is not complete if the relevant current documentation remains stale.
 
-Core data is provider-independent. Provider adapters belong only at export boundary. Client-side only by default: no analytics, telemetry, remote scripts, private Character Sheet upload, API calls, tokens, or credentials without an explicit documented boundary.
+### Canonical ownership
+
+- `README.md`: concise current baseline, quick start, public URLs.
+- `docs/README.md`: documentation map and maintenance rules.
+- `docs/USER-GUIDE.md`: current user workflow and UI terminology.
+- `docs/PRODUCT.md`: user-visible behavior and acceptance criteria.
+- `schema/manga-blueprint.schema.json`: serialized project schema.
+- `docs/ARCHITECTURE.md`: runtime/state/storage/ownership.
+- `docs/PROMPT_HANDOFF.md`: generation/review handoff contract.
+- `docs/ROADMAP.md`: status and future work; this is the only roadmap status authority.
+- `docs/PROJECT-MULTI-PAGE-ROADMAP.md`: supplemental design decisions for multi-page/portability; do not let it become a competing status tracker.
+- `docs/PROTOTYPE-*.md`: immutable-style historical release notes except corrections that clearly preserve historical meaning.
+- dated research/baseline files: historical input, not current behavior authority.
+
+### Required update mapping
+
+When a change affects:
+
+- user-visible workflow/UI → update `docs/PRODUCT.md`, `docs/USER-GUIDE.md`, public `web/guide.html`, `README.md` when headline behavior changes, and the release note;
+- project data → update schema + Product + Architecture, and migration/compatibility notes;
+- runtime ownership/state/persistence → update Architecture + runtime README;
+- AI export/prompt/manifest → update Prompt Handoff + Product/Architecture as needed;
+- delivery status/priorities → update `docs/ROADMAP.md`; do not duplicate changing status elsewhere;
+- public guide wording → keep Markdown user guide and `web/guide.html` semantically aligned.
+
+Historical release documents should not be rewritten to pretend old releases had current behavior. Instead, keep them clearly historical and point readers to current docs through `docs/README.md`.
+
+## Runtime and implementation rules
+
+The app is a zero-build static GitHub Pages application. `web/app.js` loads ordered classic-script chunks from `web/runtime/`.
+
+- preserve explicit load order unless deliberately refactoring the runtime;
+- modify the existing semantic owner when possible instead of adding chronology-named patch files;
+- a new runtime chunk needs a distinct responsibility;
+- UI-only organization belongs under `runtime/ui/` and must not create a second project-state model;
+- `ui/editor-shell.js` is the final presentation/navigation layer for the manga-first shell and should reuse existing page/work/container operations.
+
+A future ES-module/bundler migration is a separate refactor requiring behavior-equivalence evidence and rollback planning.
 
 ## Compatibility
 
-- project format remains `manga-blueprint/0.2`;
-- 0.4: canvas/layout/random-purpose metadata;
-- 0.5: `characterLibrary`;
-- 0.6: random seed/variant and panel assist provenance;
-- 0.7: identityMode/appearance, randomIntensity, manifest v3;
-- 0.8: optional `meta.storyTemplate`, panel `actionIntent`, story-readable authoring views;
-- 0.9: Story Template discovery/derivation and local custom-template library;
-- 0.10: `meta.defaultWritingMode`, optional balloon `writingMode`, optional `effects.sfxWritingMode`, automatic geometry-based panel-order synchronization, and Story Template numbering/beat alignment; no project-format or manifest-schema bump;
-- legacy 0.1 / older 0.2 normalize without losing core layout/character/camera/text data.
+Current serialized project format remains `manga-blueprint/0.2`. Current export manifest remains `manga-blueprint-export-manifest/3`.
 
-## Mobile-first UI
+Compatible optional additions may normalize into old files without a format bump when semantics remain backward-compatible. Do not use a version bump merely to record UI presentation changes.
 
-Japanese is default; English is supported. On narrow screens canvas precedes detail controls, editor uses bottom tabs, primary controls are touch-sized, visual template cards stack vertically, horizontal visual strips may scroll, and Panel Peek becomes a bottom-sheet-style dialog.
+## Verification and definition of done
 
-Primary hierarchy:
+Relevant changes must preserve or intentionally update:
 
-1. Story Template Studio / Smart Manga / visual layout;
-2. reusable character + identity source;
-3. Panel Peek / Panel List quick understanding;
-4. selected-panel refinement;
-5. background/text/effects;
-6. AI generation ZIP + short handoff copy;
-7. Review/archive secondary.
+- JavaScript syntax and semantic runtime registration;
+- project schema validation and legacy portable-project normalization;
+- stable work/page/container identity behavior;
+- explicit work activation and page selection;
+- manga-first shell and `P001` display formatting;
+- explorer-style work structure and non-destructive container deletion;
+- dynamic canvas size and RTL/LTR panel order;
+- vertical/horizontal lettering separation;
+- Story Template and Smart Manga non-mutating preview contracts;
+- character identity modes and Character Sheet diagnostics;
+- clean AI vs review export separation;
+- strict visible-text allowlist and manifest-first handoff;
+- mobile usability;
+- documentation synchronization for affected surfaces;
+- GitHub Pages deployment when public runtime/docs are changed.
 
-## Runtime
-
-`web/app.js` loads named classic-script chunks under `web/runtime/` in one explicit order. This preserves the zero-build GitHub Pages runtime and its existing global extension semantics while naming files by responsibility instead of prototype chronology.
-
-Runtime ownership is grouped by responsibility:
-
-- `runtime/core/` — foundational state, rendering, export/input, and event bindings;
-- `runtime/authoring/` — page/layout/camera and reusable-character authoring;
-- `runtime/assist/` — bounded Smart Manga assistance;
-- `runtime/identity/` — character identity and appearance handoff;
-- `runtime/story/` — story-readable panel semantics;
-- `runtime/templates/` — Story Template Studio and scene/cast contracts;
-- `runtime/lettering/` — text writing direction;
-- `runtime/ordering/` — reading-order synchronization;
-- `runtime/integration/` — cross-feature integrations whose load order is intentional;
-- `runtime/handoff/` — prompt/manifest/render contracts for downstream image-generation models;
-- `runtime/ui/` — presentation-only layout and authoring clarity.
-
-The canonical load order is declared by `web/app.js` and mirrored by `scripts/runtime-paths.mjs` for validation. `scripts/validate-runtime-layout.mjs` rejects version-numbered `web/app-N.js` runtime chunks and requires every runtime JavaScript file to be explicitly registered. Later classic-script chunks may intentionally extend globals established by earlier chunks, so the ordered runtime remains a compatibility contract.
-
-New work should modify the existing semantic owner whenever one exists instead of adding another chronology-named patch file. A future ES-module or bundler migration is a separate refactor and must preserve current external behavior, zero-build/deployment expectations unless intentionally changed, and rollback/reference evidence.
-
-## Definition of done
-
-Relevant changes preserve:
-
-- JS syntax validity for bootstrap and every runtime chunk;
-- semantic runtime paths are registered in the explicit load order and no `web/app-N.js` runtime chunks remain;
-- repository-contract validation and legacy normalization;
-- dynamic canvas and RTL/LTR;
-- panel numbers automatically align with selected RTL/LTR geometry order across canvas, Panel Peek/List, prompt, manifest, and exports;
-- Story Template thumbnails use the same RTL/LTR numbering and template beat N is applied to panel order N;
-- vertical Japanese (`vertical-rl`) is the default writing direction, horizontal is selectable, and per-balloon/per-SFX overrides are persisted;
-- lettering direction remains independent from page reading order;
-- generated prompt and manifest preserve effective balloon/SFX writing direction without promoting metadata to visible manga text;
-- bounded three-candidate Smart Manga with purpose/seed/variant/intensity provenance and story-readable action intent after apply;
-- Story Template browsing/search/category filtering without project mutation;
-- story-template visual cards with description/use case/panel count/beat flow;
-- shipped romance/battle/emotion/daily/comedy/suspense/character-introduction recipes;
-- explicit template apply with optional editable dialogue/SFX;
-- bounded derived template variation that preserves action flow;
-- browser-local custom templates with normalized geometry and no character-specific visual identity;
-- `actionIntent` persisted/exported and forwarded to prompt/manifest without becoming visible text;
-- long-press Panel Peek plus visible `ⓘ` fallback and mobile bounded opaque sheet;
-- detailed/compact Panel List and authoring-only Panel Chips;
-- framing diagnostic/Crop Guide plus explicit fit action;
-- non-blocking Manga Check;
-- selected-panel dice preserves geometry/background/balloons/role/action intent;
-- reusable sheet/description/free identity modes and correct Character Sheet diagnostics;
-- prompt wording never universally requires Character Sheets;
-- anatomy-readable review figures and monochrome clean figures;
-- guided background and balloon presets;
-- clean AI PNG with authoring metadata and balloon/SFX text removed;
-- AI ZIP excludes annotated PNG; Review ZIP includes it under same export identity;
-- manifest v3 includes file roles, character guidance and panel intent index;
-- compact JA/EN handoff message;
-- mobile usability and GitHub Pages deployment.
-
-Visual review and deterministic validation are separate evidence. Do not call UI visually verified based only on syntax/CI.
+CI success and visual/interaction verification are different evidence. Do not claim visual usability from static validation alone. For public UI changes, verify the deployed artifact/page when available.

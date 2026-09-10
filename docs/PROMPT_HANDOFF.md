@@ -1,61 +1,133 @@
 # Prompt and Image Handoff Contract
 
-## Recommended handoff: AI generation ZIP
+## Scope
 
-When moving a Manga Blueprint into ChatGPT or another image-generation assistant, use the **AI generation ZIP**.
+This document defines the **current selected-page AI generation/review handoff**.
 
-The user-facing instruction stays deliberately short:
+The editor already supports multiple works and pages, but generation/review packages remain selected-page scoped until the scoped-export phase ships. Do not infer multi-page generation semantics merely because a project contains multiple pages.
 
-> このZIPを展開して、最初に中の `*_manifest.json` を読んで、その内容に従って漫画を生成してください。Character Sheet が必要と書かれているキャラクターは、別途添付した Character Sheet 画像を対応付けて使ってください。
+## Recommended generation handoff
 
-When no Character Sheet is required, the UI uses the corresponding no-sheet wording. The manifest, not the chat sentence, is the detailed handoff authority.
+Use the **AI generation ZIP** and a short manifest-first instruction.
 
-## AI generation ZIP contents
+Typical Japanese instruction:
 
-1. `<prefix>_clean.png` — visual composition reference;
-2. `<prefix>.manga.json` — semantic blueprint;
-3. `<prefix>_prompt.txt` — generated generation/direction instructions;
-4. `<prefix>_manifest.json` — read-first handoff manifest.
+```text
+このZIPを展開して、最初に中の *_manifest.json を読んで、その内容に従って漫画を生成してください。
+Character Sheet が必要と書かれているキャラクターは、別途添付した Character Sheet 画像を対応付けて使ってください。
+```
 
-The AI package deliberately excludes annotated review PNG.
+When no Character Sheet is required, the UI may use the no-sheet wording. The chat sentence is intentionally short; the manifest and included semantic files carry the detailed contract.
 
-## Review / archive ZIP
+## AI generation ZIP
 
-Review/archive ZIP contains the same state-linked materials plus `<prefix>_annotated.png`. It is for human checking/storage, not the default image-generation input.
+Current contents:
 
-If annotated review is separately shown to an assistant, its labels and lettering preview remain authoring metadata and must not become visible final-art text unless the exact string is separately allowlisted under `TEXT TO RENDER`.
+```text
+<prefix>_clean.png
+<prefix>.manga.json
+<prefix>_prompt.txt
+<prefix>_manifest.json
+```
 
-## Manifest v3
+The generation package deliberately excludes annotated review PNG.
 
-The package continues to use:
+### File roles
+
+- `_clean.png` — visual/spatial reference.
+- `.manga.json` — complete semantic blueprint for the exported project state.
+- `_prompt.txt` — generated direction/instruction text for the current page.
+- `_manifest.json` — read-first package authority and file-role index.
+
+## Review/archive ZIP
+
+The review/archive package uses the same state-linked semantic materials and adds:
+
+```text
+<prefix>_annotated.png
+```
+
+Annotated review exists for human checking/storage. It may contain authoring labels/lettering previews and is not the default generation reference.
+
+If a review image is separately shown to a downstream assistant, labels visible there do not become valid final-art text unless the exact string is separately allowlisted for rendering.
+
+## Manifest
+
+Current schema identifier:
 
 ```text
 manga-blueprint-export-manifest/3
 ```
 
-The manifest retains export/package identity, file roles, instructions, character guidance, Story Template provenance, panel action-intent indexing, and derived lettering metadata where available. `.manga.json` remains the complete semantic contract, including reading direction and Prototype 0.10 balloon/SFX lettering direction.
+The manifest is the first file a downstream assistant should read.
 
-### File roles
+It records, where applicable:
 
-`fileEntries` identifies:
+- export/package identity;
+- package type;
+- file roles;
+- clean primary visual;
+- semantic JSON;
+- generation instructions;
+- annotated-review generation prohibition;
+- character identity guidance;
+- Character Sheet requirements;
+- Story Template provenance;
+- panel intent index;
+- derived lettering metadata;
+- compact user handoff text;
+- producer/build provenance.
 
-- `visual-spatial-reference` — clean PNG;
-- `semantic-contract` — `.manga.json`;
-- `generation-instructions` — prompt text;
-- `handoff-manifest` — manifest itself;
-- `authoring-review` — annotated PNG, Review ZIP only.
+`.manga.json` remains the complete semantic project contract. Manifest indexes are convenient read-first summaries rather than competing project state.
 
-### Read-first instructions
+## Authority split
 
-`instructions` identifies manifest itself as `readFirst`, clean PNG as `primaryVisual`, project JSON as `semanticContract`, prompt file as `generationInstructions`, and states `annotatedReviewAllowedForGeneration: false`.
+The package deliberately separates responsibilities.
 
-### Reference role contract
+### Clean PNG — spatial authority
 
-Prototype 0.14.0 adds explicit per-reference ownership at the handoff boundary.
+Controls strongly/exactly as declared by the current render contract:
 
-The clean blueprint and every required Character Sheet are assigned separate roles. Each role declares both what that reference controls and what it must **not** control.
+- panel count;
+- panel boundaries/proportions;
+- reading-order geometry;
+- approximate character placement and scale;
+- pose direction/body relationship;
+- balloon/effect geometry that remains in clean output.
 
-Example:
+The planning stick figure does **not** define finished appearance or pixel-exact anatomy.
+
+### `.manga.json` + prompt — semantic authority
+
+Controls:
+
+- story action intent;
+- pose meaning/support/motion;
+- camera/depth/foreshortening;
+- scene/background continuity semantics;
+- background intent;
+- dialogue/SFX semantics;
+- reading/writing direction;
+- art direction;
+- other current panel semantics.
+
+### Character guidance / Character Sheets — identity authority
+
+Controls finished character identity according to each reusable character's identity mode.
+
+### Art direction — rendering language
+
+Controls color/render style, line, shading, detail, background finish, palette/tone, and additional finish guidance. It does not replace panel geometry or character identity.
+
+### `TEXT TO RENDER` — visible text authority
+
+Only exact strings allowlisted in the generated prompt's renderable-text section may become visible manga lettering.
+
+## Reference-role contract
+
+When a required external Character Sheet exists, its role is separate from the clean blueprint.
+
+Conceptually:
 
 ```json
 {
@@ -81,64 +153,79 @@ Example:
       "source": "Character Sheet referenceKey=hero",
       "role": "character-identity",
       "characterId": "hero",
-      "controls": ["face", "hair", "body-proportions", "outfit", "distinctive-features"],
-      "doesNotControl": ["panel-layout", "panel-count", "pose", "camera", "story-action"]
+      "controls": [
+        "face",
+        "hair",
+        "body-proportions",
+        "outfit",
+        "distinctive-features"
+      ],
+      "doesNotControl": [
+        "panel-layout",
+        "panel-count",
+        "pose",
+        "camera",
+        "story-action"
+      ]
     }
   ]
 }
 ```
 
-This prevents a pose blueprint from being copied as appearance and prevents a Character Sheet pose/background from silently overriding the authored manga composition.
+This prevents a pose blueprint from being copied as appearance and prevents a Character Sheet pose/background from silently overriding authored composition.
 
-### Preservation contract
+## Preservation levels
 
-Prototype 0.14.0 also separates transformation scope from invariants.
+The current render brief distinguishes transformation scope and invariants.
 
-The render brief emits five constraint levels:
+### CHANGE
 
-- `CHANGE` — what the downstream model is expected to transform;
-- `PRESERVE EXACTLY` — panel count, boundaries/proportions, reading-order geometry, and allowlisted visible text;
-- `PRESERVE AS STRONG CONSTRAINTS` — character identity, relative placement/scale, story action, gaze/contact, camera intent, and scene continuity;
-- `USE AS GUIDANCE` — stick-figure joint coordinates and simplified pose-figure anatomy;
-- `DO NOT INHERIT / DO NOT ADD` — authoring artifacts and unsupported inventions.
+What the downstream renderer is expected to transform from planning/reference form into finished manga art.
 
-The important distinction is that panel geometry is exact, while stick-figure joints are not pixel-exact anatomy. This allows a downstream renderer to preserve composition without forcing malformed anatomy when a finished character body replaces the planning figure.
+### PRESERVE EXACTLY
 
-### Character guidance
+Examples:
 
-`characterGuidance` is derived from reusable characters actually used on the page and contains identity mode, reference key, appearance guidance, and Character Sheet requirement/status.
+- panel count;
+- panel boundaries/proportions;
+- reading-order geometry;
+- exact allowlisted visible text.
 
-`characterSheetsRequired` is the compact list for characters in `sheet` mode.
+### PRESERVE AS STRONG CONSTRAINTS
 
-### Story action index
+Examples:
 
-Manifest may include:
+- character identity;
+- relative placement/scale;
+- story action;
+- gaze/contact relationships;
+- camera intent;
+- scene continuity.
 
-```json
-{
-  "storyTemplate": "cuteDaily",
-  "panelIntentIndex": [
-    {
-      "panelId": "panel_1",
-      "order": 1,
-      "role": "setup",
-      "actionIntent": "部屋でこちらに気づく"
-    }
-  ]
-}
-```
+### USE AS GUIDANCE
 
-`storyTemplate` is provenance only. `panelIntentIndex` is a convenient manifest index; `.manga.json` remains the semantic source of truth.
+Examples:
 
-### Lettering metadata
+- simplified stick-figure joint coordinates;
+- planning-figure anatomy;
+- heuristic visual guides.
 
-Manifest v3 keeps the same schema identifier. Prototype 0.10 may add derived `lettering` metadata containing:
+### DO NOT INHERIT / DO NOT ADD
 
-- project default writing mode;
-- stored/effective balloon writing mode;
-- stored/effective onomatopoeia writing mode for panels with non-empty SFX.
+Examples:
 
-This metadata is layout guidance and never adds visible strings by itself.
+- authoring labels;
+- unrelated prior-conversation story/genre/setting;
+- unsupported characters/objects/text;
+- metadata from review UI.
+
+The key distinction is that panel geometry can be exact while planning-stick anatomy remains guidance.
+
+## Current-page render contract
+
+The generated prompt includes a concise current-page contract that instructs the downstream assistant to render **only the exported current page** and reject unrelated carryover from prior conversation turns or prior generated images.
+
+This remains essential even when the assistant can see earlier chat context.
 
 ## Character identity modes
 
@@ -148,28 +235,17 @@ Use the separately attached Character Sheet mapped by `referenceKey`.
 
 ### `description`
 
-No Character Sheet is required. Structured/free-text appearance guidance from the base character is the visual identity contract.
+No Character Sheet is required. Text appearance guidance is the visual identity contract.
 
 ### `free`
 
-No Character Sheet is required. The model may choose a simple appearance but must preserve it consistently across panels.
+No Character Sheet is required. The downstream model may choose a simple appearance but should preserve it consistently across panels.
 
-## Critical prompt identity rule
-
-The generated prompt must **not** say that all visual identity comes only from Character Sheets.
-
-```text
-Character visual identity follows CHARACTER IDENTITY GUIDANCE.
-Use separately attached Character Sheets only for characters whose identity mode requires them.
-```
-
-The appended `CHARACTER IDENTITY GUIDANCE` section then states the correct mode for each used character.
+Generated prompt wording must never universally claim that visual identity comes only from Character Sheets.
 
 ## Story action intent
 
-Panel `actionIntent` expresses what happens in the panel when pose alone is insufficient.
-
-When non-empty, the prompt adds a semantic section such as:
+`Panel.actionIntent` is semantic direction, for example:
 
 ```text
 STORY ACTION INTENT:
@@ -177,29 +253,38 @@ STORY ACTION INTENT:
 - Panel 2: turns back after being called
 ```
 
-These strings are **instructions**, not manga lettering. They must never become visible text merely because they appear in the prompt.
+These strings are instructions, not visible manga text.
+
+## Story Template provenance
+
+Manifest/project may include Story Template provenance such as `meta.storyTemplate`.
+
+It records how the page started. It is not continuing template authority after apply and is never visible text.
+
+**Story Template** is the canonical feature name; do not introduce “Scene Template” as a separate product term.
 
 ## Reading order
 
 `meta.readingDirection` is authoritative:
 
-- `rtl` = Japanese manga, right-to-left;
-- `ltr` = left-to-right.
+- `rtl` — Japanese manga right-to-left;
+- `ltr` — left-to-right.
 
-Prototype 0.10 synchronizes panel `order` from current geometry plus this selected direction before committed renders. The resulting order is the common source used by canvas panel numbers, Story Template thumbnail numbers, Story Template beat assignment, Panel Peek/List, generated prompt, and exported semantics.
+Committed render paths synchronize panel order from geometry + selected direction before handoff.
 
-For a standard two-column row:
+The same order should therefore be reflected by:
 
-```text
-RTL: right panel -> lower order number -> left panel
-LTR: left panel  -> lower order number -> right panel
-```
+- canvas panel numbers;
+- Story Template preview numbers;
+- Story Template beat placement;
+- Panel Peek/List;
+- prompt;
+- manifest;
+- exported semantics.
 
-When a Story Template is applied, beat 1 is applied to panel order 1, beat 2 to panel order 2, and so on. Template preview numbering therefore describes the same event sequence that will be placed into the page.
+Changing text writing direction does not change panel reading order.
 
 ## Balloon lettering direction
-
-Reading order and writing direction are separate contracts.
 
 Project default:
 
@@ -221,27 +306,15 @@ Per balloon:
 
 Allowed values:
 
-- `inherit` — follow project default;
-- `vertical-rl` — Japanese vertical writing: glyph flow top-to-bottom, columns ordered right-to-left;
-- `horizontal-tb` — horizontal writing.
+- `inherit` — project default;
+- `vertical-rl` — vertical Japanese;
+- `horizontal-tb` — horizontal.
 
-Prototype 0.10 defaults legacy/new projects to `vertical-rl` unless explicitly changed.
+The prompt may describe effective writing direction semantically. Those labels are instructions and do not create additional visible strings.
 
-The generated prompt adds a semantic section such as:
+## SFX / onomatopoeia writing direction
 
-```text
-LETTERING DIRECTION:
-- Default balloon writing mode: vertical-rl (vertical Japanese; top-to-bottom, columns right-to-left).
-- Panel 1 balloon (speech): vertical Japanese writing, top-to-bottom with columns ordered right-to-left.
-- Panel 2 balloon (speech): horizontal writing, left-to-right within the balloon.
-- Writing direction controls lettering layout only; it does not change panel reading order.
-```
-
-These are layout instructions. They do not add any renderable strings.
-
-## Onomatopoeia / SFX lettering direction
-
-Each panel may independently override the project writing default for its SFX:
+Each panel may use:
 
 ```json
 {
@@ -252,71 +325,88 @@ Each panel may independently override the project writing default for its SFX:
 }
 ```
 
-Allowed values are the same as balloons: `inherit`, `vertical-rl`, `horizontal-tb`. `inherit` resolves through `meta.defaultWritingMode`.
+Allowed writing modes are the same as balloons.
 
-For non-empty SFX, the generated prompt adds a separate semantic section such as:
-
-```text
-SFX LETTERING DIRECTION:
-- Panel 1 onomatopoeia "ドン": vertical Japanese writing, top-to-bottom with columns right-to-left.
-- Panel 3 onomatopoeia "BAM": horizontal writing.
-- SFX writing direction follows the same project default as balloons unless explicitly overridden.
-```
-
-The exact SFX string still becomes renderable only because it also appears under `TEXT TO RENDER`.
+The exact SFX string becomes renderable only because it is also listed under the exact visible-text allowlist.
 
 ## Text allowlist
 
-Only exact strings under:
+Only exact strings under the prompt's renderable-text section may appear as final manga lettering.
 
-```text
-TEXT TO RENDER:
-```
+Forbidden authoring text includes:
 
-may become visible manga text. This normally includes balloon dialogue and onomatopoeia.
-
-Forbidden as visible text includes:
-
-- character display names / Character IDs;
+- character display names;
+- Character IDs;
 - Character Sheet keys;
 - panel numbers;
 - camera terms;
 - Story Template names;
 - action intent;
-- writing-mode labels such as `vertical-rl`;
+- writing-mode labels;
 - Panel Peek/List/Chip summaries;
 - Crop Guide labels;
-- editor/UI text.
+- editor/help text.
 
 ## Visual-reference boundary
 
-Clean PNG is the spatial reference. Stick figures communicate pose/placement, not appearance.
+Clean PNG excludes authoring overlays such as:
 
-Editor-only overlays such as Panel Chips, `ⓘ`, Crop Guide, and balloon text previews do not enter clean PNG. Balloon/SFX writing direction is communicated through `.manga.json`, prompt, and derived manifest metadata instead of rendering authoring lettering labels into the AI spatial reference.
+- Panel Chips;
+- info buttons;
+- Crop Guide labels;
+- selected outlines/metadata;
+- balloon text previews;
+- camera/role labels;
+- character display labels;
+- SFX labels.
 
-Prototype 0.14.0 makes the spatial constraint strength explicit:
+It keeps the spatial reference needed for generation.
 
-- panel geometry and proportions: **exact**;
-- character-to-panel and character-to-character spatial relationships: **strong**;
-- simplified stick-figure joints/anatomy: **guidance only**.
+## Export identity
 
-## Story Templates and text
+`<prefix>` is based on project title, timestamp, and a short state hash. Export identity links files created from the same serialized state.
 
-A Story Template may seed sample dialogue/SFX only when the user enables that option before apply. Once applied, sample text becomes ordinary project dialogue/SFX and therefore appears under `TEXT TO RENDER` unless the user edits/removes it.
+Producer provenance is diagnostic and separate from project-state hash identity.
 
-Template-created balloons and SFX use `inherit`, so they follow the project default writing direction unless the user overrides them later.
+## Producer provenance
 
-Template action intent remains semantic and is never automatically promoted to renderable text.
+Generated manifests include build metadata such as:
 
-## Export-set identity
-
-`<prefix>` remains:
-
-```text
-<project-title>_YYYYMMDD_HHMMSS_<short-sha256>
+```json
+{
+  "producer": {
+    "schema": "manga-blueprint-producer/1",
+    "appVersion": "<current app version>",
+    "gitCommit": "<deployed commit or null>",
+    "buildSource": "github-pages",
+    "deployedAt": "<ISO timestamp>",
+    "projectFormat": "manga-blueprint/0.2",
+    "manifestSchema": "manga-blueprint-export-manifest/3",
+    "renderBriefSchema": "manga-blueprint-render-brief/1"
+  }
+}
 ```
 
-SHA-256 is calculated from serialized Manga Blueprint project state. Manifest records the full state hash and export UUID. Files created from the same unchanged state reuse the same in-session identity.
+GitHub Pages stamps exact deployment provenance into `build-info.json`; local/offline fallback may have `gitCommit: null`.
+
+Use this metadata when diagnosing whether a suspicious ZIP came from a stale cached build.
+
+## Current single-page boundary
+
+Current generation/review packages export only the selected page.
+
+The future scoped-export design must explicitly define:
+
+- selected pages;
+- page ranges;
+- volume/container scope;
+- whole-work scope;
+- root batch manifest;
+- per-page self-contained contracts;
+- output naming/order;
+- spread/shared-canvas exceptions.
+
+Do **not** concatenate all pages into one giant generation prompt or assume one model should render a whole work as one image.
 
 ## Example
 
@@ -334,4 +424,4 @@ Send:
 Character Sheet が必要と書かれているキャラクターは、別途添付した Character Sheet 画像を対応付けて使ってください。
 ```
 
-For a description/free-only page, no Character Sheet image needs to be attached.
+For a page whose used characters are all `description` / `free`, no Character Sheet needs to be attached.
