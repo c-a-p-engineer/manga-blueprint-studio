@@ -1,6 +1,6 @@
 # Roadmap
 
-## Shipped through Prototype 0.14.0
+## Shipped through Prototype 0.15.0
 
 ### Project / persistence foundation
 - stable `meta.workId` plus stable page/container identity;
@@ -29,6 +29,16 @@
 - page duplication regenerates page/panel/placed-character/balloon instance IDs;
 - active page is remembered per work in IndexedDB;
 - existing editor/render/handoff logic resolves the selected page through `currentPage()` instead of assuming `pages[0]`.
+
+### Manga-first editor shell / navigation
+- current work title is shown on its own line instead of occupying an oversized app-header action;
+- breadcrumb context shows optional volume/chapter/folder ancestry followed by the current page;
+- page labels use zero-padded display codes such as `P001`, while canonical `pageNumber` remains numeric;
+- previous/next, add-page, direct page strip, Work Library, and Work Structure navigation live above the manga canvas;
+- volume/chapter/folder hierarchy is presented primarily as an explorer-style tree rather than as a database-like form;
+- detailed page CRUD and hierarchy CRUD remain available in collapsible advanced sections inside Work Structure;
+- the authoring tab is named **Page settings / ページ設定**, keeping navigation separate from manuscript/layout configuration;
+- Japanese mode localizes primary autosave, page-count, panel-status, canvas camera/role annotations, and style-instruction wording while preserving machine-readable semantic values.
 
 ### Page, layout, reading and lettering
 - manuscript/canvas presets including portrait/social/video, B5, A4, Webtoon, and custom sizes;
@@ -77,7 +87,7 @@
 ### Runtime / validation
 - semantic runtime ownership under `web/runtime/` rather than chronology-named patch files;
 - explicit runtime load-order registry mirrored by validation scripts;
-- repository, project-storage, multi-page, work-library/hierarchy, UI-contract, reading/lettering, spatial, cross-model, template, cast, generation-contract, render-brief, and producer-provenance CI validation.
+- repository, project-storage, multi-page, work-library/hierarchy, editor-shell, UI-contract, reading/lettering, spatial, cross-model, template, cast, generation-contract, render-brief, and producer-provenance CI validation.
 
 ---
 
@@ -88,11 +98,42 @@
 | 0 | S | Storage / stable identity | `workId`, page/container identity, IndexedDB, import conflict protection | **Shipped** |
 | 1 | S | Multi-page Core | page CRUD/reorder/number/title/selection persistence | **Shipped in 0.13.0** |
 | 2 | S | Work / Volume / Folder management | work library, volume/chapter/folder UI, page moves | **Shipped in 0.14.0** |
+| 2.5 | S | Manga-first editor shell / navigation UX | work title + breadcrumb + P001 page navigation + explorer-style hierarchy + Japanese-first clarity | **Shipped in 0.15.0** |
 | 3 | S | Backup / Restore | complete backup ZIP, checksum, preview, transactional restore | **Next** |
 | 4 | S | Scoped Export | page selection/range/volume/work export contracts | Planned |
 | 5 | S | Panel-first / Hybrid generation | per-panel units, generation groups, deterministic composition | Planned |
 | 6 | A | Cross-page continuity | reference assets, location/prop/outfit continuity | Planned |
 | 7 | A/B | Manga direction expansion | spatial grammar, perspective, eye-flow, gutters, spreads, typesetting | Planned |
+
+## Phase 2.5 — Manga-first editor shell / navigation UX
+
+This phase exists because Backup/Restore, scoped export, and panel-first generation all depend on users understanding the active `work → container → page` context. Building those features on the previous mixed header/page-tab navigation would create avoidable rework.
+
+### Navigation hierarchy
+- application header owns only application-level actions;
+- current work title has its own line below the application header;
+- breadcrumb represents container ancestry plus current page;
+- page navigation is a first-class context control above the canvas;
+- the Page tab owns manuscript/layout settings, not work-library or hierarchy navigation.
+
+### Explorer-style work structure
+- Work Structure opens a tree of work → optional volume/chapter/folder → page;
+- flat works show pages directly under the work;
+- page selection happens directly from the tree;
+- existing detailed page and hierarchy CRUD remain available as advanced editing controls rather than primary navigation;
+- hierarchy data semantics remain `volume | chapter | folder` with stable IDs and referential page ownership.
+
+### Page display naming
+- user-visible page code is `P001` minimum three-digit zero padding;
+- canonical `pageNumber` remains an integer and does not store padded text;
+- page title remains optional secondary metadata;
+- unnamed pages display page code first and use localized panel counts only as secondary metadata.
+
+### Japanese-first UI clarity
+- remove English-only fallback labels from the primary Japanese authoring surface where they are not interoperability terms;
+- translate editor-only camera/role/status labels while keeping semantic enum values unchanged;
+- rename `追加スタイル指示` to `追加の画風・仕上げ指示（任意）` with a Japanese example;
+- keep professional English terms only where they are intentionally paired with Japanese for interoperability or learning.
 
 ## Phase 3 — Backup / Restore
 
