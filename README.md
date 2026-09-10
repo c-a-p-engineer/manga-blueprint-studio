@@ -18,10 +18,10 @@ Current prototype supports:
 - autosave that persists work contents without silently changing the active work;
 - manuscript presets from portrait/social/video sizes through B5/A4/Webtoon/custom;
 - Japanese RTL reading by default plus LTR;
-- geometry-based panel-number synchronization shared by canvas, Panel Peek/List, Scene Templates, prompt, manifest, and export;
+- geometry-based panel-number synchronization shared by canvas, Panel Peek/List, Story Templates, prompt, manifest, and export;
 - vertical Japanese writing (`vertical-rl`) by default with project/per-balloon/per-SFX overrides;
 - 1–6 panel layouts, action/conversation/climax patterns, 4-koma variants, bleed/breakout/effects;
-- Scene Template Studio with category/search, visual cards, beat-flow preview, bounded derivation, custom local templates, two-visible cast-aware templates, and per-panel cast control;
+- Story Template Studio with category/search, visual cards, beat-flow preview, bounded derivation, custom local templates, two-visible cast-aware templates, and per-panel cast control;
 - Smart Manga with three non-mutating candidates, reproducible seed, emphasis/intensity controls, and editable application;
 - reusable base characters with `sheet` / `description` / `free` identity modes;
 - character appearance summaries that remain authoritative even when optional detail fields are blank;
@@ -37,12 +37,16 @@ Current prototype supports:
 
 See [`docs/PROTOTYPE-0.14.0.md`](docs/PROTOTYPE-0.14.0.md) for the current work-library/hierarchy release baseline.
 
+## Template terminology
+
+**Story Template / ストーリーテンプレート is the single canonical template feature name.** A Story Template may describe one recognizable scene or beat sequence, but “Scene Template” is not a separate template system or alternate product name. Internal scene/cast semantics may still use the ordinary word “scene” where it describes content rather than the feature.
+
 ## Recommended workflow
 
 1. Open the **Works / 作品** library and create or explicitly open the work you want to edit.
 2. Select/add a page, and optionally assign it to a volume/chapter/folder.
 3. Choose canvas size and RTL/LTR panel reading direction.
-4. Start with Scene Template Studio, Smart Manga, or a visual layout.
+4. Start with Story Template Studio, Smart Manga, or a visual layout.
 5. Create/select reusable base characters and choose each appearance source.
 6. Read the page through Panel Chips / Panel List; long-press or tap `ⓘ` for Panel Peek.
 7. Refine action intent, pose, expression, gaze, support/motion, camera/depth, background, dialogue/SFX, and effects where needed.
@@ -69,7 +73,7 @@ Prototype 0.14.0 stores complete works in browser IndexedDB and exposes a local 
 - the active page is remembered separately for each work;
 - project autosave no longer boots from or writes historical project `localStorage` keys;
 - old browser-local autosave state is intentionally not migrated; portable `.manga.json` import is the compatibility path;
-- browser-local custom Scene Templates continue to use their separate `localStorage` library.
+- browser-local custom Story Templates continue to use their separate `localStorage` library.
 
 Current generation/export behavior remains **selected-page scoped**. Backup/restore and range/container/work export are later phases.
 
@@ -92,7 +96,7 @@ Balloon / SFX override
   horizontal-tb -> horizontal
 ```
 
-Changing writing direction never changes panel numbering. Scene Template preview numbers and applied beats follow panel reading direction, not writing direction.
+Changing writing direction never changes panel numbering. Story Template preview numbers and applied beats follow panel reading direction, not writing direction.
 
 ## Visual + semantic contract
 
@@ -175,9 +179,9 @@ Clean AI PNG removes authoring text such as character names, panel numbers, came
 
 `actionIntent` is semantic direction and must never be treated as visible manga text.
 
-## Scene Template Studio vs Smart Manga
+## Story Template Studio vs Smart Manga
 
-**Scene Template Studio** provides recognizable editable scene recipes with explicit beat/action flow, optional sample text, cast expectations, discovery metadata, and bounded variation.
+**Story Template Studio** provides recognizable editable story/scene recipes with explicit beat/action flow, optional sample text, cast expectations, discovery metadata, and bounded variation.
 
 **Smart Manga** proposes three bounded alternatives from purpose / panel count / seed / emphasis / intensity and does not mutate the page until one is applied.
 
