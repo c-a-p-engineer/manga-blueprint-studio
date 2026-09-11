@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.15.2
+## Current prototype: 0.16.0
 
-Prototype **0.15.2** keeps the manga-first editor shell and full user guide from 0.15.1, and adds a bounded **Design Direction Pass** to the AI handoff. Before rendering, downstream models are asked to derive focal hierarchy, eye flow, negative space, contrast, and detail-density rhythm while preserving the authored panel geometry, story action, camera intent, cast, identity, and exact visible text.
+Prototype **0.16.0** ships the first Advanced Panel Geometry slice: panels may remain rectangles or become editable convex quadrilaterals. The panel inspector provides rectangle/diagonal/trapezoid presets plus direct four-corner dragging, and the layout selector includes irregular **斜め3コマ** and **斜め4コマ 2×2** templates. Clean/annotated PNG clipping and the AI render brief preserve the same authored boundary. The mobile app header is also explicitly split into two rows so Help/Undo/Redo/language labels stay on one line.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -17,7 +17,7 @@ Current project format remains `manga-blueprint/0.2`; export manifest remains `m
   → 必要なら 巻 / 章 / フォルダ
     → P001, P002, ...
       → ページ設定 / コマ割り
-        → コマ・キャラ・背景・文字・演出
+        → コマ形状 / キャラ / 背景 / 文字 / 演出
           → 選択中ページの AI生成ZIP
 ```
 
@@ -30,6 +30,7 @@ The current release supports:
 - stable work/page/container identity and IndexedDB persistence;
 - optional nested `volume | chapter | folder` organization with non-destructive container deletion;
 - manuscript/canvas presets, Japanese RTL or LTR reading, and geometry-based panel order synchronization;
+- rectangle and convex-quadrilateral panel boundaries with direct four-corner editing and irregular layout presets;
 - vertical Japanese lettering by default with horizontal/per-balloon/per-SFX overrides;
 - Story Template Studio and bounded Smart Manga proposals;
 - reusable character identity with `sheet | description | free` modes;
@@ -37,7 +38,7 @@ The current release supports:
 - Panel Peek/List/Chips, camera/figure diagnostics, Crop Guide, and non-blocking Manga Check;
 - selected-page AI generation ZIP and Review/archive ZIP with manifest-first handoff;
 - strict visible-text allowlisting, reference-role/preservation contracts, bounded Design Direction Pass, and producer provenance;
-- Japanese-first mobile UI and English localization;
+- Japanese-first mobile UI with a two-row mobile app header and English localization;
 - dedicated current user guide in Markdown and as a public web page.
 
 Current generation/review export is **selected-page scoped**. Full backup/restore and selected-range/container/work-wide export are later roadmap phases.
@@ -57,8 +58,8 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.s
 
 1. Open/create a **作品**.
 2. Choose `P001` or another page above the canvas, or open **作品構成** to navigate the explorer tree.
-3. In **ページ設定**, choose manuscript size, reading direction, art direction, layout/Story Template/Smart Manga as needed.
-4. Tap a panel and refine panel direction, character, background, dialogue, and effects with the lower tabs.
+3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. `斜め3コマ` and `斜め4コマ 2×2` start with irregular panel boundaries.
+4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. Then refine character, background, dialogue, and effects.
 5. In **出力**, download the **AI生成ZIP** for the current page and copy the short manifest-first handoff message.
 6. Attach Character Sheets only for characters whose manifest says they are required.
 
@@ -66,7 +67,7 @@ For the complete UI explanation, use [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) 
 
 ## Navigation model
 
-The application header owns app-level actions such as Help, Undo/Redo, and language.
+The application header owns app-level actions such as Help, Undo/Redo, and language. On narrow screens it uses two explicit rows: branding first, then the four app actions. Labels are kept on one line instead of wrapping inside individual buttons.
 
 The current manga context is separate:
 
@@ -79,6 +80,28 @@ The current manga context is separate:
 `P001` is display formatting only. The serialized project stores numeric `pageNumber` plus stable `Page.id`.
 
 `ページ設定 / Page settings` owns manuscript/layout/current-page configuration. It is not the primary work/page navigator.
+
+## Panel geometry
+
+Rectangle-only projects remain valid. A panel may additionally store:
+
+```json
+{
+  "rect": {"x": 35, "y": 35, "w": 355, "h": 350},
+  "shape": {
+    "kind": "quad",
+    "preset": "custom",
+    "points": [
+      {"x": 70, "y": 35},
+      {"x": 390, "y": 35},
+      {"x": 355, "y": 385},
+      {"x": 35, "y": 385}
+    ]
+  }
+}
+```
+
+`shape` is authoritative for the visible boundary and clipping when present; `rect` remains its bounding-box compatibility representation. The editor accepts only usable convex quadrilaterals and prevents self-intersection/near-zero edges. Irregular panels currently disable bleed; reset the shape to **長方形** before using bleed again.
 
 ## Story Template terminology
 
@@ -130,9 +153,9 @@ The current AI generation ZIP contains:
 <prefix>_manifest.json
 ```
 
-The manifest is read first. The clean PNG controls spatial composition; semantic JSON/prompt control story/camera/pose/background/lettering semantics; character guidance or required external Character Sheets control identity; art direction controls rendering language; only exact `TEXT TO RENDER` entries are permitted as visible manga text.
+The manifest is read first. The clean PNG controls spatial composition, including an authored quadrilateral panel boundary when present; semantic JSON/prompt control story/camera/pose/background/lettering semantics; character guidance or required external Character Sheets control identity; art direction controls rendering language; only exact `TEXT TO RENDER` entries are permitted as visible manga text.
 
-Before final rendering, the handoff now includes a **derived Design Direction Pass**. It may decide focal emphasis, negative-space usage, local contrast, and detail-density rhythm inside the authored panels. It is guidance only and cannot change panel count/boundaries, reading order, story actions, camera intent, cast, identity, or exact text.
+Before final rendering, the handoff includes a **derived Design Direction Pass**. It may decide focal emphasis, negative-space usage, local contrast, and detail-density rhythm inside the authored panels. It is guidance only and cannot change panel count/boundaries, reading order, story actions, camera intent, cast, identity, or exact text.
 
 The Review/archive ZIP contains the same state-linked materials plus annotated PNG and is not the default generation input.
 
@@ -159,7 +182,7 @@ Open:
 http://localhost:4173/web/
 ```
 
-The app is a zero-build static runtime. `web/build-info.json` is the local/repository provenance fallback; GitHub Pages stamps the deployed commit and timestamp into the published copy.
+The app is a zero-build static runtime. `web/build-info.json` is the local/repository provenance fallback; GitHub Pages stamps the deployed commit and timestamp into the published copy. Runtime chunk URLs include the application version so a newly deployed release does not silently reuse older cached feature chunks.
 
 ## Documentation
 
@@ -172,19 +195,20 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.15.2.md`](docs/PROTOTYPE-0.15.2.md) — current release note.
+- [`docs/PROTOTYPE-0.16.0.md`](docs/PROTOTYPE-0.16.0.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.15.2**.
+Current application baseline: **Prototype 0.16.0**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;
 - current-page render brief: `manga-blueprint-render-brief/2`;
 - derived design direction: `manga-blueprint-design-direction-pass/1`;
+- panel geometry: rectangle or optional convex `quad` shape;
 - producer provenance: `manga-blueprint-producer/1`;
 - build metadata: `manga-blueprint-build-info/1`.
 

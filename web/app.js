@@ -2,7 +2,7 @@
 // keep this order explicit because later chunks intentionally extend earlier behavior.
 const fallbackBuildInfo={
   schema:'manga-blueprint-build-info/1',
-  appVersion:'0.15.2',
+  appVersion:'0.16.0',
   gitCommit:null,
   buildSource:'runtime-fallback',
   deployedAt:null
@@ -17,6 +17,7 @@ try{
   globalThis.MANGA_BLUEPRINT_BUILD_INFO=Object.freeze(fallbackBuildInfo);
 }
 
+const runtimeVersion=String(globalThis.MANGA_BLUEPRINT_BUILD_INFO?.appVersion||fallbackBuildInfo.appVersion);
 const runtimeChunks = [
   ['core/foundation', './runtime/core/foundation.js'],
   ['core/project-storage', './runtime/core/project-storage.js'],
@@ -51,14 +52,16 @@ const runtimeChunks = [
   ['templates/panel-cast-flow', './runtime/templates/panel-cast-flow.js'],
   ['handoff/interaction-generation-contract', './runtime/handoff/interaction-generation-contract.js'],
   ['handoff/render-brief', './runtime/handoff/render-brief.js'],
+  ['authoring/panel-geometry', './runtime/authoring/panel-geometry.js'],
   ['handoff/producer-provenance', './runtime/handoff/producer-provenance.js'],
+  ['ui/mobile-header', './runtime/ui/mobile-header.js'],
   ['ui/editor-shell', './runtime/ui/editor-shell.js']
 ];
 
 for (const [id, src] of runtimeChunks) {
   await new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = src;
+    script.src = `${src}?v=${encodeURIComponent(runtimeVersion)}`;
     script.dataset.runtimeChunk = id;
     script.onload = resolve;
     script.onerror = () => reject(new Error(`Failed to load runtime chunk ${id}: ${src}`));

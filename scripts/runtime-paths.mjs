@@ -34,7 +34,9 @@ export const runtimePaths = Object.freeze({
   panelCastFlow: 'web/runtime/templates/panel-cast-flow.js',
   interactionGenerationContract: 'web/runtime/handoff/interaction-generation-contract.js',
   renderBrief: 'web/runtime/handoff/render-brief.js',
+  panelGeometry: 'web/runtime/authoring/panel-geometry.js',
   producerProvenance: 'web/runtime/handoff/producer-provenance.js',
+  mobileHeader: 'web/runtime/ui/mobile-header.js',
   editorShell: 'web/runtime/ui/editor-shell.js'
 });
 
@@ -49,7 +51,7 @@ export const runtimeLoadOrder = Object.freeze([
   'templateQuality','sceneContract','castFallback',
   'desktopLayout','authoringClarity',
   'castSemantics','twoVisible','panelCastFlow',
-  'interactionGenerationContract','renderBrief','producerProvenance','editorShell'
+  'interactionGenerationContract','renderBrief','panelGeometry','producerProvenance','mobileHeader','editorShell'
 ]);
 
 export function readRuntime(key) {
