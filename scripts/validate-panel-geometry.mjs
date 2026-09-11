@@ -18,9 +18,12 @@ for(const token of [
 ])if(!geometry.includes(token))throw new Error(`panel geometry contract missing: ${token}`);
 
 for(const token of [
+  'body .topbar{',
   'grid-template-columns:repeat(4,minmax(0,1fr))',
   'white-space:nowrap',
-  '.tagline{display:block!important'
+  'body .topbar .tagline{display:block!important',
+  'body .topbar .top-actions #undoBtn span',
+  'display:inline!important'
 ])if(!header.includes(token))throw new Error(`mobile header contract missing: ${token}`);
 
 for(const token of [
@@ -31,4 +34,4 @@ for(const token of [
 
 for(const token of ['"shape"','"quad"','"points"'])if(!schema.includes(token))throw new Error(`schema panel geometry missing: ${token}`);
 
-console.log('Quadrilateral panel geometry + rectangle bleed compatibility + two-row mobile header validation passed.');
+console.log('Quadrilateral panel geometry + rectangle bleed compatibility + authoritative two-row mobile header validation passed.');
