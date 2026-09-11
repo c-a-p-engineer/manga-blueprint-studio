@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.16.0
+## Current prototype: 0.16.1
 
-Prototype **0.16.0** ships the first Advanced Panel Geometry slice: panels may remain rectangles or become editable convex quadrilaterals. The panel inspector provides rectangle/diagonal/trapezoid presets plus direct four-corner dragging, and the layout selector includes irregular **斜め3コマ** and **斜め4コマ 2×2** templates. Clean/annotated PNG clipping and the AI render brief preserve the same authored boundary. The mobile app header is also explicitly split into two rows so Help/Undo/Redo/language labels stay on one line.
+Prototype **0.16.1** is a focused Advanced Panel Geometry polish release. When a quadrilateral panel is reshaped, the annotated panel-number badge now follows the authored top-right corner inward instead of staying attached to the panel bounding box. Prototype 0.16.0 remains the foundation for editable convex quadrilaterals, diagonal/trapezoid presets, irregular layout templates, polygon-aware export, and the two-row mobile header.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -31,6 +31,7 @@ The current release supports:
 - optional nested `volume | chapter | folder` organization with non-destructive container deletion;
 - manuscript/canvas presets, Japanese RTL or LTR reading, and geometry-based panel order synchronization;
 - rectangle and convex-quadrilateral panel boundaries with direct four-corner editing and irregular layout presets;
+- annotated panel-number badges that follow the edited quadrilateral corner instead of the compatibility bounding box;
 - vertical Japanese lettering by default with horizontal/per-balloon/per-SFX overrides;
 - Story Template Studio and bounded Smart Manga proposals;
 - reusable character identity with `sheet | description | free` modes;
@@ -59,7 +60,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.s
 1. Open/create a **作品**.
 2. Choose `P001` or another page above the canvas, or open **作品構成** to navigate the explorer tree.
 3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. `斜め3コマ` and `斜め4コマ 2×2` start with irregular panel boundaries.
-4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. Then refine character, background, dialogue, and effects.
+4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. The annotated panel number follows the edited top-right corner. Then refine character, background, dialogue, and effects.
 5. In **出力**, download the **AI生成ZIP** for the current page and copy the short manifest-first handoff message.
 6. Attach Character Sheets only for characters whose manifest says they are required.
 
@@ -195,14 +196,14 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.16.0.md`](docs/PROTOTYPE-0.16.0.md) — current release note.
+- [`docs/PROTOTYPE-0.16.1.md`](docs/PROTOTYPE-0.16.1.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.16.0**.
+Current application baseline: **Prototype 0.16.1**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;

@@ -137,6 +137,15 @@ panelRect=function(panel){
 function panelRenderPoints33(panel){
   return panel?.shape?.kind==='quad'?panelShapePoints33(panel):rectPoints33(panelRect(panel));
 }
+function panelNumberAnchor33(points){
+  const corner=points[1]||points[0];
+  const centroid=points.reduce((sum,point)=>({x:sum.x+point.x,y:sum.y+point.y}),{x:0,y:0});
+  centroid.x/=points.length;centroid.y/=points.length;
+  const dx=centroid.x-corner.x,dy=centroid.y-corner.y,length=Math.hypot(dx,dy)||1;
+  const adjacent=Math.min(edgeLength33(corner,points[0]),edgeLength33(corner,points[2]));
+  const inset=Math.min(38,Math.max(22,adjacent*.28));
+  return{x:corner.x+dx/length*inset,y:corner.y+dy/length*inset};
+}
 
 function layoutSpecWithShape33(rect,preset){return{rect:{...rect},shape:{kind:'quad',preset,points:presetPoints33(rect,preset)}};}
 function layoutSpecs33(id,w,h){
@@ -211,10 +220,10 @@ renderSvg=function(annotated=true){
   const page=currentPage(),size=pageSize04();
   const defs=page.panels.map(panel=>`<clipPath id="clip_${panel.id}"><polygon points="${pointsAttr33(panelRenderPoints33(panel))}"/></clipPath>`).join('');
   const body=page.panels.map(panel=>{
-    const r=panelRect(panel),points=panelRenderPoints33(panel),clip=panel.style.breakout==='none';
+    const r=panelRect(panel),points=panelRenderPoints33(panel),clip=panel.style.breakout==='none',numberAnchor=panelNumberAnchor33(points);
     const borderClass=`panel-outline ${panel.id===selectedPanelId?'selected':''} ${panel.style.border}`;
     const chars=panel.characters.length?panel.characters.map(character=>characterSvg(character,annotated)).join(''):(annotated?`<text class="empty-note authoring-text" x="${r.x+r.w/2}" y="${r.y+r.h/2}">tap → add character</text>`:'');
-    const meta=annotated?`<g class="authoring-text"><rect class="panel-number-bg" x="${r.x+r.w-43}" y="${r.y+12}" width="30" height="30" rx="15"/><text class="panel-number" x="${r.x+r.w-28}" y="${r.y+27}">${panel.order}</text><text class="camera-label" x="${r.x+14}" y="${r.y+27}">${escapeXml(panel.camera.distance)} · ${escapeXml(panel.camera.angle)}</text><text class="role-label" x="${r.x+14}" y="${r.y+45}">${escapeXml(panel.role)}</text></g>`:'';
+    const meta=annotated?`<g class="authoring-text"><rect class="panel-number-bg" x="${numberAnchor.x-15}" y="${numberAnchor.y-15}" width="30" height="30" rx="15"/><text class="panel-number" x="${numberAnchor.x}" y="${numberAnchor.y}">${panel.order}</text><text class="camera-label" x="${r.x+14}" y="${r.y+27}">${escapeXml(panel.camera.distance)} · ${escapeXml(panel.camera.angle)}</text><text class="role-label" x="${r.x+14}" y="${r.y+45}">${escapeXml(panel.role)}</text></g>`:'';
     const bgMeta=annotated&&panel.background.location?`<text class="effect-note authoring-text" x="${r.x+14}" y="${r.y+r.h-18}">BG: ${escapeXml(panel.background.location)}</text>`:'';
     const sfx=annotated&&panel.effects.sfxText?`<text class="effect-note authoring-text" x="${r.x+r.w-18}" y="${r.y+r.h-18}" text-anchor="end">SFX: ${escapeXml(panel.effects.sfxText)}</text>`:'';
     return `<g data-panel="${escapeXml(panel.id)}"><polygon class="${borderClass}" points="${pointsAttr33(points)}"/><polygon class="panel-hit" data-panel-hit="${escapeXml(panel.id)}" points="${pointsAttr33(points)}"/>${effectSvg(panel)}<g ${clip?`clip-path="url(#clip_${panel.id})"`:''}>${chars}</g>${panel.balloons.map(balloon=>balloonSvg(balloon,annotated)).join('')}${meta}${bgMeta}${sfx}${annotated?panelShapeHandleSvg33(panel):''}</g>`;
