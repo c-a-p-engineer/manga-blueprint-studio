@@ -12,7 +12,9 @@ for(const token of [
   'data-panel-corner33',
   "diagonal3:{ja:'斜め3コマ'",
   "diagonal4:{ja:'斜め4コマ 2×2'",
-  "brief.panelGeometryModel='rect-or-convex-quad'"
+  "brief.panelGeometryModel='rect-or-convex-quad'",
+  'function panelRenderPoints33(panel)',
+  'rectPoints33(panelRect(panel))'
 ])if(!geometry.includes(token))throw new Error(`panel geometry contract missing: ${token}`);
 
 for(const token of [
@@ -29,4 +31,4 @@ for(const token of [
 
 for(const token of ['"shape"','"quad"','"points"'])if(!schema.includes(token))throw new Error(`schema panel geometry missing: ${token}`);
 
-console.log('Quadrilateral panel geometry + two-row mobile header validation passed.');
+console.log('Quadrilateral panel geometry + rectangle bleed compatibility + two-row mobile header validation passed.');
