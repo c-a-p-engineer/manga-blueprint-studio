@@ -13,6 +13,7 @@ Prototype 0.16.4 removes two remaining UI detours: Story Template authoring now 
 - Work Explorer combines saved-work switching and the current work page tree.
 - Removed the separate 作品構成 button and the dedicated 巻・章・フォルダ editor from the primary UI. Existing/imported container data remains compatible and may still appear as nested folders in the tree.
 - Page operations remain available as advanced controls.
+- Narrow-screen page navigation uses the same four-control structure as desktop after the separate 作品構成 button was removed.
 
 ## Compatibility
 
