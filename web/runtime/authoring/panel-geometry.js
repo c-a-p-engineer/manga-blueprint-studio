@@ -134,6 +134,9 @@ panelRect=function(panel){
   if(panel?.shape?.kind==='quad')return panelShapeBBox33(panelShapePoints33(panel));
   return panelRectBase33(panel);
 };
+function panelRenderPoints33(panel){
+  return panel?.shape?.kind==='quad'?panelShapePoints33(panel):rectPoints33(panelRect(panel));
+}
 
 function layoutSpecWithShape33(rect,preset){return{rect:{...rect},shape:{kind:'quad',preset,points:presetPoints33(rect,preset)}};}
 function layoutSpecs33(id,w,h){
@@ -206,9 +209,9 @@ function panelShapeHandleSvg33(panel){
 
 renderSvg=function(annotated=true){
   const page=currentPage(),size=pageSize04();
-  const defs=page.panels.map(panel=>`<clipPath id="clip_${panel.id}"><polygon points="${pointsAttr33(panelShapePoints33(panel))}"/></clipPath>`).join('');
+  const defs=page.panels.map(panel=>`<clipPath id="clip_${panel.id}"><polygon points="${pointsAttr33(panelRenderPoints33(panel))}"/></clipPath>`).join('');
   const body=page.panels.map(panel=>{
-    const r=panelRect(panel),points=panelShapePoints33(panel),clip=panel.style.breakout==='none';
+    const r=panelRect(panel),points=panelRenderPoints33(panel),clip=panel.style.breakout==='none';
     const borderClass=`panel-outline ${panel.id===selectedPanelId?'selected':''} ${panel.style.border}`;
     const chars=panel.characters.length?panel.characters.map(character=>characterSvg(character,annotated)).join(''):(annotated?`<text class="empty-note authoring-text" x="${r.x+r.w/2}" y="${r.y+r.h/2}">tap → add character</text>`:'');
     const meta=annotated?`<g class="authoring-text"><rect class="panel-number-bg" x="${r.x+r.w-43}" y="${r.y+12}" width="30" height="30" rx="15"/><text class="panel-number" x="${r.x+r.w-28}" y="${r.y+27}">${panel.order}</text><text class="camera-label" x="${r.x+14}" y="${r.y+27}">${escapeXml(panel.camera.distance)} · ${escapeXml(panel.camera.angle)}</text><text class="role-label" x="${r.x+14}" y="${r.y+45}">${escapeXml(panel.role)}</text></g>`:'';
