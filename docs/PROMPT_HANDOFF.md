@@ -76,6 +76,7 @@ It records, where applicable:
 - panel intent index;
 - derived lettering metadata;
 - derived Design Direction Pass;
+- current panel geometry model and per-panel geometry in the render brief;
 - compact user handoff text;
 - producer/build provenance.
 
@@ -90,7 +91,7 @@ The package deliberately separates responsibilities.
 Controls strongly/exactly as declared by the current render contract:
 
 - panel count;
-- panel boundaries/proportions;
+- panel boundaries/proportions, including authored convex-quadrilateral boundaries;
 - reading-order geometry;
 - approximate character placement and scale;
 - pose direction/body relationship;
@@ -110,6 +111,7 @@ Controls:
 - dialogue/SFX semantics;
 - reading/writing direction;
 - art direction;
+- optional exact quadrilateral panel coordinates;
 - other current panel semantics.
 
 ### Character guidance / Character Sheets — identity authority
@@ -123,6 +125,50 @@ Controls color/render style, line, shading, detail, background finish, palette/t
 ### `TEXT TO RENDER` — visible text authority
 
 Only exact strings allowlisted in the generated prompt's renderable-text section may become visible manga lettering.
+
+## Panel geometry contract
+
+Prototype 0.16.0 supports two current panel-boundary forms:
+
+```text
+rectangle-only panel
+  rect = required compatibility geometry
+
+quadrilateral panel
+  rect = synchronized bounding box
+  shape.kind = quad
+  shape.points[4] = exact authored visible boundary
+```
+
+For quadrilateral panels, `shape.points` is the stronger boundary authority. The clean PNG, editor/review rendering, and current render brief must describe the same four-point polygon.
+
+The render brief exposes:
+
+```json
+{
+  "panelGeometryModel": "rect-or-convex-quad",
+  "panels": [
+    {
+      "geometry": {
+        "rect": {"x": 35, "y": 35, "w": 355, "h": 350},
+        "shape": {
+          "kind": "quad",
+          "points": [
+            {"x": 35, "y": 35},
+            {"x": 390, "y": 55},
+            {"x": 390, "y": 385},
+            {"x": 35, "y": 365}
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+Downstream generation must not reinterpret a quadrilateral as a decorative diagonal line inside a rectangular panel. The polygon **is the panel boundary** and remains under `PRESERVE EXACTLY`.
+
+Rectangle-only panels omit/null the optional shape and retain the existing behavior. Arbitrary polygons, curves, and inferred shared-edge topology are not part of the current handoff contract.
 
 ## Reference-role contract
 
@@ -188,7 +234,7 @@ What the downstream renderer is expected to transform from planning/reference fo
 Examples:
 
 - panel count;
-- panel boundaries/proportions;
+- panel boundaries/proportions, including quadrilateral points when present;
 - reading-order geometry;
 - exact allowlisted visible text.
 
@@ -311,6 +357,8 @@ It records how the page started. It is not continuing template authority after a
 
 **Story Template** is the canonical feature name; do not introduce “Scene Template” as a separate product term.
 
+The **斜め3コマ / 斜め4コマ 2×2** choices introduced with panel geometry are page-layout presets. They do not create a second Story Template system.
+
 ## Reading order
 
 `meta.readingDirection` is authoritative:
@@ -318,7 +366,7 @@ It records how the page started. It is not continuing template authority after a
 - `rtl` — Japanese manga right-to-left;
 - `ltr` — left-to-right.
 
-Committed render paths synchronize panel order from geometry + selected direction before handoff.
+Committed render paths synchronize panel order from geometry + selected direction before handoff. For current convex quadrilateral panels, the synchronized compatibility `rect` bounding box is used for deterministic row/order calculation while the exact polygon remains the rendering boundary.
 
 The same order should therefore be reflected by:
 
@@ -393,6 +441,7 @@ Forbidden authoring text includes:
 - writing-mode labels;
 - Panel Peek/List/Chip summaries;
 - Crop Guide labels;
+- panel-shape corner-handle numbers;
 - editor/help text.
 
 ## Visual-reference boundary
@@ -403,12 +452,13 @@ Clean PNG excludes authoring overlays such as:
 - info buttons;
 - Crop Guide labels;
 - selected outlines/metadata;
+- panel-shape corner handles;
 - balloon text previews;
 - camera/role labels;
 - character display labels;
 - SFX labels.
 
-It keeps the spatial reference needed for generation.
+It keeps the spatial reference needed for generation, including the authored rectangle or quadrilateral panel boundary.
 
 ## Export identity
 
