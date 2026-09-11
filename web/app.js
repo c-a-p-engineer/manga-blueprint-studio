@@ -54,6 +54,7 @@ const runtimeChunks = [
   ['handoff/render-brief', './runtime/handoff/render-brief.js'],
   ['authoring/panel-geometry', './runtime/authoring/panel-geometry.js'],
   ['templates/presentation-contract', './runtime/templates/presentation-contract.js'],
+  ['templates/discovery-presentation', './runtime/templates/discovery-presentation.js'],
   ['handoff/producer-provenance', './runtime/handoff/producer-provenance.js'],
   ['ui/mobile-header', './runtime/ui/mobile-header.js'],
   ['ui/editor-shell', './runtime/ui/editor-shell.js']
