@@ -7,7 +7,7 @@ Manga Blueprint Studio is a zero-build GitHub Pages application. `web/app.js` lo
 Runtime files are named by responsibility, not prototype chronology.
 
 - `core/` — foundational project state, IndexedDB persistence, rendering, import/export input, and base event bindings.
-- `authoring/` — page/work/container authoring, page/layout/camera, reusable characters, and localization/export hardening.
+- `authoring/` — page/work/container authoring, page/layout/camera, panel geometry/editing assistance, reusable characters, and localization/export hardening.
 - `assist/` — bounded Smart Manga assistance.
 - `identity/` — character identity and appearance handoff.
 - `story/` — story-readable panel semantics and Smart Manga intent.
@@ -16,7 +16,7 @@ Runtime files are named by responsibility, not prototype chronology.
 - `ordering/` — geometry + reading-order synchronization.
 - `integration/` — cross-feature integration with intentional load dependencies.
 - `handoff/` — prompt/manifest/render contracts and producer provenance for downstream image-generation assistants.
-- `ui/` — presentation-only responsive layout, authoring clarity, and the manga-first editor shell.
+- `ui/` — presentation-only responsive layout, authoring clarity, mobile app header, and the manga-first editor shell.
 
 ## Important current owners
 
@@ -31,6 +31,29 @@ Owns page CRUD/reorder/number/title/selection and per-work active-page restorati
 ### `authoring/work-library-hierarchy.js`
 
 Owns Work Library behavior, container CRUD/hierarchy, page assignment, non-destructive container deletion, and explicit work activation paths.
+
+### `authoring/panel-geometry.js`
+
+Owns the canonical optional convex-quadrilateral panel shape, shape presets, direct four-corner editing, polygon hit/clip rendering, irregular layout presets, page-resize scaling, and render-brief geometry enrichment.
+
+### `authoring/panel-editing-assist.js`
+
+Loads immediately after `panel-geometry.js` and owns non-canonical editing assistance around that same shape model:
+
+- optional corner snapping to nearby page/other-panel/self alignment coordinates;
+- editor-only alignment guide lines;
+- near-horizontal/vertical edge correction;
+- plain-language frame-style explanations for normal/borderless/inset/impact, bleed, and breakout.
+
+It must not persist a second geometry model. Final authored `Panel.shape.points` remain the source of truth, and authoring guide lines must never enter clean AI output.
+
+### `ordering/reading-order.js`
+
+Owns geometry + RTL/LTR panel sequence synchronization. Rectangle panels use visual centers; shaped panels derive a polygon centroid and adaptive row grouping so a single protruding diagonal corner does not unexpectedly determine panel order.
+
+### `ui/mobile-header.js`
+
+Owns narrow-screen app-header presentation only: branding/tagline on the first row and Help / Undo / Redo / language on the second row. Work identity is not an app-header action.
 
 ### `ui/editor-shell.js`
 
@@ -76,7 +99,8 @@ docs/README.md
 5. Browser-visible behavior, project JSON, prompt, manifest, export package boundaries, RTL/LTR, writing direction, and legacy portable-file normalization are external contracts during refactors.
 6. `scripts/runtime-paths.mjs` and `scripts/validate-runtime-layout.mjs` keep semantic runtime registration/load order explicit.
 7. User-visible/runtime contract changes must also update the documentation owners defined in `docs/README.md` and `AGENTS.md`.
-8. CI evidence and visual/interaction evidence are separate; static validation cannot by itself prove a public layout is visually correct.
+8. Authoring overlays such as snapping guides are presentation aids only; they must not leak into clean AI generation assets.
+9. CI evidence and visual/interaction evidence are separate; static validation cannot by itself prove a public layout is visually correct.
 
 ## Runtime migration boundary
 
