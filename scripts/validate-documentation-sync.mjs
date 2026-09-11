@@ -81,7 +81,7 @@ requirePhrase('web/runtime/authoring/localization-export-hardening.js','詳し�
 
 if(!fs.existsSync(`docs/PROTOTYPE-${version}.md`)) throw new Error(`Missing current release note docs/PROTOTYPE-${version}.md`);
 const release=read(`docs/PROTOTYPE-${version}.md`);
-for(const phrase of [`Prototype ${version}`,'docs/USER-GUIDE.md','/guide.html','documentation']){
+for(const phrase of [`Prototype ${version}`,'docs/USER-GUIDE.md','/guide.html','Documentation']){
   if(!release.includes(phrase)) throw new Error(`Current release note missing ${JSON.stringify(phrase)}`);
 }
 
