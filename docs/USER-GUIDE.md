@@ -201,6 +201,18 @@ A page can remain directly under the work. Deleting a non-empty container does n
 
 Use it for recognizable story/beat patterns such as confession, reaction, battle opening, counterattack, gag failure, or character introduction. Browsing/searching does not mutate the current page; only explicit apply changes it.
 
+テンプレートは**カードを選ぶだけ**で選択されます。以前の重複した「ストーリーテンプレート」ドロップダウンは表示しません。カードには、そのテンプレートで使う主な演出がチップで表示されます。
+
+クイック絞り込みでは、1人表示 / 2人表示 / 恋愛 / バトルなどに加えて、次の演出からサンプルを探せます。
+
+- **演出あり / 演出なし** — 演出を使った例と素の構成を比較;
+- **斜めコマ**;
+- **衝撃枠 / 枠無し / 小窓**;
+- **集中線 / スピード線 / 衝撃線 / 緊張線 / 無音・間**;
+- **ブチ抜き**.
+
+異なるグループの条件は組み合わせられるため、たとえば **2人表示 + 集中線**、**斜めコマ + 衝撃枠** のように絞れます。`突進→一撃`、`連続攻防`、`衝撃の発見`、`不穏な接近`、`静かな余韻`、`ツッコミ小窓` など、演出を試すための具体例も用意されています。
+
 ### Smart Manga
 
 Smart Manga proposes a small set of bounded alternatives from purpose, panel count, seed, emphasis, and intensity. It also remains non-mutating until explicit apply.
