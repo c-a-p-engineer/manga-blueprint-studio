@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.16.1
+## Shipped through Prototype 0.16.2
 
 ### Foundation / persistence
 
@@ -35,7 +35,8 @@
 - detailed page/container CRUD retained as advanced controls;
 - **Page settings / ページ設定** separated from primary navigation;
 - Japanese-first cleanup of primary authoring/status/style labels;
-- **Prototype 0.16.0 mobile header** uses an explicit branding row plus an app-action row so action labels do not wrap inside buttons.
+- mobile app header uses an explicit branding row plus an app-action row so action labels do not wrap inside buttons;
+- **Prototype 0.16.2** hardens that two-row header contract and hides any transient Work Library control from the app-level header until it is re-homed into the work context.
 
 ### Documentation / user guidance
 
@@ -53,13 +54,17 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 - dynamic manuscript/canvas presets;
 - RTL/LTR panel reading direction;
 - geometry-based panel order synchronization;
+- shaped-panel reading order uses robust panel visual centers so one protruding slanted corner does not unexpectedly reorder a page;
 - vertical/horizontal lettering direction with per-balloon/per-SFX overrides;
 - common panel layouts and 4-koma variants;
 - **Prototype 0.16.0 convex-quadrilateral panel boundaries** with direct four-corner editing;
 - panel-shape presets: rectangle, diagonal-left/right, trapezoid-left/right;
 - irregular layout presets: **斜め3コマ** and **斜め4コマ 2×2**;
 - polygon-aware editor border/hit area and clean/annotated PNG clipping;
-- **Prototype 0.16.1 annotated panel-number badge follows the authored top-right quadrilateral corner inward while reshaping** rather than following the compatibility bounding box;
+- **Prototype 0.16.1** annotated panel-number badge follows the authored top-right quadrilateral corner inward while reshaping rather than following the compatibility bounding box;
+- **Prototype 0.16.2** optional snap-assisted corner dragging to nearby page/other-panel/self alignment coordinates with editor-only blue guide lines;
+- one-click correction for edges already near horizontal/vertical;
+- contextual in-editor explanations for normal/borderless/inset/impact frames, bleed, and breakout;
 - Story Template Studio with discovery/beat-flow/bounded derivation/custom local templates;
 - Smart Manga bounded candidate proposals;
 - reusable base-character identity with `sheet | description | free` modes;
@@ -92,7 +97,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 | 2.6 | A | Bounded Design Direction handoff | **Shipped in 0.15.2** |
 | 3 | S | Backup / Restore | **Next** |
 | 4 | S | Scoped Export | Planned |
-| 4.5 | S-enabler | Advanced Panel Geometry — quadrilateral foundation | **First slice shipped in 0.16.0; annotation follow-up in 0.16.1** |
+| 4.5 | S-enabler | Advanced Panel Geometry — quadrilateral foundation | **First slice shipped in 0.16.0; polish in 0.16.1; alignment/order UX in 0.16.2** |
 | 5 | S | Panel-first / Hybrid generation | Planned |
 | 6 | A | Cross-page continuity / Reference Assets | Planned |
 | 7 | A/B | Manga direction expansion | Planned |
@@ -237,6 +242,16 @@ Shipped authoring behavior:
 
 The authoring-only panel-number badge is anchored from the authored top-right polygon corner toward the panel interior. During direct corner dragging it therefore follows the actual frame shape instead of the quadrilateral bounding box. This changes only annotated/editor presentation; clean AI PNG output remains label-free.
 
+### 0.16.2 alignment / ordering polish
+
+- optional snapping during direct corner dragging;
+- snap candidates include page edges/center, other panel corners, and other corners of the selected panel;
+- active x/y snaps display editor-only blue guide lines;
+- **近い辺を水平・垂直に補正** straightens edges already close to horizontal/vertical without rewriting intentional diagonals;
+- shaped-panel reading order uses polygon visual centers and adaptive row grouping instead of bounding-box minimum x/y;
+- therefore a single diagonal corner protruding upward/rightward does not by itself turn a later panel into Panel 1;
+- panel frame terminology is explained inline instead of requiring the user to know what **衝撃枠 / 断ち切り / ブチ抜き** mean.
+
 Current data contract:
 
 ```json
@@ -264,7 +279,7 @@ Current data contract:
 - panel shape presets and layout-template application;
 - project normalization/schema compatibility;
 - canvas resize scaling;
-- reading-order synchronization through the shape bounding box + explicit `order`;
+- reading-order synchronization through robust shape visual anchors + explicit `order`;
 - AI clean-blueprint semantics and render-brief geometry;
 - page duplication/full-work cloning through ordinary project-state cloning.
 
@@ -272,7 +287,6 @@ Splitting an irregular panel currently uses its compatibility bounding box and p
 
 ### Deferred geometry expansion
 
-- snapping corner handles to page margins / neighboring guide coordinates;
 - linked/shared-boundary dragging across neighboring panels;
 - arbitrary 5+ point polygons;
 - concave/self-intersecting frames;
@@ -285,16 +299,17 @@ Those can follow once the quadrilateral geometry proves stable. Shared-boundary 
 
 ### Verification
 
-For the shipped first slice:
+For the shipped first slice and hardening:
 
 - old rectangle-only projects load with no visible geometry change;
 - rectangle ↔ quadrilateral conversion participates in Undo/Redo;
 - corner dragging rejects invalid quadrilaterals;
 - selected/hit-tested region uses the rendered polygon;
 - clean and annotated exports use the same polygon boundary;
-- RTL/LTR order remains deterministic through the compatibility bounding box;
+- RTL/LTR order remains deterministic and is resilient to a lone protruding corner;
 - templates that do not opt into irregular geometry remain rectangles;
 - the render brief exposes the same authored quad points;
+- snap guides and alignment UI remain authoring-only and do not leak into clean AI output;
 - future Panel-first compositor can consume the same polygon/mask contract.
 
 Remaining interaction/visual QA should continue to include narrow mobile screens, corner-handle touch ergonomics, and combinations with breakout/effects.
@@ -419,7 +434,7 @@ Make long works more stable across pages without silently uploading private refe
 
 After the quadrilateral foundation ships:
 
-- snapping and linked/shared-boundary dragging;
+- linked/shared-boundary dragging;
 - inset/overlap authoring;
 - arbitrary polygon exploration if real manga use cases justify it;
 - safer bleed visualization across irregular edges;
