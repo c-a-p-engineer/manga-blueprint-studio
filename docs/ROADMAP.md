@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.16.0
+## Shipped through Prototype 0.16.1
 
 ### Foundation / persistence
 
@@ -59,6 +59,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 - panel-shape presets: rectangle, diagonal-left/right, trapezoid-left/right;
 - irregular layout presets: **斜め3コマ** and **斜め4コマ 2×2**;
 - polygon-aware editor border/hit area and clean/annotated PNG clipping;
+- **Prototype 0.16.1 annotated panel-number badge follows the authored top-right quadrilateral corner inward while reshaping** rather than following the compatibility bounding box;
 - Story Template Studio with discovery/beat-flow/bounded derivation/custom local templates;
 - Smart Manga bounded candidate proposals;
 - reusable base-character identity with `sheet | description | free` modes;
@@ -91,7 +92,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 | 2.6 | A | Bounded Design Direction handoff | **Shipped in 0.15.2** |
 | 3 | S | Backup / Restore | **Next** |
 | 4 | S | Scoped Export | Planned |
-| 4.5 | S-enabler | Advanced Panel Geometry — quadrilateral foundation | **First slice shipped in 0.16.0** |
+| 4.5 | S-enabler | Advanced Panel Geometry — quadrilateral foundation | **First slice shipped in 0.16.0; annotation follow-up in 0.16.1** |
 | 5 | S | Panel-first / Hybrid generation | Planned |
 | 6 | A | Cross-page continuity / Reference Assets | Planned |
 | 7 | A/B | Manga direction expansion | Planned |
@@ -231,6 +232,10 @@ Shipped authoring behavior:
 - Page settings includes **斜め3コマ** and **斜め4コマ 2×2** irregular layout presets;
 - canvas resizing scales quadrilateral points together with the page;
 - irregular shapes currently disable bleed rather than pretending rectangular bleed semantics still apply.
+
+### 0.16.1 annotation polish
+
+The authoring-only panel-number badge is anchored from the authored top-right polygon corner toward the panel interior. During direct corner dragging it therefore follows the actual frame shape instead of the quadrilateral bounding box. This changes only annotated/editor presentation; clean AI PNG output remains label-free.
 
 Current data contract:
 
