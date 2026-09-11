@@ -3,7 +3,7 @@ import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const app=readRuntime('writingDirection');
 const schema=JSON.parse(fs.readFileSync('schema/manga-blueprint.schema.json','utf8'));
-const bootstrap=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 
 const must=[
   "defaultWritingMode='vertical-rl'",
@@ -18,8 +18,8 @@ const must=[
   'manifest.panelOrder='
 ];
 for(const token of must){if(!app.includes(token))throw new Error(`writing-direction contract missing: ${token}`);}
-const src=`./${runtimePaths.writingDirection.slice('web/'.length)}`;
-if(!bootstrap.includes(src))throw new Error(`Writing-direction runtime is not loaded by bootstrap: ${src}`);
+const src=runtimePaths.writingDirection.slice('web/'.length);
+if(!bootstrap.includes(`'${src}'`))throw new Error(`Writing-direction runtime is not loaded by TypeScript bootstrap: ${src}`);
 
 const metaMode=schema.properties?.meta?.properties?.defaultWritingMode?.enum||[];
 if(!metaMode.includes('vertical-rl')||!metaMode.includes('horizontal-tb'))throw new Error('schema meta.defaultWritingMode enum incomplete');

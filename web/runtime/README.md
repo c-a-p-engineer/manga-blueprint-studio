@@ -94,3 +94,7 @@ docs/README.md
 This structure is a compatibility design, not an ES-module conversion.
 
 A future module/bundler/runtime migration must be handled as a separate refactor with characterization tests, semantic-equivalence checks, deployment impact analysis, and rollback/reference evidence.
+
+## Phase 1 TypeScript/Vite bridge
+
+Prototype 0.17.0 keeps this directory as the compatibility/reference runtime while the production entry moves to Vite + TypeScript. `web/src/legacy-runtime.ts` owns ordered loading and commit-aware cache busting. New top-level UI composition belongs in typed source under `web/src/`; do not add another chronology-named runtime patch file for Phase 1 presentation fixes.

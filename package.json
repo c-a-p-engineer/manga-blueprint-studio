@@ -1,0 +1,17 @@
+{
+  "name": "manga-blueprint-studio",
+  "version": "0.17.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.config.ts",
+    "build": "vite build --config vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "validate:phase1": "node scripts/validate-phase1-toolchain.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "typescript": "5.9.2",
+    "vite": "8.2.0"
+  }
+}

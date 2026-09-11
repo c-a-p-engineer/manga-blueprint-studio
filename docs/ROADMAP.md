@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.16.4
+## Shipped through Prototype 0.17.0
 
 ### Foundation / persistence
 
@@ -50,6 +50,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 
 ### Manga authoring
 
+- **Prototype 0.17.0 Phase 1 runtime/UI cutover**: Vite + TypeScript production entry, commit-aware cache busting, template-first Page settings, explicit apply CTA, progressive disclosure for manual layout, and removal of the legacy hierarchy editor from the primary Page surface;
 - **Prototype 0.16.4 task-flow simplification**: Story Template Studio moved into the upper panel-layout flow with sample dialogue/SFX toggle + cast + visible apply action; active work title opens the combined Work Explorer and dedicated volume/chapter/folder editing is removed from the primary UI;
 - **Prototype 0.16.3 template cast UX**: card → explicit reusable-character selection → apply, removal of the redundant middle preview, exact selected-cast routing for one/two-visible templates, and six editable starter characters for new works;
 - dynamic manuscript/canvas presets;
@@ -446,3 +447,7 @@ Manga Blueprint Studio is not currently intended to become:
 - a cloud collaboration suite by default.
 
 Its differentiator remains **human-directed manga semantics that can be inspected, edited, and handed to multiple downstream generators with explicit contracts**.
+
+### Runtime migration track
+
+Prototype 0.17.0 establishes the migration boundary: TypeScript/Vite owns the production entry and new UI composition while the current classic-script runtime remains the behavioral reference. Later migration work should move semantic owners to typed ES modules incrementally, preserving export/project contracts and keeping rollback/reference coverage until equivalence is proven.

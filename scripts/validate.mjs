@@ -8,7 +8,7 @@ const runtimeKeys=[
   'storyReadability','smartIntentHardening'
 ];
 const runtimeFiles=runtimeKeys.map(key=>runtimePaths[key]);
-const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js','web/runtime/README.md',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
+const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js','web/src/main.ts','web/src/legacy-runtime.ts','web/runtime/README.md',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
 for(const file of requiredFiles)if(!fs.existsSync(file))throw new Error(`Missing required file: ${file}`);
 
 const schema=JSON.parse(fs.readFileSync('schema/manga-blueprint.schema.json','utf8'));
@@ -39,9 +39,9 @@ const app9=sources.characterGuidance;
 const app10=sources.identityLocalizationHardening;
 const app11=sources.storyReadability;
 const app12=sources.smartIntentHardening;
-const bootstrap=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 for(const id of ['blueprintSvg','helpBtn','helpDialog','canvasPresetSelect','canvasWidth','canvasHeight','templateSelect','randomBtn','randomDialog','panelOverview','selectedPanelSummary','cameraQuickPreset','cameraHelp','backgroundLocation','addBalloon','lineEffect','exportAiPng','exportAnnotatedPng','promptOutput','exportJson','importJson'])if(!html.includes(`id="${id}"`))throw new Error(`Missing base UI control: ${id}`);
-for(const file of runtimeFiles){const src=`./${file.slice('web/'.length)}`;if(!bootstrap.includes(src))throw new Error(`Bootstrap does not load ${src}`);}
+for(const file of runtimeFiles){const src=file.slice('web/'.length);if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap does not load ${src}`);}
 
 for(const phrase of ['STRICT TEXT RENDERING RULE:','TEXT TO RENDER:','exportPng(false)','NEVER render character display names','authoring-text'])if(!js.includes(phrase))throw new Error(`Missing AI-safe handoff contract: ${phrase}`);
 for(const phrase of ['square:{','four-vertical','four-grid','four-horizontal','smartRandom04','panelSummary04(','Extreme close','超寄り','Low angle','あおり','HELP_SEEN_KEY_04'])if(!js.includes(phrase))throw new Error(`Missing 0.4 feature contract: ${phrase}`);
@@ -97,4 +97,4 @@ if(!example.characterLibrary?.length)throw new Error('Example should demonstrate
 const exampleBase=example.characterLibrary[0];
 if(exampleBase.identityMode!=='description'||!exampleBase.appearance?.summary)throw new Error('Example should demonstrate Character-Sheet-free appearance guidance');
 if(!example.pages[0].panels[0].actionIntent)throw new Error('Example should demonstrate actionIntent');
-console.log('Prototype 0.8 repository contract validation passed.');
+console.log('Prototype repository contract validation passed.');

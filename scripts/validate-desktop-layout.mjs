@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const app=readRuntime('desktopLayout');
-const bootstrap=fs.readFileSync('web/app.js','utf8');
-const src=`./${runtimePaths.desktopLayout.slice('web/'.length)}`;
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
+const src=runtimePaths.desktopLayout.slice('web/'.length);
 
 const required=[
   src,
@@ -19,7 +19,8 @@ const required=[
 
 for(const needle of required){
   const source=needle===src?bootstrap:app;
-  if(!source.includes(needle))throw new Error(`Desktop layout contract missing: ${needle}`);
+  const expected=needle===src?`'${needle}'`:needle;
+  if(!source.includes(expected))throw new Error(`Desktop layout contract missing: ${needle}`);
 }
 
 if(!app.includes("topbar?.getBoundingClientRect?.().height||68")){

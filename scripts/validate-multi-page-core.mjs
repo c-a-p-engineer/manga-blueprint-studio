@@ -3,7 +3,7 @@ import {runtimePaths, runtimeLoadOrder} from './runtime-paths.mjs';
 
 const read = path => fs.readFileSync(path,'utf8');
 const schema = JSON.parse(read('schema/manga-blueprint.schema.json'));
-const app = read('web/app.js');
+const bootstrap = read('web/src/legacy-runtime.ts');
 const storage = read(runtimePaths.projectStorage);
 const editor = read(runtimePaths.editorState);
 const pages = read(runtimePaths.pageNavigation);
@@ -16,8 +16,8 @@ const order = Object.fromEntries(runtimeLoadOrder.map((key,index)=>[key,index]))
 if(!(order.projectStorage < order.editorState && order.eventBindings < order.pageNavigation && order.pageNavigation < order.pageLayoutCamera)){
   throw new Error('Multi-page runtime load order is invalid');
 }
-for(const src of ['./runtime/core/project-storage.js','./runtime/authoring/page-navigation.js']){
-  if(!app.includes(src))throw new Error(`web/app.js does not load ${src}`);
+for(const src of ['runtime/core/project-storage.js','runtime/authoring/page-navigation.js']){
+  if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap does not load ${src}`);
 }
 
 const pageDef=schema.$defs?.page?.properties||{};

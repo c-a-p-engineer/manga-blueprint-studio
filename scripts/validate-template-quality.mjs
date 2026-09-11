@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const app=readRuntime('templateQuality');
-const bootstrap=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app13=readRuntime('templateStudio');
 
 for(const phrase of [
@@ -17,8 +17,8 @@ for(const phrase of [
   'templateQualityIssues21'
 ])if(!app.includes(phrase))throw new Error(`Missing template quality contract: ${phrase}`);
 
-const src=`./${runtimePaths.templateQuality.slice('web/'.length)}`;
-if(!bootstrap.includes(src))throw new Error(`Bootstrap does not load ${src}`);
+const src=runtimePaths.templateQuality.slice('web/'.length);
+if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap does not load ${src}`);
 if(!app13.includes("classroomTalk:{label:'storyClassroomTalk'"))throw new Error('Classroom conversation template missing');
 
 for(const text of [

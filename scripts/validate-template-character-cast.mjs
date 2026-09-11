@@ -2,16 +2,17 @@ import fs from 'node:fs';
 
 const read=path=>fs.readFileSync(path,'utf8');
 const runtime=read('web/runtime/integration/template-character-cast.js');
-const app=read('web/app.js');
+const bootstrap=read('web/src/legacy-runtime.ts');
+const phaseOneUi=read('web/src/phase-one-ui.ts');
 
 function requireText(source,text,label){
   if(!source.includes(text))throw new Error(`${label} missing ${JSON.stringify(text)}`);
 }
 
-requireText(app,"['integration/template-character-cast', './runtime/integration/template-character-cast.js']",'runtime registration');
-const discoveryIndex=app.indexOf("['templates/discovery-presentation'");
-const castIndex=app.indexOf("['integration/template-character-cast'");
-const producerIndex=app.indexOf("['handoff/producer-provenance'");
+requireText(bootstrap,"['integration/template-character-cast','runtime/integration/template-character-cast.js']",'runtime registration');
+const discoveryIndex=bootstrap.indexOf("['templates/discovery-presentation'");
+const castIndex=bootstrap.indexOf("['integration/template-character-cast'");
+const producerIndex=bootstrap.indexOf("['handoff/producer-provenance'");
 if(!(discoveryIndex>=0&&castIndex>discoveryIndex&&producerIndex>castIndex))throw new Error('Template cast integration must load after discovery presentation and before producer/UI tail.');
 
 for(const id of [
@@ -40,6 +41,16 @@ for(const token of [
   '@media(max-width:760px)'
 ])requireText(runtime,token,'template cast integration');
 
+for(const token of [
+  "closest('#applyStoryTemplate11')",
+  "runtime.applySelectedTemplateWithCast36",
+  "runtime.applyTemplatePresentation34",
+  'event.stopImmediatePropagation()',
+  "apply.classList.add('primary','phase1-template-apply')",
+  "oldBlock.hidden=true",
+  'ensureManualLayoutDisclosure'
+])requireText(phaseOneUi,token,'Phase 1 template workflow');
+
 const newWorkOnlyComment='Existing/imported works are left untouched.';
 requireText(runtime,newWorkOnlyComment,'compatibility contract');
 
@@ -47,4 +58,4 @@ if(runtime.includes('normalizeProject=function(input){')&&runtime.includes('addM
   throw new Error('Starter characters must not be silently injected through normalizeProject into existing/imported works.');
 }
 
-console.log('Template cast selection and starter-character contract passed.');
+console.log('Template cast selection, primary apply route, and starter-character contract passed.');

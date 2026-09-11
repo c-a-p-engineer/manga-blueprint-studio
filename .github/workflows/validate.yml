@@ -21,6 +21,22 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck Phase 1 source
+        run: npm run typecheck
+
+      - name: Build Vite production artifact
+        run: npm run build
+
+      - name: Validate Vite artifact shape
+        run: |
+          test -f dist/index.html
+          test -f dist/guide.html
+          test -f dist/runtime/core/foundation.js
+          grep -q 'assets/' dist/index.html
+
       - name: Check JavaScript syntax
         run: |
           node --check web/app.js
@@ -38,7 +54,11 @@ jobs:
           node --check scripts/validate-editor-shell.mjs
           node --check scripts/validate-documentation-sync.mjs
           node --check scripts/validate-version-sync.mjs
+          node --check scripts/validate-phase1-toolchain.mjs
           find web/runtime -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+
+      - name: Validate Phase 1 toolchain / UX contract
+        run: npm run validate:phase1
 
       - name: Validate semantic runtime layout
         run: node scripts/validate-runtime-layout.mjs

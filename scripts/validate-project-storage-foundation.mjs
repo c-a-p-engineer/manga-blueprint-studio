@@ -8,13 +8,14 @@ const foundation=read(runtimePaths.foundation);
 const storage=read(runtimePaths.projectStorage);
 const editor=read(runtimePaths.editorState);
 const events=read(runtimePaths.eventBindings);
-const app=read('web/app.js');
+const bootstrap=read('web/src/legacy-runtime.ts');
+const main=read('web/src/main.ts');
 
 assert.equal(runtimeLoadOrder[0],'foundation');
 assert.equal(runtimeLoadOrder[1],'projectStorage');
 assert.equal(runtimeLoadOrder[2],'editorState');
-assert.ok(app.includes("['core/project-storage', './runtime/core/project-storage.js']"));
-assert.ok(app.includes("await initializeEditorState()"));
+assert.ok(bootstrap.includes("['core/project-storage','runtime/core/project-storage.js']"));
+assert.ok(main.includes('await runtime.initializeEditorState()'));
 
 assert.ok(!editor.includes('function loadAutosave()'),'project autosave must not bootstrap from localStorage');
 assert.ok(!editor.includes('localStorage.setItem(STORAGE_KEY'),'project autosave must not write project state to localStorage');

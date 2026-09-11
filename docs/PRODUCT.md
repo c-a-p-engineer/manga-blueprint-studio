@@ -520,3 +520,16 @@ A current release is product-compatible when all relevant items remain true:
 - current export remains explicitly selected-page scoped until scoped export ships;
 - user guide/public guide and current product documentation match shipped terminology/workflow;
 - public UI changes are not declared visually verified solely because CI passed.
+
+## Prototype 0.17.0 — template-first Page settings
+
+The primary Page-settings task is now **Story Template first**:
+
+1. choose a Story Template card (panel layout + direction/presentation);
+2. choose whether sample dialogue/SFX is used;
+3. choose the reusable character cast;
+4. press the explicit full-width apply action.
+
+Browsing remains non-mutating. Manual panel-layout controls remain available behind progressive disclosure for direct editing. The legacy volume/chapter/folder editor is not a primary Page-settings surface; existing hierarchy data remains compatible and is navigated through **Work Explorer / 作品エクスプローラー**.
+
+The production shell is now built through Vite with a TypeScript entry. This is a migration boundary, not a claim that every legacy runtime owner is already converted.

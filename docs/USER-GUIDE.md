@@ -325,3 +325,14 @@ Use the **AI generation ZIP / clean PNG**, not the annotated review PNG.
 - AI handoff contract: [`PROMPT_HANDOFF.md`](PROMPT_HANDOFF.md)
 - Roadmap: [`ROADMAP.md`](ROADMAP.md)
 - Schema: [`../schema/manga-blueprint.schema.json`](../schema/manga-blueprint.schema.json)
+
+## Prototype 0.17.0: テンプレートから始める
+
+ページ設定では、まず **テンプレートからページを作る** の流れを使うのが最短です。
+
+1. Story Templateカードを選ぶ。
+2. **サンプルのセリフ・効果音を使う** のチェックで、テンプレートの台詞/SFXを入れるか決める。
+3. 使用するキャラクター（必要なら2人目）を選ぶ。
+4. **このテンプレートを使う** を押す。
+
+これでコマ割り・演出・必要なサンプル台詞を現在ページへまとめて適用できます。直接コマ割りを編集したい場合だけ **手動でコマ割りを調整** を開きます。旧「巻・章・フォルダ」編集欄はページ設定には表示せず、作品名から開く **作品エクスプローラー** をページ移動・作品切替の主経路にします。

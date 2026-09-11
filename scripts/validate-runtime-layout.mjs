@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {runtimeLoadOrder, runtimePaths} from './runtime-paths.mjs';
+import {runtimeLoadOrder,runtimePaths} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
+const entry=fs.readFileSync('web/app.js','utf8');
 const numbered=fs.readdirSync('web').filter(name=>/^app-\d+\.js$/.test(name));
 if(numbered.length)throw new Error(`Numbered runtime chunks are no longer allowed: ${numbered.join(', ')}`);
+if(!entry.includes("import './src/main.ts'"))throw new Error('web/app.js must delegate to the TypeScript/Vite entrypoint.');
 
 if(!fs.existsSync('web/runtime/README.md'))throw new Error('Runtime ownership documentation missing');
 if(new Set(runtimeLoadOrder).size!==runtimeLoadOrder.length)throw new Error('runtimeLoadOrder contains duplicate keys');
@@ -16,10 +18,10 @@ for(const key of runtimeLoadOrder){
   const file=runtimePaths[key];
   if(!file)throw new Error(`Missing runtime path for ${key}`);
   if(!fs.existsSync(file))throw new Error(`Missing runtime source for ${key}: ${file}`);
-  const relative=`./${path.relative('web',file).replaceAll('\\','/')}`;
-  const at=bootstrap.indexOf(relative);
-  if(at<0)throw new Error(`Bootstrap does not load ${key}: ${relative}`);
-  if(at<=bootstrapCursor)throw new Error(`Bootstrap runtime order disagrees with runtimeLoadOrder at ${key}: ${relative}`);
+  const relative=path.relative('web',file).replaceAll('\\','/');
+  const at=bootstrap.indexOf(`'${relative}'`);
+  if(at<0)throw new Error(`TypeScript bootstrap does not load ${key}: ${relative}`);
+  if(at<=bootstrapCursor)throw new Error(`TypeScript bootstrap runtime order disagrees with runtimeLoadOrder at ${key}: ${relative}`);
   bootstrapCursor=at;
 }
 
@@ -32,4 +34,5 @@ const expected=new Set(listedPaths);
 for(const file of actual)if(!expected.has(file))throw new Error(`Runtime JS is not registered in load order: ${file}`);
 for(const file of expected)if(!actual.has(file))throw new Error(`Registered runtime JS does not exist: ${file}`);
 
-console.log(`Semantic runtime layout passed (${listedPaths.length} named chunks).`);
+if(!bootstrap.includes('runtimeCacheKey')||!bootstrap.includes('gitCommit'))throw new Error('Legacy runtime cache key must include release revision provenance.');
+console.log(`Semantic runtime layout passed (${listedPaths.length} named legacy chunks behind TypeScript entry).`);
