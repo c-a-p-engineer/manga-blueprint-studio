@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.17.0
+## Shipped through Prototype 0.17.1
 
 ### Foundation / persistence
 

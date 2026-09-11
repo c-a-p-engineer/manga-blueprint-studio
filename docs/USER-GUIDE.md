@@ -227,9 +227,9 @@ A reusable base character can use one of three appearance modes:
 - **文章で指定** — text appearance guidance; no sheet required;
 - **AIにおまかせ** — downstream model chooses a simple consistent appearance.
 
-新規作品には、編集可能な汎用ベースとして **高校生男子 / 高校生女子 / 成人男性 / 成人女性 / モブ男性 / モブ女性** の6人が最初から入ります。全員「文章で指定」方式のたたき台で、名前・容姿・服装は自由に変更できます。既存作品や読み込んだ作品へは勝手に追加せず、**キャラ → かんたん追加** から必要なものだけ追加できます。
+新規作品には、編集可能な汎用ベースとして **高校生男子 / 高校生女子 / 成人男性 / 成人女性 / モブ男性 / モブ女性** の6人が最初から入ります。全員「文章で指定」方式で、髪・目・服装まで初期値があります。高校生は長袖シャツ/ブラウス＋ブレザー等の学校制服、成人・モブは長袖トップス＋ロングパンツ等の通常着を明示しています。名前・容姿・服装は自由に変更できます。既存作品や読み込んだ作品へは勝手に追加せず、**キャラ → かんたん追加** から必要なものだけ追加できます。
 
-The stick figure is a **pose and placement reference**, not the character's finished appearance.
+The stick figure is a **pose and placement reference**, not the character's finished appearance or clothing state. AI handoff explicitly tells the renderer not to interpret stick figures as unclothed bodies; explicit outfit guidance has priority.
 
 ## Reading direction and writing direction
 

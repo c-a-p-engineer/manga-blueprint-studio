@@ -4,7 +4,7 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.17.0
+## Current prototype: 0.17.1
 
 Prototype **0.17.0** starts the TypeScript + Vite cutover and makes the template workflow the primary Page-settings task. Story Template selection, sample dialogue/SFX choice, cast selection, and the apply CTA now live in one task-first surface; manual panel layout is secondary. The legacy volume/chapter/folder editor is removed from the primary Page UI while existing hierarchy data remains readable in Work Explorer.
 

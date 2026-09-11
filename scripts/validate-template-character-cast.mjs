@@ -38,7 +38,12 @@ for(const token of [
   'relocateTemplateWorkflow36',
   'templateUseDialogue36',
   "apply.classList.add('primary')",
-  '@media(max-width:760px)'
+  '@media(max-width:760px)',
+  "hair:localized.hair||''",
+  "eyes:localized.eyes||''",
+  '白い長袖シャツ、紺のブレザー',
+  'long-sleeve blouse, ankle-length trousers',
+  'gray hoodie, black full-length trousers'
 ])requireText(runtime,token,'template cast integration');
 
 for(const token of [
