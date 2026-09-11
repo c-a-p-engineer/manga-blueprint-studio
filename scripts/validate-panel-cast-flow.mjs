@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app=readRuntime('panelCastFlow');
-const src=`./${runtimePaths.panelCastFlow.slice('web/'.length)}`;
+const src=runtimePaths.panelCastFlow.slice('web/'.length);
 
-if(!bootstrap.includes(src))throw new Error(`Bootstrap must load ${src}`);
+if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap must load ${src}`);
 
 for(const phrase of [
   "templatePanelCastFlow28:'コマごとの登場'",
