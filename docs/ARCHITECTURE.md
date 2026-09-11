@@ -2,11 +2,11 @@
 
 ## Runtime shape
 
-Manga Blueprint Studio is a zero-build static web application served by GitHub Pages.
+Manga Blueprint Studio is a static GitHub Pages application built with Vite.
 
-`web/app.js` loads ordered classic-script chunks from `web/runtime/`. There is currently no application server, framework build step, external runtime script, analytics client, or image-generation API in the core app.
+`web/app.js` is a thin module entry that delegates to `web/src/main.ts`. TypeScript owns build provenance, runtime startup, and the first task-first UI composition layer. The existing classic-script chunks under `web/runtime/` remain a compatibility/reference runtime during Phase 1 rather than being falsely treated as already migrated ES modules.
 
-The explicit script order is a compatibility contract because later chunks intentionally extend globals established by earlier chunks. Runtime chunk URLs include the current application version so a new release does not silently reuse stale cached feature chunks.
+The explicit legacy script order remains a compatibility contract because later chunks intentionally extend globals established by earlier chunks. Production chunk URLs now include both the application version and deployed commit revision, while the Vite entry itself receives a hashed asset URL. This closes the same-version stale-cache gap observed on GitHub Pages.
 
 ## Runtime ownership
 
@@ -25,7 +25,7 @@ web/runtime/
 └─ ui/           presentation-only layout, clarity, editor shell, and mobile header
 ```
 
-`scripts/runtime-paths.mjs` mirrors semantic owners for validators. `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` files, duplicate/missing registrations, and unregistered runtime JavaScript.
+`web/src/legacy-runtime.ts` is the production compatibility loader, while `scripts/runtime-paths.mjs` mirrors semantic owners for validators. `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` files, duplicate/missing registrations, and unregistered runtime JavaScript.
 
 ### Core owners
 
@@ -460,7 +460,7 @@ Current manifest/render indexes are **selected-page scoped**. Multi-page/range/c
 
 ## Producer provenance
 
-`handoff/producer-provenance.js` reads build metadata established by `web/app.js`/`web/build-info.json` and adds producer diagnostics to generated manifests.
+`handoff/producer-provenance.js` reads build metadata established by `web/src/main.ts`/`web/build-info.json` and adds producer diagnostics to generated manifests.
 
 GitHub Pages deployment stamps the deployed commit/timestamp into `build-info.json`. Local/offline fallback keeps app version while commit may be null.
 
@@ -504,3 +504,9 @@ Static/CI validation covers deterministic contracts such as:
 - documentation-map/user-guide/public-guide presence and terminology.
 
 Visual/interaction quality remains separate evidence. A passing CI job does not prove a mobile layout or touch handle is visually good; public UI changes should be inspected from a deployed or equivalent rendered artifact when possible.
+
+### Phase 1 typed UI owner
+
+`web/src/phase-one-ui.ts` owns the new primary Page-settings composition boundary. It keeps the Story Template task together (template → sample dialogue/SFX choice → cast → apply), demotes manual panel layout behind progressive disclosure, and removes the legacy hierarchy editor from the primary Page surface without deleting compatible serialized hierarchy data. It deliberately calls existing canonical template-application functions rather than introducing a second template state model.
+
+The migration boundary is intentionally asymmetric: new composition code must be TypeScript/ESM; existing runtime owners remain classic scripts until migrated with characterization/equivalence coverage. This makes the old runtime a reference implementation instead of pretending a flag-day rewrite is complete.

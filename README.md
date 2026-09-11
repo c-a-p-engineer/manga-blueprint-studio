@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.16.4
+## Current prototype: 0.17.0
 
-Prototype **0.16.4** simplifies the authoring flow again: Story Template cards now live in the upper panel-layout area with the sample-dialogue/SFX checkbox, cast selection, and an always-visible apply button. The active work title now opens a file-explorer-style Work Explorer that combines work switching and page navigation; the separate volume/chapter/folder editor is no longer a primary UI surface. Prototype 0.16.3 remains the starter-character/cast-selection release.
+Prototype **0.17.0** starts the TypeScript + Vite cutover and makes the template workflow the primary Page-settings task. Story Template selection, sample dialogue/SFX choice, cast selection, and the apply CTA now live in one task-first surface; manual panel layout is secondary. The legacy volume/chapter/folder editor is removed from the primary Page UI while existing hierarchy data remains readable in Work Explorer.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -24,7 +24,7 @@ Current project format remains `manga-blueprint/0.2`; export manifest remains `m
 The current release supports:
 
 - manga-first editor shell with work title, breadcrumb, `P001` page context, direct page navigation, and Work Structure above the canvas;
-- explorer-style `作品構成 / Work Structure` for `work → optional volume/chapter/folder → page` navigation;
+- explorer-style `作品エクスプローラー / Work Explorer` for `work → optional volume/chapter/folder → page` navigation;
 - local multi-work library with create/open/rename/duplicate/delete;
 - multiple pages per work with add/select/duplicate/delete/reorder/renumber/title and per-work active-page restore;
 - stable work/page/container identity and IndexedDB persistence;
@@ -59,7 +59,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.s
 ## Quick start
 
 1. Open/create a **作品**.
-2. Choose `P001` or another page above the canvas, or open **作品構成** to navigate the explorer tree.
+2. Choose `P001` or another page above the canvas, or open **作品エクスプローラー** to navigate the explorer tree.
 3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. Story Template cards can be narrowed by 2人表示・恋愛などの条件と、斜めコマ・衝撃枠・集中線などの演出条件を組み合わせて探せます。カードを選んだ後は、使用するキャラクターを明示してから適用します。`斜め3コマ` and `斜め4コマ 2×2` start with irregular panel boundaries.
 4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. The annotated panel number follows the edited top-right corner. Then refine character, background, dialogue, and effects.
 5. In **出力**, download the **AI生成ZIP** for the current page and copy the short manifest-first handoff message.
@@ -77,7 +77,7 @@ The current manga context is separate:
 - breadcrumb for optional volume/chapter/folder ancestry;
 - visible page code such as `P001`;
 - previous/next/add/direct page controls;
-- **作品構成** explorer.
+- **作品エクスプローラー** explorer.
 
 `P001` is display formatting only. The serialized project stores numeric `pageNumber` plus stable `Page.id`.
 
@@ -219,3 +219,7 @@ Current application baseline: **Prototype 0.16.4**.
 ## License
 
 MIT
+
+### Phase 1 runtime migration
+
+The production site is now built with **Vite + TypeScript**. `web/app.js` is a thin entry shim, `web/src/main.ts` owns bootstrap/build provenance, and the existing `web/runtime/*.js` files remain a validated compatibility/reference layer during migration. Production runtime chunk cache keys include both app version and deployed commit so same-version source changes cannot silently reuse stale chunks.

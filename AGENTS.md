@@ -170,9 +170,9 @@ Historical release documents should not be rewritten to pretend old releases had
 
 ## Runtime and implementation rules
 
-The app is a zero-build static GitHub Pages application. `web/app.js` loads ordered classic-script chunks from `web/runtime/`.
+The app is a Vite-built static GitHub Pages application. `web/app.js` is a thin entry shim into `web/src/main.ts`; TypeScript owns bootstrap and new UI composition. Ordered classic-script chunks under `web/runtime/` remain a temporary compatibility/reference layer during the Phase 1 migration and are copied into the production artifact.
 
-- preserve explicit load order unless deliberately refactoring the runtime;
+- preserve the explicit legacy runtime load order while that compatibility layer exists, unless deliberately migrating an owner to typed ES modules with behavior-equivalence evidence;
 - modify the existing semantic owner when possible instead of adding chronology-named patch files;
 - a new runtime chunk needs a distinct responsibility;
 - UI-only organization belongs under `runtime/ui/` and must not create a second project-state model;
