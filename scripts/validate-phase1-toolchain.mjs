@@ -26,7 +26,10 @@ for(const token of [
   "copy('テンプレートからページを作る'",
   "copy('手動でコマ割りを調整'",
   "byId('containerManager16')?.remove()",
-  "closest('#applyStoryTemplate11')"
+  "closest('#applyStoryTemplate11')",
+  'setTextIfChanged',
+  'pagePanelObserver?.takeRecords()',
+  'pagePanelObserver=new MutationObserver(queueCompose)'
 ])if(!ui.includes(token))throw new Error(`Phase 1 UI contract missing ${token}`);
 for(const token of ['min-height:54px','bottom:74px','#containerManager16{display:none!important}'])if(!css.includes(token))throw new Error(`Phase 1 responsive/touch contract missing ${token}`);
 
