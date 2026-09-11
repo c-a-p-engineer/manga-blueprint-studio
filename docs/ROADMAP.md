@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.16.3
+## Shipped through Prototype 0.16.4
 
 ### Foundation / persistence
 
@@ -50,6 +50,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 
 ### Manga authoring
 
+- **Prototype 0.16.4 task-flow simplification**: Story Template Studio moved into the upper panel-layout flow with sample dialogue/SFX toggle + cast + visible apply action; active work title opens the combined Work Explorer and dedicated volume/chapter/folder editing is removed from the primary UI;
 - **Prototype 0.16.3 template cast UX**: card → explicit reusable-character selection → apply, removal of the redundant middle preview, exact selected-cast routing for one/two-visible templates, and six editable starter characters for new works;
 - dynamic manuscript/canvas presets;
 - RTL/LTR panel reading direction;

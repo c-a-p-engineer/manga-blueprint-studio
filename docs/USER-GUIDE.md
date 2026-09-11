@@ -60,16 +60,16 @@ The current work name is not mixed into these app-level actions.
 Below the app header, the current manga context is shown.
 
 - the work title appears on its own line;
-- tapping the title opens **作品一覧**;
+- tapping the work title opens **作品エクスプローラー**;
 - the breadcrumb shows the current location, for example `第1巻 › 第3章 › P001`;
 - `‹` / `›` switch pages;
 - `＋` adds a page;
-- **作品構成** opens the explorer-style work tree;
+- the explorer shows saved works on the left and the selected work's page tree on the right; there is no separate 作品構成 button;
 - the horizontal page strip lets you jump directly to another page.
 
-### 3. Work Structure / 作品構成
+### 3. Work Explorer / 作品エクスプローラー
 
-**作品構成** is the primary navigation for manga hierarchy.
+**作品エクスプローラー** is the primary file-explorer-style navigation for works and pages.
 
 ```text
 ロボ漫画
@@ -81,7 +81,7 @@ Below the app header, the current manga context is shown.
 └─ P004
 ```
 
-Tap a page to open it. Detailed page operations and volume/chapter/folder editing are available as advanced controls in the same screen.
+Tap a work to switch works, or tap a page to open it. Page operations remain available as advanced controls. The dedicated 巻・章・フォルダ editor is not shown in the ordinary UI; legacy/imported nested containers still remain compatible.
 
 ### 4. Manga canvas
 
@@ -104,7 +104,7 @@ Use for page-wide configuration:
 - Story Template / Smart Manga starting patterns;
 - page-level overview/checks.
 
-**ページ設定 is not the primary page navigator.** Page selection lives above the canvas and in 作品構成.
+**ページ設定 is not the primary page navigator.** Page selection lives above the canvas and in 作品エクスプローラー.
 
 #### コマ
 
@@ -203,7 +203,7 @@ Use it for recognizable story/beat patterns such as confession, reaction, battle
 
 テンプレートは**カードを選ぶだけ**で選択されます。以前の重複した「ストーリーテンプレート」ドロップダウンは表示しません。カードには、そのテンプレートで使う主な演出がチップで表示されます。
 
-カードを選ぶと、その下に **使用するキャラクター** が出ます。1人表示では主役を1人、2人表示テンプレートでは主役と2人目を別々に選んでから **このキャラクターでテンプレートを使う** を押します。以前の中段プレビューは廃止し、「カード選択 → キャラ選択 → 適用」の1本の流れに整理しています。
+ストーリーテンプレートは **ページ設定 → コマ割り** の上段フローに統合されています。カードを選ぶとコマ割り・カメラ・演出が決まり、**「サンプルのセリフ・効果音を使う」** のチェック有無でテンプレート内のセリフ/SFXを入れるか決めます。そのまま使用キャラクターを選び、常に見える **「このテンプレートを使う」** で適用します。独立した中段のストーリーテンプレート欄はありません。
 
 クイック絞り込みでは、1人表示 / 2人表示 / 恋愛 / バトルなどに加えて、次の演出からサンプルを探せます。
 

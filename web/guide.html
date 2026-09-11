@@ -25,7 +25,7 @@
       <strong>目次</strong>
       <a href="#concept">まずこれだけ</a>
       <a href="#screen">画面の見方</a>
-      <a href="#structure">作品構成</a>
+      <a href="#structure">作品エクスプローラー</a>
       <a href="#page-settings">ページ設定</a>
       <a href="#panel-shape">斜めコマ・四隅編集</a>
       <a href="#story-tools">Story Template / Smart Manga</a>
@@ -53,8 +53,8 @@
       <section>
         <h2>最初の5分</h2>
         <ol class="steps">
-          <li><strong>作品を開く / 作る</strong><span>作品名をタップすると作品一覧を開けます。</span></li>
-          <li><strong>P001を選ぶ</strong><span>ページバーか「作品構成」からページを選びます。</span></li>
+          <li><strong>作品を開く / 作る</strong><span>作品名をタップすると作品エクスプローラーを開けます。</span></li>
+          <li><strong>P001を選ぶ</strong><span>ページバーか「作品エクスプローラー」からページを選びます。</span></li>
           <li><strong>ページ設定を決める</strong><span>原稿サイズ、読み方向、画風、コマ割り、ストーリーテンプレートなどを決めます。</span></li>
           <li><strong>コマをタップして中身を詰める</strong><span>カメラ、コマ形状、人物、背景、吹き出し、演出を編集します。</span></li>
           <li><strong>出力 → AI生成ZIP</strong><span>選択中の1ページをZIPにして画像生成AIへ渡します。</span></li>
@@ -65,15 +65,15 @@
         <h2>画面の見方</h2>
         <div class="card-grid">
           <article class="card"><h3>① アプリヘッダー</h3><p>アプリ全体の操作だけを置きます。スマホでは、上段をタイトルと説明、下段を「使い方 / 元に戻す / やり直す / 言語」にした<strong>2段ヘッダー</strong>です。</p></article>
-          <article class="card"><h3>② 作品・ページ位置</h3><p>作品名、パンくず、現在ページ <code>P001</code>、前後移動、ページ追加、作品構成があります。</p></article>
+          <article class="card"><h3>② 作品・ページ位置</h3><p>作品名、パンくず、現在ページ <code>P001</code>、前後移動、ページ追加、作品エクスプローラーがあります。</p></article>
           <article class="card"><h3>③ 漫画キャンバス</h3><p>現在ページのコマ割りを確認します。コマ・人物・吹き出しをタップして編集対象を選びます。</p></article>
           <article class="card"><h3>④ 下の編集タブ</h3><p>ページ設定 / コマ / キャラ / 背景 / 文字 / 演出 / 出力。現在のページや選択中のコマを編集します。</p></article>
         </div>
       </section>
 
       <section id="structure">
-        <h2>作品構成：ファイルエクスプローラー感覚でページを探す</h2>
-        <p><strong>作品構成</strong>は漫画の階層を一覧するメインナビゲーションです。</p>
+        <h2>作品エクスプローラー：ファイルエクスプローラー感覚でページを探す</h2>
+        <p><strong>作品エクスプローラー</strong>は漫画の階層を一覧するメインナビゲーションです。</p>
         <pre><code>ロボ漫画
 ├─ P001  表紙
 ├─ 第1巻
@@ -137,8 +137,9 @@
         </div>
         <div class="callout"><strong>演出からサンプルを探せます。</strong> 1人表示 / 2人表示 / 恋愛 / バトルなどの条件と、<strong>演出あり / 演出なし、斜めコマ、衝撃枠、枠無し、小窓、集中線、スピード線、衝撃線、緊張線、無音・間、ブチ抜き</strong>を組み合わせて絞り込めます。たとえば「2人表示 + 集中線」「斜めコマ + 衝撃枠」です。`突進→一撃`、`連続攻防`、`衝撃の発見`、`不穏な接近`、`静かな余韻`、`ツッコミ小窓` などをそのまま試せます。</div>
         <p><strong>Scene Template / シーンテンプレートという別機能はありません。</strong> 正式名称は Story Template / ストーリーテンプレートです。</p>
+        <div class="callout"><strong>テンプレートはページ設定の上段で完結します。</strong> カードでコマ割り・演出を選び、「サンプルのセリフ・効果音を使う」のチェックで文字を入れるか決定。使用キャラクターを選んだら、常に表示される「このテンプレートを使う」で適用します。独立した中段のストーリーテンプレート欄はありません。</div>
       
-        <div class="callout"><strong>テンプレートを選んだら、次に使用キャラクターを選びます。</strong> 1人表示では主役、2人表示では主役と2人目を別々に選択し、「このキャラクターでテンプレートを使う」で適用します。以前の中段プレビューは廃止し、カード → キャラ → 適用の1本の流れに整理しました。</div>
+        
       </section>
 
       <section id="character">
@@ -190,7 +191,7 @@ Character Sheet が必要と書かれているキャラクターは、別途添�
         <h2>困ったとき</h2>
         <div class="card-grid">
           <article class="card"><h3>スマホのヘッダーが古い1段表示</h3><p>0.16.0では2段表示です。更新直後に古い表示が残る場合はページを再読込してください。エントリポイントとruntime URLはバージョン付きです。</p></article>
-          <article class="card"><h3>別ページが見つからない</h3><p>キャンバス上のページバーか<strong>作品構成</strong>を使います。</p></article>
+          <article class="card"><h3>別ページが見つからない</h3><p>キャンバス上のページバーか<strong>作品エクスプローラー</strong>を使います。</p></article>
           <article class="card"><h3>生成画像に編集ラベルが出た</h3><p>確認用注釈PNGではなく<strong>AI生成ZIP / clean PNG</strong>を使います。</p></article>
           <article class="card"><h3>斜めコマを元に戻したい</h3><p>コマ形状で<strong>長方形</strong>を選ぶか、Undoを使います。</p></article>
         </div>

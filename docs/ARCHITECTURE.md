@@ -375,6 +375,7 @@ Story Template is the canonical product feature name.
 Custom-template library is separate from project autosave until backup/restore explicitly defines bundling. The new **斜め3コマ / 斜め4コマ 2×2** entries are page-layout presets, not a second Story Template feature.
 
 - `integration/template-character-cast.js` owns the non-serialized cast choice between template discovery and canonical apply. It routes the selected reusable base character(s) into the existing one-visible/two-visible apply pipeline instead of introducing another template state model.
+- the same integration owns the final Page-settings presentation of the template task: Story Template Studio + sample-dialogue checkbox + cast selection + visible apply action are relocated into one upper panel-layout workflow; the legacy middle block remains state plumbing only and is hidden.
 - the same integration wraps **new-work creation only** to seed six editable description-mode starters; normal project normalization/import does not silently add them to existing works.
 
 ## Smart Manga architecture
@@ -464,6 +465,8 @@ Current manifest/render indexes are **selected-page scoped**. Multi-page/range/c
 GitHub Pages deployment stamps the deployed commit/timestamp into `build-info.json`. Local/offline fallback keeps app version while commit may be null.
 
 Producer metadata diagnoses which deployed build created an export. It is not part of project-state identity hashing.
+
+`ui/editor-shell.js` owns the **Work Explorer** opened from the active work title. It combines work switching with the page tree, keeps page actions as advanced controls, and omits dedicated volume/chapter/folder editing from the primary UI while preserving compatibility semantics in project state.
 
 ## Public guide and documentation architecture
 

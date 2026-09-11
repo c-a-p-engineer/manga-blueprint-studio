@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.16.3
+## Current prototype: 0.16.4
 
-Prototype **0.16.3** simplifies Story Template application into one task-first flow: choose a template card, explicitly choose the character(s) to use, then apply. The redundant middle preview is removed, two-visible templates use the two selected reusable characters, and new works start with six editable starter characters (high-school boy/girl, adult man/woman, male/female background characters). Prototype 0.16.2 remains the presentation-filter catalog release.
+Prototype **0.16.4** simplifies the authoring flow again: Story Template cards now live in the upper panel-layout area with the sample-dialogue/SFX checkbox, cast selection, and an always-visible apply button. The active work title now opens a file-explorer-style Work Explorer that combines work switching and page navigation; the separate volume/chapter/folder editor is no longer a primary UI surface. Prototype 0.16.3 remains the starter-character/cast-selection release.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -199,14 +199,14 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.16.3.md`](docs/PROTOTYPE-0.16.3.md) — current release note.
+- [`docs/PROTOTYPE-0.16.4.md`](docs/PROTOTYPE-0.16.4.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.16.3**.
+Current application baseline: **Prototype 0.16.4**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;

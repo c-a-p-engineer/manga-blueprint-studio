@@ -11,9 +11,12 @@ Object.assign(i18n.ja,{
   starterAdultFemale36:'成人女性',
   starterMobMale36:'モブ男性',
   starterMobFemale36:'モブ女性',
-  templateCastStep36:'テンプレートを使う',
+  templateCastStep36:'キャラクターとセリフ',
+  templateWorkflowHeading36:'コマ割り・セリフテンプレート',
+  templateWorkflowLead36:'テンプレートカードでコマ割りと演出を選び、セリフを使うか・誰を出すかを決めて、そのまま適用します。',
+  templateUseDialogue36:'サンプルのセリフ・効果音を使う',
   templateCastHeading36:'使用するキャラクター',
-  templateCastLead36:'カードでテンプレートを選んだあと、実際に配置するキャラクターを指定します。選ぶだけではページは変更されません。',
+  templateCastLead36:'使用キャラクターを選び、上のチェックでサンプルのセリフ・効果音を使うか決めます。選ぶだけではページは変更されません。',
   templateCastPrimary36:'主役',
   templateCastSecondary36:'2人目',
   templateCastSingleHelp36:'このキャラクターをテンプレートの主役として配置します。',
@@ -23,7 +26,7 @@ Object.assign(i18n.ja,{
   templateCastNeedSecond36:'2人表示には別のキャラクターがもう1人必要です。',
   templateCastAddDefaults36:'標準キャラ6人を追加',
   templateCastOpenCharacters36:'キャラ設定を開く',
-  templateUseWithCast36:'このキャラクターでテンプレートを使う'
+  templateUseWithCast36:'このテンプレートを使う'
 });
 Object.assign(i18n.en,{
   starterCharacters36:'Quick add',
@@ -35,9 +38,12 @@ Object.assign(i18n.en,{
   starterAdultFemale36:'Adult woman',
   starterMobMale36:'Male background character',
   starterMobFemale36:'Female background character',
-  templateCastStep36:'Use template',
+  templateCastStep36:'Characters and dialogue',
+  templateWorkflowHeading36:'Layout + dialogue templates',
+  templateWorkflowLead36:'Choose a template card for panel layout/direction, decide whether to use sample dialogue, choose the cast, then apply from the same surface.',
+  templateUseDialogue36:'Use sample dialogue and SFX',
   templateCastHeading36:'Characters to use',
-  templateCastLead36:'Choose a template card, then explicitly choose the character(s) it will place. Browsing and choosing characters do not change the page.',
+  templateCastLead36:'Choose the cast and whether to use the template sample dialogue/SFX. Browsing and choosing do not change the page.',
   templateCastPrimary36:'Primary',
   templateCastSecondary36:'Second character',
   templateCastSingleHelp36:'This character will be placed as the primary character for the template.',
@@ -47,7 +53,7 @@ Object.assign(i18n.en,{
   templateCastNeedSecond36:'A two-visible template needs a second, different character.',
   templateCastAddDefaults36:'Add 6 standard characters',
   templateCastOpenCharacters36:'Open character setup',
-  templateUseWithCast36:'Use template with these characters'
+  templateUseWithCast36:'Use this template'
 });
 
 const STARTER_CHARACTER_PRESETS_36=Object.freeze({
@@ -183,7 +189,32 @@ function syncTemplateCastPanel36(){
   else if(needsTwo&&!templateSecondaryCharacterId36)message=t('templateCastNeedSecond36');
   else message=needsTwo?t('templateCastTwoHelp36'):t('templateCastSingleHelp36');
   if(status)status.textContent=message;
-  if(apply){apply.disabled=!tpl||!templatePrimaryCharacterId36||(needsTwo&&!templateSecondaryCharacterId36);apply.dataset.i18n='templateUseWithCast36';apply.textContent=t('templateUseWithCast36');}
+  if(apply){apply.hidden=false;apply.classList.add('primary');apply.disabled=!tpl||!templatePrimaryCharacterId36||(needsTwo&&!templateSecondaryCharacterId36);apply.dataset.i18n='templateUseWithCast36';apply.textContent=t('templateUseWithCast36');}
+}
+
+
+function localizeTemplateDialogueChoice36(){
+  const checkbox=$('storyTemplateText11'),label=checkbox?.closest('label');if(!label)return;
+  const copy=label.querySelector('[data-i18n]')||label.querySelector('span');
+  if(copy){copy.dataset.i18n='templateUseDialogue36';copy.textContent=t('templateUseDialogue36');}
+}
+function relocateTemplateWorkflow36(){
+  const pagePanel=document.querySelector('.tool-panel[data-section="page"]'),studio=$('templateStudio13'),action=$('templateCastAction36'),block=$('storyTemplateBlock11');
+  if(!pagePanel||!studio||!action)return;
+  let host=$('templateWorkflowTop36');
+  if(!host){
+    host=document.createElement('section');host.id='templateWorkflowTop36';host.className='template-workflow-top36';
+    host.innerHTML=`<div id="templateWorkflowHeading36" class="subhead template-workflow-heading36"></div><p id="templateWorkflowLead36" class="help template-workflow-lead36"></p><div id="templateStudioSlot36"></div><div id="templateApplySlotTop36"></div>`;
+    const overview=[...pagePanel.querySelectorAll('.subhead')].find(node=>node.dataset.i18n==='panelOverviewHeading');
+    if(overview)overview.insertAdjacentElement('beforebegin',host);else pagePanel.appendChild(host);
+  }
+  $('templateWorkflowHeading36').textContent=t('templateWorkflowHeading36');
+  $('templateWorkflowLead36').textContent=t('templateWorkflowLead36');
+  $('templateStudioSlot36')?.appendChild(studio);
+  $('templateApplySlotTop36')?.appendChild(action);
+  localizeTemplateDialogueChoice36();
+  const apply=$('applyStoryTemplate11');if(apply){apply.hidden=false;apply.removeAttribute('aria-hidden');apply.classList.add('primary');}
+  if(block){block.hidden=true;block.setAttribute('aria-hidden','true');}
 }
 
 function injectTemplateCastUi36(){
@@ -198,14 +229,15 @@ function injectTemplateCastUi36(){
       <div class="template-cast-support36"><button id="templateCastAddDefaults36" type="button" data-i18n="templateCastAddDefaults36"></button><button id="templateCastOpenCharacters36" type="button" data-i18n="templateCastOpenCharacters36"></button></div>
       <div id="templateTextSlot36"></div><div id="templateApplySlot36"></div>`;
     studio.insertAdjacentElement('afterend',action);
-    const textLabel=$('storyTemplateText11')?.closest('label');if(textLabel)$('templateTextSlot36').appendChild(textLabel);
-    const apply=$('applyStoryTemplate11');if(apply)$('templateApplySlot36').appendChild(apply);
+    const textLabel=$('storyTemplateText11')?.closest('label');if(textLabel){$('templateTextSlot36').appendChild(textLabel);localizeTemplateDialogueChoice36();}
+    const apply=$('applyStoryTemplate11');if(apply){$('templateApplySlot36').appendChild(apply);apply.hidden=false;apply.classList.add('primary');}
     $('templatePrimaryCharacter36')?.addEventListener('change',event=>{templatePrimaryCharacterId36=event.target.value;normalizeTemplateCastSelection36();syncTemplateCastPanel36();});
     $('templateSecondaryCharacter36')?.addEventListener('change',event=>{templateSecondaryCharacterId36=event.target.value;syncTemplateCastPanel36();});
     $('templateCastAddDefaults36')?.addEventListener('click',addAllStarterCharactersToCurrent36);
     $('templateCastOpenCharacters36')?.addEventListener('click',()=>document.querySelector('.tab[data-tab="character"]')?.click());
   }
   syncTemplateCastPanel36();
+  relocateTemplateWorkflow36();
 }
 
 // During the final apply only, route the canonical template apply pipeline to the explicitly chosen cast.
@@ -241,7 +273,8 @@ function bindTemplateCastApply36(){
 function installTemplateCastStyles36(){
   if($('templateCastStyles36'))return;
   const style=document.createElement('style');style.id='templateCastStyles36';style.textContent=`
-    #storyTemplatePreview11[hidden]{display:none!important}
+    #storyTemplatePreview11[hidden],#storyTemplateBlock11[hidden]{display:none!important}
+    .template-workflow-top36{margin:12px 0 14px;padding:12px;border:1px solid #cbd5e1;border-radius:16px;background:#fff}.template-workflow-heading36{margin:0 0 4px}.template-workflow-lead36{margin:0 0 10px}.template-workflow-top36 #templateStudio13{margin:0}.template-workflow-top36 .template-cast-action36{margin-top:12px}.template-workflow-top36 #applyStoryTemplate11{display:block!important;width:100%;min-height:50px;font-size:.9rem}
     .template-cast-action36{margin:12px 0 4px;padding:13px;border:1px solid #d8e0ea;border-radius:15px;background:#f8fafc;box-shadow:0 1px 2px rgba(15,23,42,.03)}
     .template-cast-head36{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:5px}.template-cast-head36 h3{margin:2px 0 0;font-size:1rem}.template-cast-head36>strong{max-width:52%;font-size:.78rem;line-height:1.35;text-align:right;color:#334155}
     .template-step-label36{display:inline-flex;align-items:center;min-height:22px;padding:2px 8px;border-radius:999px;background:#e0e7ff;color:#3730a3;font-size:.68rem;font-weight:800}.template-cast-lead36,.template-cast-status36{margin:5px 0 9px;color:#475569;font-size:.76rem;line-height:1.45}.template-cast-status36{margin:7px 0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px}
@@ -256,13 +289,14 @@ function installTemplateCastStyles36(){
 const selectTemplateBase36=selectTemplate13;
 selectTemplate13=function(id){selectTemplateBase36(id);syncTemplateCastPanel36();};
 const renderBase36=render;
-render=function(){renderBase36();renderStarterCharacterButtons36();syncTemplateCastPanel36();};
+render=function(){renderBase36();renderStarterCharacterButtons36();syncTemplateCastPanel36();relocateTemplateWorkflow36();};
 const applyLanguageBase36=applyLanguage;
-applyLanguage=function(){applyLanguageBase36();renderStarterCharacterButtons36();syncTemplateCastPanel36();};
+applyLanguage=function(){applyLanguageBase36();renderStarterCharacterButtons36();syncTemplateCastPanel36();localizeTemplateDialogueChoice36();relocateTemplateWorkflow36();};
 
 installTemplateCastStyles36();
 injectStarterCharacterUi36();
 injectTemplateCastUi36();
 bindTemplateCastApply36();
+relocateTemplateWorkflow36();
 renderStarterCharacterButtons36();
 syncTemplateCastPanel36();

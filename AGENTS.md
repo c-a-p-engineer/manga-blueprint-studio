@@ -47,8 +47,8 @@ Navigation and editing responsibilities must remain distinct.
 - the breadcrumb shows the active container path plus the current page;
 - visible page labels use minimum three-digit codes such as `P001`; canonical `pageNumber` remains numeric;
 - previous/next/add/direct-page navigation lives above the manga canvas;
-- **Work Structure / 作品構成** is the primary explorer-style navigation for `work → optional containers → page`;
-- detailed page/container CRUD may exist as advanced controls, but must not replace the explorer as the primary mental model;
+- **Work Explorer / 作品エクスプローラー** opens from the active work title and is the primary file-explorer-style navigation for `work → page`; legacy/imported containers may still render as nested folders;
+- dedicated volume/chapter/folder editing is not a primary UI surface; compatibility data remains supported without forcing that hierarchy into ordinary authoring;
 - **Page settings / ページ設定** owns manuscript size, reading direction, page-wide style/layout and related current-page configuration; it is not the primary work/page navigator.
 
 Do not move work identity, hierarchy navigation, or page selection back into one oversized header button or database-like form as the main path.
