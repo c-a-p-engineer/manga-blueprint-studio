@@ -2,7 +2,7 @@
 // keep this order explicit because later chunks intentionally extend earlier behavior.
 const fallbackBuildInfo={
   schema:'manga-blueprint-build-info/1',
-  appVersion:'0.16.1',
+  appVersion:'0.16.2',
   gitCommit:null,
   buildSource:'runtime-fallback',
   deployedAt:null
@@ -53,6 +53,7 @@ const runtimeChunks = [
   ['handoff/interaction-generation-contract', './runtime/handoff/interaction-generation-contract.js'],
   ['handoff/render-brief', './runtime/handoff/render-brief.js'],
   ['authoring/panel-geometry', './runtime/authoring/panel-geometry.js'],
+  ['authoring/panel-editing-assist', './runtime/authoring/panel-editing-assist.js'],
   ['handoff/producer-provenance', './runtime/handoff/producer-provenance.js'],
   ['ui/mobile-header', './runtime/ui/mobile-header.js'],
   ['ui/editor-shell', './runtime/ui/editor-shell.js']
