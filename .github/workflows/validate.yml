@@ -28,6 +28,7 @@ jobs:
           node --check scripts/validate-runtime-layout.mjs
           node --check scripts/validate-render-brief.mjs
           node --check scripts/validate-producer-provenance.mjs
+          node --check scripts/validate-panel-geometry.mjs
           node --check scripts/validate-project-storage-foundation.mjs
           node --check scripts/validate-multi-page-core.mjs
           node --check scripts/validate-work-library-hierarchy.mjs
@@ -101,6 +102,9 @@ jobs:
 
       - name: Validate current-page render brief
         run: node scripts/validate-render-brief.mjs
+
+      - name: Validate quadrilateral panel geometry
+        run: node scripts/validate-panel-geometry.mjs
 
       - name: Validate producer provenance
         run: node scripts/validate-producer-provenance.mjs
