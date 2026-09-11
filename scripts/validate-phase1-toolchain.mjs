@@ -31,6 +31,6 @@ for(const token of [
   'pagePanelObserver?.takeRecords()',
   'pagePanelObserver=new MutationObserver(queueCompose)'
 ])if(!ui.includes(token))throw new Error(`Phase 1 UI contract missing ${token}`);
-for(const token of ['min-height:54px','bottom:74px','#containerManager16{display:none!important}'])if(!css.includes(token))throw new Error(`Phase 1 responsive/touch contract missing ${token}`);
+for(const token of ['min-height:54px','bottom:74px','#containerManager16{display:none!important}','.template-cast-grid36 [hidden]{display:none!important}'])if(!css.includes(token))throw new Error(`Phase 1 responsive/touch contract missing ${token}`);
 
 console.log('Phase 1 TypeScript/Vite + template-first UX contract passed.');

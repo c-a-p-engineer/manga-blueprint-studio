@@ -83,33 +83,26 @@ captureCurrentTemplate13=function(name){
 };
 
 function withTemplatePresentation34(tpl,run){
-  const size=pageSize04(),specs=templatePanelSpecs34(tpl,size);
-  let panelIndex=0;
-  const savedTemplateRects=templateRects13,savedMakePanel=makePanel,savedReadingOrder=typeof readingOrderedPanels16==='function'?readingOrderedPanels16:null;
+  const size=pageSize04(),specs=templatePanelSpecs34(tpl,size),pageBefore=currentPage(),panelsBefore=pageBefore?.panels;
+  const savedTemplateRects=templateRects13;
   templateRects13=function(target,targetSize){
     if(target!==tpl)return savedTemplateRects(target,targetSize);
     return templatePanelSpecs34(target,targetSize).map(spec=>({...spec.rect}));
   };
-  makePanel=function(rect,order){
-    const panel=makePanelBase34(rect,order),spec=specs[panelIndex++];
-    return assignTemplateShape34(panel,spec);
-  };
-  if(savedReadingOrder){
-    readingOrderedPanels16=function(page){
-      const ordered=savedReadingOrder(page);
-      ordered.forEach((panel,index)=>{
-        const beat=tpl.beats?.[index]||tpl.beats?.at(-1)||{};
-        panel.style.border=storyTemplateBorder34(beat.border);
-      });
-      return ordered;
-    };
-  }
-  try{return run();}
-  finally{
-    templateRects13=savedTemplateRects;
-    makePanel=savedMakePanel;
-    if(savedReadingOrder)readingOrderedPanels16=savedReadingOrder;
-  }
+  let result;
+  try{result=run();}
+  finally{templateRects13=savedTemplateRects;}
+
+  const page=currentPage();
+  if(!page||page.panels===panelsBefore)return {applied:false,result};
+  page.panels.forEach((panel,index)=>assignTemplateShape34(panel,specs[index]));
+  const ordered=typeof readingOrderedPanels16==='function'?readingOrderedPanels16(page):[...page.panels].sort((a,b)=>a.order-b.order);
+  ordered.forEach((panel,index)=>{
+    const beat=tpl.beats?.[index]||tpl.beats?.at(-1)||{};
+    panel.style.border=storyTemplateBorder34(beat.border);
+  });
+  if(typeof render==='function')render();
+  return {applied:true,result};
 }
 
 function applyTemplatePresentation34(){
