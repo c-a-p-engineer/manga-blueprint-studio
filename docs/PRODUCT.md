@@ -17,12 +17,14 @@ The current product supports:
 - multiple pages per work;
 - manga-first work/page navigation;
 - page/panel authoring;
+- rectangle or convex-quadrilateral panel geometry;
+- direct four-corner panel-shape editing and irregular layout presets;
 - reusable character identity;
 - Story Template Studio and Smart Manga;
 - manga-specific camera/background/text/effect semantics;
 - selected-page AI generation/review handoff packages.
 
-The current product does **not** yet provide full backup/restore, multi-page/range/container/work-wide AI export, panel-first generation packages, generalized cross-page reference assets, or deterministic final post-generation typesetting. Those remain roadmap items.
+The current product does **not** yet provide full backup/restore, multi-page/range/container/work-wide AI export, panel-first generation packages, generalized cross-page reference assets, arbitrary polygon/curved panel frames, or deterministic final post-generation typesetting. Those remain roadmap items.
 
 ## Primary mental model
 
@@ -52,6 +54,8 @@ The application header owns app-level actions such as:
 - UI language.
 
 It should not carry the active work title as a large action that competes with app-level controls.
+
+On narrow mobile screens, the app header uses two explicit rows: branding/tagline first, then Help / Undo / Redo / language. Action labels remain single-line instead of wrapping inside individual buttons.
 
 ### Current work / page context
 
@@ -199,7 +203,40 @@ Panel `order` must remain synchronized with current geometry + reading direction
 - manifest-derived order;
 - exports.
 
-The product includes common layout families such as single, 2/3 panel, 4-koma variants, 5/6 panel, conversation, action, and climax patterns. Applying a layout/template is explicit when it would replace authored panel geometry.
+The product includes common layout families such as single, 2/3 panel, 4-koma variants, 5/6 panel, conversation, action, and climax patterns. Prototype 0.16.0 additionally includes **斜め3コマ** and **斜め4コマ 2×2** layouts whose panels begin as actual editable quadrilaterals. Applying a layout/template is explicit when it would replace authored panel geometry.
+
+### Panel shape
+
+A panel always retains `rect` as its compatibility bounding box. It may additionally own an optional shape:
+
+```json
+{
+  "shape": {
+    "kind": "quad",
+    "preset": "custom",
+    "points": [
+      {"x": 35, "y": 35},
+      {"x": 390, "y": 55},
+      {"x": 390, "y": 385},
+      {"x": 35, "y": 365}
+    ]
+  }
+}
+```
+
+When `shape.kind = quad` exists:
+
+- its four points are authoritative for the visible panel boundary, selection hit area, and clipping;
+- `rect` is synchronized to the quadrilateral bounding box for compatibility with existing placement/order systems;
+- the panel inspector offers rectangle, diagonal-left/right, trapezoid-left/right, and custom shape choices;
+- **四隅を直接編集** exposes four visible handles that may be dragged independently;
+- invalid self-intersection, near-zero area, and unusably short edges are rejected;
+- changing page size scales both the compatibility rect and quadrilateral points;
+- resetting to rectangle removes `shape` and uses the current bounding box;
+- irregular shapes currently disable bleed instead of applying rectangular bleed semantics to a non-rectangular edge;
+- splitting an irregular panel currently degrades explicitly to rectangular children based on its bounding box.
+
+Arbitrary 5+ point polygons, curves, linked shared-edge dragging, snapping, and topology-aware splitting are not current behavior.
 
 ## Story action intent
 
@@ -373,17 +410,17 @@ The app provides:
 - a dedicated full user guide page at `web/guide.html` / public `/guide.html`;
 - Markdown source guidance at `docs/USER-GUIDE.md`.
 
-The full guide should explain the manga-first mental model, current screen layout, hierarchy, P001 page codes, editing tabs, Story Template vs Smart Manga, identity modes, and AI handoff without requiring knowledge of internal runtime names.
+The full guide should explain the manga-first mental model, current screen layout, hierarchy, P001 page codes, editing tabs, panel-shape editing, Story Template vs Smart Manga, identity modes, and AI handoff without requiring knowledge of internal runtime names.
 
 ## AI-safe output boundary
 
 ### Visual authority
 
-Clean AI PNG communicates panel geometry/proportions and approximate spatial placement. Stick-figure joints are guidance rather than finished anatomy.
+Clean AI PNG communicates panel geometry/proportions and approximate spatial placement. For shaped panels, the quadrilateral boundary is the visual authority and must be preserved exactly. Stick-figure joints are guidance rather than finished anatomy.
 
 ### Semantic authority
 
-`.manga.json` + generated prompt carry story action, pose meaning, camera, depth, background, continuity, lettering semantics, and related direction.
+`.manga.json` + generated prompt carry story action, pose meaning, camera, depth, background, continuity, lettering semantics, panel geometry metadata, and related direction.
 
 ### Character identity
 
@@ -438,15 +475,16 @@ Current project format: `manga-blueprint/0.2`.
 
 Current export manifest: `manga-blueprint-export-manifest/3`.
 
-Current compatible optional fields include stable work/page/container identity, Story Template provenance, action intent, writing direction, art direction, richer pose/depth/continuity semantics, and assistance provenance.
+Current compatible optional fields include stable work/page/container identity, Story Template provenance, action intent, writing direction, art direction, richer pose/depth/continuity semantics, assistance provenance, and optional convex-quadrilateral `Panel.shape` geometry.
 
-Older portable files may normalize missing compatible fields to safe defaults. UI-only changes such as `P001` display formatting do not require a project-format bump.
+Older portable files may normalize missing compatible fields to safe defaults. Rectangle-only panels remain valid. UI-only changes such as `P001` display formatting do not require a project-format bump.
 
 ## Acceptance criteria
 
 A current release is product-compatible when all relevant items remain true:
 
 - app header is app-level; current work/page context is presented separately;
+- on narrow screens the app header uses branding + actions as two explicit rows and does not wrap Help/Undo/Redo labels inside buttons;
 - work title, breadcrumb, `P001` page code, page switching, and Work Structure are available above the canvas;
 - Work Structure is the primary explorer-style work/container/page navigator;
 - Page settings owns page-wide configuration rather than primary work navigation;
@@ -456,6 +494,10 @@ A current release is product-compatible when all relevant items remain true:
 - container hierarchy supports root/grouped pages and non-destructive confirmed deletion;
 - page display codes are minimum three-digit padded while `pageNumber` stays numeric;
 - RTL/LTR and panel geometry drive consistent panel order across UI and handoff;
+- rectangle-only pages remain compatible;
+- optional quadrilateral panels use one convex four-point boundary consistently for editor border, hit testing, clipping, clean output, and render-brief geometry;
+- invalid quadrilateral corner movement is rejected and direct shape editing participates in Undo/Redo;
+- irregular layout presets create editable quadrilateral panels rather than decorative overlays;
 - writing direction remains independent from panel reading order;
 - Story Template browsing and Smart Manga candidate browsing do not mutate project state;
 - character identity modes do not universally require Character Sheets;
