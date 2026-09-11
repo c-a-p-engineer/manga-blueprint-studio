@@ -89,13 +89,19 @@ function syncPanelRectFromShape33(panel){
 function ensureQuad33(panel){
   if(!panel)return null;
   const normalized=normalizedQuad33(panel.shape,panel.rect);
-  if(normalized){panel.shape=normalized;syncPanelRectFromShape33(panel);return panel.shape;}
+  if(normalized){
+    panel.shape=normalized;
+    panel.style.bleed='none';
+    syncPanelRectFromShape33(panel);
+    return panel.shape;
+  }
   panel.shape={kind:'quad',preset:'custom',points:rectPoints33(panel.rect)};
+  panel.style.bleed='none';
   return panel.shape;
 }
 function presetPoints33(rect,preset){
   const r={x:Number(rect.x),y:Number(rect.y),w:Number(rect.w),h:Number(rect.h)};
-  const dx=Math.max(20,Math.min(r.w*.16,96)),dy=Math.max(20,Math.min(r.h*.12,96));
+  const dx=Math.max(20,Math.min(r.w*.16,96));
   if(preset==='diagonal-left')return[{x:r.x+dx,y:r.y},{x:r.x+r.w,y:r.y},{x:r.x+r.w-dx,y:r.y+r.h},{x:r.x,y:r.y+r.h}];
   if(preset==='diagonal-right')return[{x:r.x,y:r.y},{x:r.x+r.w-dx,y:r.y},{x:r.x+r.w,y:r.y+r.h},{x:r.x+dx,y:r.y+r.h}];
   if(preset==='trapezoid-left')return[{x:r.x+dx,y:r.y},{x:r.x+r.w,y:r.y},{x:r.x+r.w,y:r.y+r.h},{x:r.x,y:r.y+r.h}];
@@ -230,7 +236,11 @@ function ensurePanelGeometryUi33(){
   $('panelShapePreset33').addEventListener('change',()=>{
     const panel=selectedPanel();if(!panel)return;
     const value=$('panelShapePreset33').value;
-    if(value==='custom')return;
+    if(value==='custom'){
+      panelShapeEditMode33=true;
+      mutate(()=>ensureQuad33(panel));
+      return;
+    }
     mutate(()=>setPanelShapePreset33(panel,value));
   });
   $('panelShapeEdit33').addEventListener('click',()=>{
