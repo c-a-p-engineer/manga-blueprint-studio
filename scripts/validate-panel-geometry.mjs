@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 
 const geometry=fs.readFileSync('web/runtime/authoring/panel-geometry.js','utf8');
+const assist=fs.readFileSync('web/runtime/authoring/panel-editing-assist.js','utf8');
 const header=fs.readFileSync('web/runtime/ui/mobile-header.js','utf8');
 const app=fs.readFileSync('web/app.js','utf8');
 const schema=fs.readFileSync('schema/manga-blueprint.schema.json','utf8');
@@ -22,20 +23,32 @@ for(const token of [
 ])if(!geometry.includes(token))throw new Error(`panel geometry contract missing: ${token}`);
 
 for(const token of [
+  'panelSnapEnabled36',
+  'panelSnapCandidates36',
+  'panel-snap-guide36',
+  'panelStraighten36',
+  'frameGuideImpact36',
+  'frameGuideBleed36',
+  'frameGuideBreakout36'
+])if(!assist.includes(token))throw new Error(`panel editing assist contract missing: ${token}`);
+
+for(const token of [
   'body .topbar{',
   'grid-template-columns:repeat(4,minmax(0,1fr))',
   'white-space:nowrap',
   'body .topbar .tagline{display:block!important',
   'body .topbar .top-actions #undoBtn span',
+  'body .topbar #workLibraryBtn16{display:none!important',
   'display:inline!important'
 ])if(!header.includes(token))throw new Error(`mobile header contract missing: ${token}`);
 
 for(const token of [
   './runtime/authoring/panel-geometry.js',
+  './runtime/authoring/panel-editing-assist.js',
   './runtime/ui/mobile-header.js',
   '?v=${encodeURIComponent(runtimeVersion)}'
 ])if(!app.includes(token))throw new Error(`runtime/cache contract missing: ${token}`);
 
 for(const token of ['"shape"','"quad"','"points"'])if(!schema.includes(token))throw new Error(`schema panel geometry missing: ${token}`);
 
-console.log('Quadrilateral panel geometry + geometry-following panel numbers + rectangle bleed compatibility + authoritative two-row mobile header validation passed.');
+console.log('Quadrilateral geometry + snapping/guides + frame explanations + geometry-following numbers + two-row mobile header validation passed.');
