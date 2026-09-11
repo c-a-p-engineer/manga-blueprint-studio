@@ -1,88 +1,177 @@
 # Architecture
 
-## Runtime
+## Runtime shape
 
-The prototype is a zero-dependency static web application. `web/app.js` loads ordered classic-script chunks from `web/runtime/`. GitHub Pages serves the exact static assets; no server, build step, external runtime script, analytics, or API is required.
+Manga Blueprint Studio is a zero-build static web application served by GitHub Pages.
 
-Runtime files are organized by responsibility rather than prototype chronology:
+`web/app.js` loads ordered classic-script chunks from `web/runtime/`. There is currently no application server, framework build step, external runtime script, analytics client, or image-generation API in the core app.
+
+The explicit script order is a compatibility contract because later chunks intentionally extend globals established by earlier chunks.
+
+## Runtime ownership
 
 ```text
 web/runtime/
-├─ core/         foundational state, project storage, rendering, export/input, event bindings
-├─ authoring/    work library/hierarchy, page navigation, page/layout/camera, reusable-character authoring
+├─ core/         project state, persistence, rendering, export/input, base events
+├─ authoring/    page/work/container and reusable-character authoring
 ├─ assist/       bounded Smart Manga assistance
 ├─ identity/     character identity and appearance handoff
 ├─ story/        story-readable panel semantics
-├─ templates/    Story Template Studio and scene/cast contracts
-├─ lettering/    text writing direction
-├─ ordering/     reading-order synchronization
-├─ integration/  cross-feature integration with intentional order dependencies
-├─ handoff/      prompt/manifest/render contracts for downstream models
-└─ ui/           presentation-only layout and authoring clarity
+├─ templates/    Story Template Studio and template/cast contracts
+├─ lettering/    balloon/SFX writing direction
+├─ ordering/     geometry + reading-order synchronization
+├─ integration/  cross-feature integration with intentional load dependencies
+├─ handoff/      prompt/manifest/render contracts and producer provenance
+└─ ui/           presentation-only layout, clarity, and editor shell
 ```
 
-The explicit load order in `web/app.js` remains a compatibility contract because later classic-script chunks intentionally extend globals established by earlier chunks. `scripts/runtime-paths.mjs` mirrors those semantic owners for validators, and `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` chunks, missing registrations, duplicate registrations, and unregistered runtime JavaScript.
+`scripts/runtime-paths.mjs` mirrors semantic owners for validators. `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` files, duplicate/missing registrations, and unregistered runtime JavaScript.
 
-`core/project-storage.js` loads after `core/foundation.js` and before `core/editor-state.js`. It owns stable work/page/container identity helpers and browser project persistence; editor state consumes that boundary rather than writing project autosave directly.
+### Core owners
 
-`authoring/page-navigation.js` loads after base event bindings. It owns page-list UI, page selection, page CRUD/reordering, visible page-number/title editing, and per-work active-page restoration. It extends the existing global `renderUi` / `initializeEditorState` functions rather than creating a second editor state model.
+`core/foundation.js`
 
-`authoring/work-library-hierarchy.js` loads after page navigation and before later page/camera authoring wrappers. It owns explicit work switching/library UI plus container hierarchy authoring. It composes with the same global editor state rather than introducing a parallel state store.
+- shared constants/helpers;
+- project normalization base;
+- core render helpers and base semantic state.
 
-This organization remains a classic-script compatibility design, not an ES-module conversion. A future module/bundler migration must be handled separately with characterization tests, semantic-equivalence checks, and a cutover/rollback plan.
+`core/project-storage.js`
 
-## State
+- stable work/page/container identity normalization;
+- IndexedDB storage;
+- explicit save vs activate boundary;
+- per-work active-page metadata;
+- full-work identity regeneration helper.
 
-Browser project state normalizes to `manga-blueprint/0.2`. Stable work/page/container fields are compatible additions within that format; old portable files may omit them and receive IDs/default metadata when loaded.
+`core/editor-state.js`
+
+- active project and editor selections;
+- Undo/Redo history;
+- `currentPage()` / selected panel/character/balloon resolution;
+- persistence initialization and autosave scheduling.
+
+`core/export-input.js` / `core/event-bindings.js`
+
+- base import/export/UI event paths consumed/extended by later owners.
+
+### Authoring owners
+
+`authoring/page-navigation.js`
+
+- page CRUD/reorder/number/title;
+- page selection;
+- per-work selected-page restoration;
+- detailed page-management controls.
+
+`authoring/work-library-hierarchy.js`
+
+- Work Library create/open/rename/duplicate/delete;
+- container create/rename/reorder/reparent/delete;
+- page-to-container assignment;
+- non-destructive container deletion;
+- explicit work activation behavior.
+
+Other `authoring/` chunks own page/layout/camera, character library/export surfaces, and localization/export hardening.
+
+### UI owner: manga-first editor shell
+
+`ui/editor-shell.js` is the final presentation/navigation layer for the current manga-first shell.
+
+It deliberately **reuses existing page/work/container functions** instead of creating a second project-state model.
+
+It owns presentation such as:
+
+- current work title on its own line;
+- breadcrumb from container ancestry to current page;
+- minimum three-digit page code formatting (`P001`);
+- previous/next/add/direct page navigation above the canvas;
+- explorer-style Work Structure dialog;
+- relocation of detailed page/container CRUD into advanced sections;
+- Page → Page settings naming/role clarification;
+- Japanese-first cleanup of primary authoring labels.
+
+Because this chunk is presentation-only, `P001` is never serialized as a string replacement for numeric `pageNumber`.
+
+`ui/editor-shell.js` currently loads after producer provenance and other feature owners so it can reorganize the fully assembled UI without redefining domain behavior.
+
+## Serialized project state
+
+Project state normalizes to `manga-blueprint/0.2`.
 
 ```text
 Project
+├─ format = manga-blueprint/0.2
 ├─ meta
 │  ├─ workId
+│  ├─ title
 │  ├─ pageWidth / pageHeight
 │  ├─ readingDirection (rtl | ltr)
 │  ├─ defaultWritingMode (vertical-rl | horizontal-tb)
 │  ├─ canvasPreset / layoutPreset
 │  ├─ storyTemplate
-│  ├─ randomPurpose / randomSeed
-│  ├─ randomVariant (balanced | dynamic | emotion)
-│  └─ randomIntensity (stable | standard | bold)
-├─ containers
-│  └─ Container
-│     ├─ id / kind (volume | chapter | folder)
-│     ├─ title / order
-│     └─ parentId
-├─ characterLibrary
-│  └─ BaseCharacter
-│     ├─ characterId / name / referenceKey / default pose
-│     ├─ identityMode (sheet | description | free)
-│     └─ appearance (summary / hair / eyes / outfit / features)
-└─ pages
+│  ├─ randomPurpose / randomSeed / randomVariant / randomIntensity
+│  └─ artDirection
+├─ containers[]
+│  └─ { id, kind: volume|chapter|folder, title, order, parentId }
+├─ characterLibrary[]
+│  └─ reusable base identity / appearance guidance
+└─ pages[]
    └─ Page
       ├─ id
       ├─ pageNumber / order / title
       ├─ containerId
-      └─ Panel
-         ├─ rect / order / role
-         ├─ actionIntent
-         ├─ style / camera / background
+      └─ panels[]
+         ├─ id / order / rect / role / actionIntent
+         ├─ style
+         ├─ camera
+         ├─ background
          ├─ effects
-         │  └─ sfxWritingMode (inherit | vertical-rl | horizontal-tb)
-         ├─ characters (pose / expression / gaze / placement)
-         ├─ balloons
-         │  └─ writingMode (inherit | vertical-rl | horizontal-tb)
-         └─ assistSeed
+         ├─ characters[]
+         ├─ balloons[]
+         └─ assist provenance where present
 ```
 
-`workId`, `Container.id`, and `Page.id` are stable identities. Visible work/container/page titles, page numbers, and ordering metadata are mutable. `Page.containerId` and `Container.parentId` are references that may change without changing stable entity identity.
+The JSON Schema is canonical for machine-readable field shape: `schema/manga-blueprint.schema.json`.
 
-Normalization repairs missing/duplicate container IDs, unsupported container kinds, dangling/self/cyclic parents, missing/duplicate page IDs, and dangling page-container references conservatively. This keeps imported portable projects usable without inventing destructive migration behavior.
+## Identity model
 
-`storyTemplate`, `actionIntent`, `defaultWritingMode`, balloon `writingMode`, SFX `sfxWritingMode`, work identity, container references, and page sequence metadata remain compatible optional additions. The current project schema identifier does not change solely for these optional fields.
+Stable identity and display metadata are intentionally separate.
 
-## Editor selection model
+### Stable identities
 
-The editor keeps page/container selection outside serialized project semantics:
+- `meta.workId`
+- `Container.id`
+- `Page.id`
+- panel IDs
+- placed-character instance IDs
+- balloon IDs
+
+### Mutable display / organization
+
+- work/container/page titles
+- page number
+- page/container ordering
+- `Page.containerId`
+- `Container.parentId`
+
+Moving a page between containers changes its organizational reference, not its identity.
+
+### Duplicate semantics
+
+Page duplication regenerates:
+
+- page ID;
+- every duplicated panel ID;
+- every duplicated placed-character instance ID;
+- every duplicated balloon ID.
+
+Full-work duplication/import-as-new additionally regenerates work/container IDs and remaps `parentId` / `containerId` references.
+
+Reusable semantic character IDs may remain unchanged because they identify the same fictional character inside the copied work rather than a placement instance.
+
+## Editor selection state
+
+Editor selection is not serialized as competing project semantics.
 
 ```text
 project
@@ -90,81 +179,93 @@ selectedPageId
 selectedPanelId
 selectedCharacterId
 selectedBalloonId
-selectedContainerId16   // transient hierarchy inspector selection
+selectedContainerId16   // hierarchy inspector selection
 ```
 
-`currentPage()` resolves `selectedPageId`, with a defensive first-page fallback only when selection is stale. Undo/Redo restores project state and repairs an invalid selected page/panel after structural changes.
+`currentPage()` resolves `selectedPageId`, with defensive fallback only for stale selection.
 
-Page duplication copies semantic content while regenerating mutable instance identity:
+Page selection is editor state. Structural page edits are project mutations and participate in Undo/Redo snapshots.
 
-- `Page.id`;
-- every duplicated `Panel.id`;
-- every duplicated placed-character instance `id`;
-- every duplicated balloon `id`.
+Work switches/import boundaries reset editor history so Undo/Redo does not cross independent work identity.
 
-The selected base-character identity (`characterId`) remains semantic character identity and is not regenerated by page duplication.
+## Persistence and activation
 
-## Multi-work persistence and activation
-
-Prototype 0.14.0 separates **saving work contents** from **activating a work**.
-
-`projectStorage.save(project)` writes only the `works` record. It does not touch `activeWorkId`. `projectStorage.setActive(workId)` is the explicit activation API.
-
-This separation is a correctness boundary: a debounced autosave from work A may finish after the user explicitly opens work B. The late save may persist A's contents, but it cannot switch the editor's active-work metadata back to A.
-
-The work storage API therefore exposes:
+IndexedDB database:
 
 ```text
-load(workId)
-loadActive()
-save(project)            // contents only
-list()
-has(workId)
-setActive(workId)        // explicit activation only
-remove(workId)
-getActivePageId(workId)
-setActivePage(workId,pageId)
+manga-blueprint-studio
+├─ works
+│  └─ workId -> { title, updatedAt, project }
+└─ meta
+   ├─ activeWorkId
+   └─ activePageId:<workId>
 ```
 
-Work Library browsing calls `list()` only and never activates. Explicit open/create/import paths call `setActive()` after the target work is known/persisted.
+The critical boundary is:
 
-When switching works, the current work is saved immediately, the target work is loaded, its remembered page is restored, editor selection/history are reset to the work boundary, and then normal rendering/autosave resumes.
+```text
+projectStorage.save(project)     // persist contents only
+projectStorage.setActive(workId) // explicit activation only
+```
 
-Full-work duplication uses `cloneProjectAsNewWork()` and regenerates:
+A delayed autosave from Work A is allowed to finish after the user opens Work B, but that save cannot reactivate A.
 
-- work ID;
-- all container IDs with parent remapping;
-- page IDs with container remapping;
-- panel IDs;
-- placed-character instance IDs;
-- balloon IDs.
+Work Library listing calls storage listing only; browsing is not activation.
 
-Semantic base-character IDs remain unchanged because they express identity, not placement-instance identity.
+On startup, the runtime restores the saved active work and then its remembered page before normal persistence resumes.
 
-## Multi-page navigation
+There is intentionally no migration from historical browser project-autosave `localStorage` keys. Portable `.manga.json` import is the compatibility path.
 
-Prototype 0.13.0 exposes multiple pages in one work through `authoring/page-navigation.js`.
+`localStorage` remains valid for unrelated small local concerns such as UI language and browser-local custom Story Templates.
 
-Page operations use ordinary project mutation/history paths:
+## Manga-first navigation architecture
 
-- add page;
-- duplicate page;
-- delete page, except the final page;
-- move earlier/later;
-- sequential renumber;
-- edit unique visible page number;
-- edit optional page title;
-- select page.
+The presentation hierarchy mirrors the domain hierarchy:
 
-Page selection itself is editor state rather than an Undo/Redo content mutation. Structural page changes are project mutations and therefore participate in existing history snapshots.
+```text
+App controls
+  ↓
+Current work title
+  ↓
+Breadcrumb / P001 current-page context
+  ↓
+Page strip + Work Structure explorer
+  ↓
+Manga canvas
+  ↓
+Page settings / selected-panel editing tabs
+```
 
-The last selected page is persisted per work as IndexedDB metadata. Startup suppresses page-selection persistence until the saved project and remembered page ID have been read, preventing the first render from overwriting a remembered page with page 1.
+This avoids mixing navigation with content editing.
 
-## Container hierarchy
+### Work Structure tree
 
-Prototype 0.14.0 exposes the reserved `volume | chapter | folder` model through `authoring/work-library-hierarchy.js`.
+The explorer renders root pages and recursive containers from existing project data.
 
-Container hierarchy is project state:
+- container children derive from `parentId`;
+- page placement derives from `containerId`;
+- page ordering derives from page `order`;
+- container sibling ordering derives from container `order`;
+- selecting a page calls the canonical page-selection path;
+- advanced forms reuse existing page/container CRUD implementations.
+
+No second hierarchy data model is introduced for the tree.
+
+### Page display code
+
+User-visible page code is derived:
+
+```text
+P + max(3-digit zero padding, full numeric pageNumber)
+```
+
+Examples: `P001`, `P008`, `P042`, `P123`, `P1000`.
+
+The project stores only numeric `pageNumber`; formatting belongs to UI/export naming layers where needed.
+
+## Container hierarchy behavior
+
+Container model:
 
 ```text
 Container
@@ -177,195 +278,187 @@ Container
 Page.containerId -> nullable Container.id
 ```
 
-Sibling ordering is deterministic by `order` with ID tie-break. Reparenting rejects the selected container itself and its descendants to prevent cycles.
+Normalization repairs unsupported/dangling/self/cyclic references conservatively.
 
-Deleting a container is intentionally non-destructive to page content. After confirmation:
+Reparenting rejects the selected container itself and descendants to prevent cycles.
 
-1. pages directly assigned to the container move to its parent (or ungrouped at root);
+Deleting a container is non-destructive to page content:
+
+1. directly assigned pages move to its parent (or root);
 2. direct child containers move to the same parent;
 3. sibling ordering is normalized;
-4. only the container record is removed.
+4. the container record is removed.
 
-This design avoids hidden recursive deletion and preserves stable page IDs.
+## Reading order
 
-## Story action model
+`meta.readingDirection` is explicit:
 
-`Panel.actionIntent` captures the event/meaning that cannot reliably be inferred from pose alone. It is intentionally short free text. It is consumed by Panel Peek / Panel List / Panel Chips, generation prompt under `STORY ACTION INTENT`, and manifest `panelIntentIndex`. It is not visible manga text and never enters `TEXT TO RENDER`.
+- `rtl` Japanese default;
+- `ltr` supported.
 
-## Story Template Studio
+Committed render paths synchronize panel `order` from current geometry + reading direction. This sequence is shared by:
 
-**Story Template is the canonical template feature name.** “Scene Template” is not a second system. The word “scene” remains valid for content semantics such as scene continuity and scene/cast contracts.
+- canvas panel badges;
+- Story Template preview numbering;
+- Story Template beat assignment;
+- Panel Peek/List;
+- prompt;
+- manifest-derived semantics;
+- export.
 
-### Built-in registry
+Page sequence order, panel order, and container sibling order are independent sequences.
 
-`storyTemplates11` remains the canonical in-memory recipe registry created by Prototype 0.8. Prototype 0.9 extends that mutable registry with additional romance, battle, emotion, daily, comedy, suspense, and character-introduction recipes.
+## Writing direction
 
-`meta13` is derived authoring metadata for template discovery: category, localized description, localized use case, and search tags. It does not become project state.
-
-### Discovery views
-
-Story Template Studio adds category filtering, free-text search, visual cards, layout thumbnails, panel count/category, description/use case, and selected-template beat-flow preview.
-
-Browsing/searching/selecting changes only transient authoring UI state. It does not mutate the manga page.
-
-Prototype 0.10 overrides template thumbnail numbering in `web/runtime/integration/template-lettering-order.js`. Ordering is calculated from page-scale template geometry through the existing reading-order preview function; those numbers are then drawn onto thumbnail-scale geometry. Using page-scale geometry avoids thumbnail dimensions changing row-grouping semantics.
-
-### Apply path
-
-Template apply resolves shipped/custom geometry, confirms destructive replacement when authored content exists, creates ordinary panel state, and records `meta.storyTemplate` as provenance.
-
-Prototype 0.10's integrated apply path then:
-
-1. creates all panels from the template geometry;
-2. calls the canonical geometry/read-direction renumbering path;
-3. obtains panels in `readingOrderedPanels16()` order;
-4. assigns template beat `N` to panel order `N`;
-5. copies role/action/camera/background/effects;
-6. optionally copies sample dialogue/SFX;
-7. initializes template-created SFX writing mode as `inherit`;
-8. places the selected/project reusable base character when available;
-9. selects panel order 1.
-
-No continuing template authority remains after apply. The important contract is that thumbnail number, panel `order`, and applied beat index all express the same reading sequence.
-
-Applying a page template inside the current work preserves work identity. Replacing selected-page content must not silently turn the current work into a different work or mutate a different page.
-
-### Bounded derivation
-
-`deriveTemplate13()` clones the selected recipe into one temporary derived recipe. It intentionally preserves action/beat sequence while varying a bounded subset of camera distance/angle and emphasis/effect choices. The variation is preview-only until explicit apply.
-
-### Browser-local custom templates
-
-Custom templates use `manga-blueprint-studio/custom-story-templates/0.9` in `localStorage`.
-
-A custom template stores normalized panel rectangles, panel role/action intent, pose/expression/gaze without character identity, camera, background, optional dialogue/SFX, and selected effects. Character-specific visual identity and Character Sheet data are excluded. On reapply, geometry scales to current canvas and current reusable base character is used when available.
-
-Custom templates are separate from project autosave. They remain in browser `localStorage` until the dedicated backup/restore phase explicitly defines how local template libraries are bundled.
-
-## Character identity boundary
-
-Character identity remains project-level and separate from pose instances.
-
-- `sheet`: external Character Sheet required; `referenceKey` maps it.
-- `description`: no sheet; appearance text becomes identity contract.
-- `free`: no sheet; model may choose a simple consistent appearance.
-
-Old bases with a reference key normalize to `sheet`; those without one normalize to `description`. In `free` mode appearance-detail controls are disabled so inactive values do not look authoritative.
-
-The Output UI derives actual Character Sheet requirements from used base characters and writes the same map into manifest v3.
-
-## Prompt identity contract
-
-The compiler states:
-
-```text
-Character visual identity follows CHARACTER IDENTITY GUIDANCE.
-Use separately attached Character Sheets only for characters whose identity mode requires them.
-```
-
-`CHARACTER IDENTITY GUIDANCE` remains appended from reusable base-character state.
-
-## Reading direction and panel order
-
-`meta.readingDirection` is explicit. RTL is Japanese default; LTR is supported.
-
-Prototype 0.10 treats panel `order` as synchronized semantic state derived from current geometry plus reading direction before committed renders. `readingOrderedPanels16()` groups panels into horizontal reading rows using page-relative Y tolerance, then orders X descending for RTL or ascending for LTR. `renumberPanels()` assigns sequential `order` values.
-
-The synchronized order is shared by canvas badges, Story Template thumbnail numbering/beat placement, Panel Peek/List, generated prompt, manifest-derived semantics, and exports. Changing text writing direction does not participate in this algorithm.
-
-Page sequence `order` is separate from panel `order`. Page reordering changes work sequence without changing per-page panel reading order. Container sibling `order` is another independent sequence used only for work organization.
-
-## Lettering direction
-
-`web/runtime/lettering/writing-direction.js` establishes the project/balloon lettering model:
+Project default:
 
 ```text
 meta.defaultWritingMode = vertical-rl | horizontal-tb
-balloon.writingMode = inherit | vertical-rl | horizontal-tb
 ```
 
-`web/runtime/integration/template-lettering-order.js` extends the same model to per-panel onomatopoeia:
+Balloon/SFX override:
 
 ```text
-panel.effects.sfxWritingMode = inherit | vertical-rl | horizontal-tb
+inherit | vertical-rl | horizontal-tb
 ```
 
-`vertical-rl` is the project default. `inherit` resolves against `meta.defaultWritingMode` for both balloons and SFX.
+Writing direction is lettering layout only. It never changes panel reading order.
 
-Editor and annotated review balloon rendering use an authoring-only text preview. Horizontal preview wraps into centered lines; vertical preview lays glyphs top-to-bottom and columns right-to-left. SFX writing direction is recorded semantically and exposed in the effects editor; clean AI render continues to omit SFX labels.
+Editor/review may preview lettering direction. Clean AI rendering omits balloon/SFX text and transfers exact text + writing-mode semantics separately.
 
-The prompt adds `LETTERING DIRECTION` for balloons and `SFX LETTERING DIRECTION` for non-empty onomatopoeia. Exact visible strings remain exclusively under `TEXT TO RENDER`.
+## Story Template architecture
 
-Manifest v3 keeps its existing schema identifier while its derived `lettering` object may contain balloon entries plus an `onomatopoeia` array with stored/effective writing mode per non-empty SFX.
+Story Template is the canonical product feature name.
 
-## Dynamic coordinate system
+- shipped recipe registry provides story/beat patterns;
+- discovery metadata is derived UI metadata;
+- browsing/filtering/preview does not mutate project;
+- explicit apply creates ordinary page/panel state;
+- template geometry is renumbered using canonical reading order before beat `N` is assigned to panel order `N`;
+- `meta.storyTemplate` is provenance only;
+- bounded derivation creates temporary proposal state, not continuing authority;
+- browser-local custom templates store reusable direction/normalized geometry but exclude finished character-specific identity.
 
-SVG viewBox, PNG export, layout generation, pointer bounds, character placement, balloon bounds, Story Template geometry, custom-template normalized geometry, and Crop Guide use `meta.pageWidth` / `meta.pageHeight` rather than assuming 800×1130.
+Custom-template library is separate from project autosave until backup/restore explicitly defines bundling.
 
-## Panel Peek / Panel List architecture
+## Smart Manga architecture
 
-Panel Peek and Panel List are **derived authoring views**, not additional project models.
+Smart Manga generates bounded, non-mutating candidates from purpose/panel count/seed/variant/intensity and optional character placement.
 
-- Panel Peek reads current panel semantic state and shows action, characters, camera, background, dialogue, effects, and framing status;
-- long-press uses pointer events with movement cancellation;
-- a visible SVG `ⓘ` invokes the same dialog;
-- on narrow screens the dialog is an opaque viewport-bounded bottom sheet with fixed header/actions and scrollable semantic body;
-- detailed Panel List provides Shot-List-style semantic rows; compact mode uses the derived summary;
-- selecting a row changes editor selection only.
+Applied candidate provenance is stored in compatible project fields where defined. Selected-panel dice is a narrower mutation boundary and preserves content outside its responsibility.
 
-Panel Chips and info buttons are inserted into the live editor SVG after canonical render. They do not exist in clean AI serialization.
+## Character identity architecture
 
-## Camera framing diagnostic and Crop Guide
+Reusable base character identity is project-level. Placed characters are panel-specific instances.
 
-The semantic camera model remains the source of truth. The runtime estimates a figure-to-panel fill ratio and warns about strong contradictions. Warnings never mutate state automatically. Explicit **fit character size to camera** adjusts only the selected/primary figure scale through normal undoable mutation. Crop Guide remains authoring-only.
+Identity modes:
 
-## Manga Check
+- `sheet` — external Character Sheet required;
+- `description` — text appearance contract;
+- `free` — downstream model may choose a simple consistent design.
 
-Manga Check derives advisory issues from current page state: missing `actionIntent`, camera/figure-scale conflict, repeated camera distance, all background locations unspecified on a multi-panel page, and repeated primary expression. Lint may navigate to a panel but never blocks export or rewrites content.
+The output layer derives Character Sheet requirements from actually used characters.
 
-## Smart Manga and selected-panel dice
+Stick figures remain spatial/pose guidance, not appearance authority.
 
-Smart Manga remains bounded to shipped layouts/direction profiles, with three non-mutating candidates, reproducible seed, balanced/dynamic/emotion variants, stable/standard/bold intensity, optional base-character placement, and expanded purposes.
+## Story action / pose / camera / continuity semantics
 
-The selected-panel dice preserves panel geometry, role, entered background content, and balloons/dialogue while re-proposing camera/effects/breakout plus placed-character pose/expression/gaze.
+`Panel.actionIntent` captures event meaning that generic pose labels cannot encode.
 
-Story Template Studio and Smart Manga intentionally solve different problems: templates provide recognizable story/scene scripts and local reusable patterns; Smart Manga provides bounded alternative proposals from a purpose.
+Richer current semantics may include support state, motion phase, near-object depth target, foreshortening, contact-aware interaction guidance, and scene continuity anchors.
+
+These remain semantic inputs to authoring/handoff, not visible manga lettering.
+
+## Panel Peek / Panel List / Panel Chips
+
+These are derived authoring views rather than parallel models.
+
+- Panel Peek summarizes current semantic state;
+- visible `ⓘ` provides a discoverable path in addition to long-press;
+- narrow-screen presentation is viewport-bounded/opaque;
+- Panel List/page overview reads current panel state in reading order;
+- Panel Chips/guide overlays are injected into editor/review presentation and omitted from clean AI output.
+
+## Camera diagnostic / Manga Check
+
+Camera/figure-scale diagnostics, Crop Guide, and Manga Check derive warnings from current authored state.
+
+They are advisory. Warnings do not mutate project state automatically and do not become export blockers.
 
 ## AI-safe render modes
 
-- editor may contain anatomy colors, Panel Chips, `ⓘ`, Crop Guide, selected outlines, authoring labels, and balloon writing-direction text previews;
-- canonical annotated export contains normal authoring metadata defined by the exporter;
-- clean AI export removes authoring text/anatomy colors/balloon and SFX text while preserving spatial composition, monochrome pose figures, balloon geometry, and effect lines;
-- dynamic editor overlays, Work Library, hierarchy UI, and Story Template Studio UI are never part of canonical export serialization;
-- AI-generation ZIP excludes annotated PNG entirely.
+### Editor / review
 
-## Prompt compiler and manifest
+May include authoring metadata, colored anatomy/pose guides, Panel Chips, `ⓘ`, Crop Guide, selected states, and lettering preview.
 
-The compiler remains deterministic from current project state. It preserves clean-reference rule, strict `TEXT TO RENDER` allowlist, panel semantics, `STORY ACTION INTENT`, mode-aware `CHARACTER IDENTITY GUIDANCE`, `LETTERING DIRECTION`, and `SFX LETTERING DIRECTION` guidance.
+### Clean AI visual
 
-Manifest v3 remains the read-first authority and may record `storyTemplate` provenance plus `panelIntentIndex` and derived lettering metadata. The included semantic `.manga.json` and prompt carry writing-direction state. Browser-local template library contents are never exported automatically.
+Removes authoring labels and balloon/SFX text while preserving spatial composition, monochrome pose figures, balloon geometry, and effect geometry.
 
-Prototype 0.14.0 keeps generation/render/manifest semantic indexes scoped to `currentPage()`. Multi-page/range/container/work export is intentionally deferred until a dedicated scope contract is added.
+### Package split
 
-## Persistence / privacy / deployment
+- AI generation ZIP excludes annotated PNG.
+- Review/archive ZIP adds annotated PNG under the same state-linked export identity.
 
-Project autosave uses IndexedDB through `web/runtime/core/project-storage.js`.
+## Prompt and manifest architecture
 
-```text
-IndexedDB: manga-blueprint-studio
-├─ works
-│  └─ workId -> { title, updatedAt, project }
-└─ meta
-   ├─ activeWorkId
-   └─ activePageId:<workId>
-```
+Prompt compilation is deterministic from current project/selected-page state.
 
-The `works` store may contain multiple projects. Saving a record does not change `activeWorkId`. The active work changes only through explicit create/open/import/delete-fallback paths.
+It preserves:
 
-The project record includes stable `meta.workId`, container hierarchy, page IDs, and page sequence/title/container metadata. The editor tracks `selectedPageId` rather than defining the current page as `pages[0]`.
+- current-page render contract;
+- strict `TEXT TO RENDER` allowlist;
+- story action intent;
+- character identity guidance;
+- camera/depth/continuity semantics;
+- lettering/SFX writing direction;
+- art direction;
+- exact panel/cast/setting constraints represented by current contract.
 
-There is intentionally **no migration from legacy browser project-autosave localStorage keys**. Portable `.manga.json` files remain importable and receive missing stable identity/page/container fields when necessary.
+`manga-blueprint-export-manifest/3` is read first and records package identity, file roles, generation inputs, character guidance/Sheet requirements, Story Template provenance, panel intent index, lettering metadata, and producer provenance where available.
 
-`localStorage` is still used for language preference and the separate browser-local custom-template library. Moving project autosave to IndexedDB does not imply those unrelated preferences/libraries have moved yet.
+Current manifest/render indexes are **selected-page scoped**. Multi-page/range/container/work export requires an explicit later scope contract.
 
-All work/container/page management, templates, search, derivation, lettering preview, SFX writing-direction controls, reading-order synchronization, lint, hashing, ZIP generation, appearance guidance, diagnostics, and project persistence execute locally. GitHub Pages publishes static `web/`, schema, and examples. No project data is silently uploaded. Validation remains dependency-free.
+## Producer provenance
+
+`handoff/producer-provenance.js` reads build metadata established by `web/app.js`/`web/build-info.json` and adds producer diagnostics to generated manifests.
+
+GitHub Pages deployment stamps the deployed commit/timestamp into `build-info.json`. Local/offline fallback keeps app version while commit may be null.
+
+Producer metadata diagnoses which deployed build created an export. It is not part of project-state identity hashing.
+
+## Public guide and documentation architecture
+
+User guidance has two synchronized representations:
+
+- `docs/USER-GUIDE.md` — repository Markdown source;
+- `web/guide.html` — public readable guide page.
+
+The in-editor Help modal remains a compact reference and links to the full guide. It should not accumulate the entire product manual.
+
+`docs/README.md` maps current vs historical documents and defines update ownership. `docs/ROADMAP.md` alone owns changing phase status; detailed multi-page design notes must not become a second status source.
+
+## Privacy / deployment
+
+All core authoring, local search/template selection, lint, hashing, ZIP generation, project persistence, and hierarchy management execute in the browser.
+
+Core behavior must not silently upload project state or private Character Sheets.
+
+GitHub Pages publishes static `web/`, schema, and examples. The public guide is also a static page.
+
+## Validation boundaries
+
+Static/CI validation covers deterministic contracts such as:
+
+- syntax;
+- runtime registration/order;
+- schema shape and compatible normalization;
+- work/page/container persistence behavior;
+- manga-first editor shell contract;
+- Story Template/Smart Manga contracts;
+- reading/lettering synchronization;
+- AI-safe handoff and manifest contracts;
+- version/document synchronization;
+- documentation-map/user-guide/public-guide presence and terminology.
+
+Visual/interaction quality remains separate evidence. A passing CI job does not prove a mobile layout is visually good; public UI changes should be inspected from a deployed or equivalent rendered artifact when possible.

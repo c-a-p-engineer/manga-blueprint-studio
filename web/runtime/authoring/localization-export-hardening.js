@@ -5,6 +5,7 @@ Object.assign(i18n.ja,{
   guideLowLabel:'Low angle / あおり',guideLowBody:'下から見上げ、強さ・威圧感・迫力を出しやすい構図です。',
   guideHighLabel:'High angle / ふかん',guideHighBody:'上から見下ろし、弱さ・孤立・全体配置を見せやすい構図です。',
   skeletonHead:'頭',skeletonTorso:'胴',skeletonArms:'腕',skeletonLegs:'脚',skeletonExtremities:'手・足',
+  guideFull:'詳しい使い方を別画面で開く',
   exportError:'出力に失敗しました。ページを再読み込みせず、設定を確認してもう一度お試しください。'
 });
 Object.assign(i18n.en,{
@@ -13,6 +14,7 @@ Object.assign(i18n.en,{
   guideLowLabel:'Low angle',guideLowBody:'Look upward to emphasize power, intimidation, or impact.',
   guideHighLabel:'High angle',guideHighBody:'Look downward to emphasize vulnerability, isolation, or an overview of the scene.',
   skeletonHead:'Head',skeletonTorso:'Torso',skeletonArms:'Arms',skeletonLegs:'Legs',skeletonExtremities:'Hands / Feet',
+  guideFull:'Open full user guide',
   exportError:'Export failed. Keep the page open, check the current settings, and try again.'
 });
 
@@ -24,6 +26,7 @@ function installFormalHelp07(){
     <div class="guide-grid"><section class="guide-section"><h3 data-i18n="guideReading"></h3><p data-i18n="guideReadingBody"></p></section><section class="guide-section"><h3 data-i18n="guideCharacters"></h3><p data-i18n="guideCharactersBody"></p></section><section class="guide-section"><h3 data-i18n="guideSkeleton"></h3><p data-i18n="guideSkeletonBody"></p></section><section class="guide-section"><h3 data-i18n="guideBackground"></h3><p data-i18n="guideBackgroundBody"></p></section></div>
     <section class="guide-section"><h3 data-i18n="guideCamera"></h3><div class="cheat-grid"><div><strong data-i18n="guideExtremeCloseLabel"></strong><span data-i18n="guideExtremeCloseBody"></span></div><div><strong data-i18n="guideLongLabel"></strong><span data-i18n="guideLongBody"></span></div><div><strong data-i18n="guideLowLabel"></strong><span data-i18n="guideLowBody"></span></div><div><strong data-i18n="guideHighLabel"></strong><span data-i18n="guideHighBody"></span></div></div></section>
     <section class="guide-section"><h3 data-i18n="guideExport"></h3><p data-i18n="guideExportBody"></p></section>
+    <a href="./guide.html" class="button-like full" data-i18n="guideFull"></a>
     <button value="close" class="primary full" data-i18n="guideDone"></button></form>`;
 }
 

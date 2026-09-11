@@ -1,268 +1,342 @@
 # Roadmap
 
-## Shipped through Prototype 0.15.0
+`docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-### Project / persistence foundation
-- stable `meta.workId` plus stable page/container identity;
+## Shipped through Prototype 0.15.1
+
+### Foundation / persistence
+
+- stable work/page/container identity;
 - IndexedDB-backed multi-work persistence;
-- active work and per-work active-page metadata;
-- ordinary autosave saves work contents without silently changing active work;
-- project autosave no longer depends on historical project `localStorage` keys;
-- same-`workId` JSON import is protected from silent overwrite;
-- full-work copy/import-as-new regenerates work/container/page/panel/placed-instance IDs and remaps hierarchy references.
+- explicit save-vs-activate boundary;
+- per-work active-page persistence;
+- same-`workId` import protection;
+- full-work copy/import-as-new identity regeneration/remapping;
+- no migration from historical browser project-autosave `localStorage`.
 
-### Work library / hierarchy
-- browser-local Work Library listing title, update time, and page count;
-- explicit create/open/rename/duplicate/delete work operations;
-- browsing the Work Library does not change active-work state;
-- `volume | chapter | folder` containers with optional parent-child nesting;
-- create/rename/reparent/reorder/delete container operations;
-- current-page assignment to a container or ungrouped state;
-- parent changes reject self/descendant cycles;
-- deleting a non-empty container re-homes direct pages and child containers to the parent instead of silently deleting pages.
+### Multi-page / hierarchy
 
-### Multi-page core
-- multiple pages inside one work;
-- add, select, duplicate, delete, move earlier/later, and sequential renumber;
-- editable visible page number with duplicate protection;
-- optional page title;
-- page duplication regenerates page/panel/placed-character/balloon instance IDs;
-- active page is remembered per work in IndexedDB;
-- existing editor/render/handoff logic resolves the selected page through `currentPage()` instead of assuming `pages[0]`.
+- multiple pages per work;
+- add/select/duplicate/delete/reorder/renumber/title;
+- optional `volume | chapter | folder` containers;
+- nesting/reordering/reparenting;
+- page-to-container assignment;
+- cycle protection;
+- confirmed non-destructive container deletion.
 
-### Manga-first editor shell / navigation
-- current work title is shown on its own line instead of occupying an oversized app-header action;
-- breadcrumb context shows optional volume/chapter/folder ancestry followed by the current page;
-- page labels use zero-padded display codes such as `P001`, while canonical `pageNumber` remains numeric;
-- previous/next, add-page, direct page strip, Work Library, and Work Structure navigation live above the manga canvas;
-- volume/chapter/folder hierarchy is presented primarily as an explorer-style tree rather than as a database-like form;
-- detailed page CRUD and hierarchy CRUD remain available in collapsible advanced sections inside Work Structure;
-- the authoring tab is named **Page settings / ページ設定**, keeping navigation separate from manuscript/layout configuration;
-- Japanese mode localizes primary autosave, page-count, panel-status, canvas camera/role annotations, and style-instruction wording while preserving machine-readable semantic values.
+### Manga-first editor shell
 
-### Page, layout, reading and lettering
-- manuscript/canvas presets including portrait/social/video, B5, A4, Webtoon, and custom sizes;
-- explicit RTL/LTR panel reading direction;
-- automatic geometry-based panel numbering synchronized across canvas, Panel Peek/List, Story Templates, prompt, manifest, and exports;
-- vertical Japanese (`vertical-rl`) project default with horizontal and per-balloon/per-SFX overrides;
-- 1–6 panel, conversation/action/climax, and 4-koma layout families;
-- clean/review export separation with dynamic canvas dimensions.
+- app-level header separated from active work identity;
+- work title on its own line;
+- breadcrumb for optional container ancestry + current page;
+- page codes such as `P001` while `pageNumber` remains numeric;
+- previous/next/add/direct page navigation above the canvas;
+- explorer-style **Work Structure / 作品構成**;
+- detailed page/container CRUD retained as advanced controls;
+- **Page settings / ページ設定** separated from primary navigation;
+- Japanese-first cleanup of primary authoring/status/style labels.
 
-### Story-readable authoring and direction
-- per-panel `actionIntent`;
-- Panel Peek, Panel List / Shot List, and authoring-only Panel Chips;
-- camera/figure-size diagnostics and Crop Guide;
-- advisory Manga Check;
-- support state, motion phase, near-object depth target, foreshortening, and scene-continuity semantics;
-- airborne/action-specific pose semantics and cross-model interpretation priority;
-- contact-aware action/pose resolution for interactions such as hugs;
-- action/pose conflict warnings and scene/style conflict warnings.
+### Documentation / user guidance
 
-### Story Template Studio / Smart Manga
-- **Story Template / ストーリーテンプレート is the single canonical template feature name;** “Scene Template” is not a separate feature name;
-- category/search/template cards with description, use case, panel count, beat flow, and bounded derivation;
-- browser-local custom templates with normalized geometry and no character-specific identity;
-- romance, battle, emotion, daily, comedy, suspense, and character-introduction packs;
-- explicit two-visible templates and quick filters;
-- per-panel cast visibility/cast semantics and template cast requirements;
-- bounded Smart Manga candidates with seed, emphasis, intensity, and selected-panel direction dice.
+Prototype 0.15.1 aligns current documentation with the shipped 0.15 editor shell and establishes a durable documentation map/update contract.
 
-### Character identity
-- reusable project-level base-character library;
-- `sheet` / `description` / `free` identity modes;
-- appearance summary authority even when optional hair/eyes/outfit/features fields are blank;
-- Character Sheet requirement diagnostics based on actually used characters;
-- no universal Character Sheet requirement in generated prompts.
+- current canonical docs rewritten around shipped behavior rather than old prototype chronology;
+- `docs/README.md` defines document ownership and current-vs-historical boundaries;
+- `docs/USER-GUIDE.md` provides the current user workflow;
+- `/guide.html` provides a dedicated public usage screen;
+- in-editor quick Help links to the full guide;
+- CI validates key documentation/version/guide alignment.
 
-### AI handoff and export
-- manifest-first AI ZIP containing clean PNG, semantic `.manga.json`, prompt, and manifest;
-- review/archive ZIP adds annotated PNG under the same export identity;
-- strict `TEXT TO RENDER` visible-text allowlist;
-- model-independent authority split between Clean PNG, semantic JSON/prompt, character guidance, and art direction;
-- current-page Render Contract that rejects prior-conversation/prior-image story carryover;
-- exact panel/cast/setting/text constraints represented at high signal;
-- producer provenance in manifest with app version, deployed commit, build source, and deployment timestamp;
-- GitHub Pages deployment stamps exact `GITHUB_SHA` into deployed `build-info.json`.
+### Manga authoring
 
-### Runtime / validation
-- semantic runtime ownership under `web/runtime/` rather than chronology-named patch files;
-- explicit runtime load-order registry mirrored by validation scripts;
-- repository, project-storage, multi-page, work-library/hierarchy, editor-shell, UI-contract, reading/lettering, spatial, cross-model, template, cast, generation-contract, render-brief, and producer-provenance CI validation.
+- dynamic manuscript/canvas presets;
+- RTL/LTR panel reading direction;
+- geometry-based panel order synchronization;
+- vertical/horizontal lettering direction with per-balloon/per-SFX overrides;
+- common panel layouts and 4-koma variants;
+- Story Template Studio with discovery/beat-flow/bounded derivation/custom local templates;
+- Smart Manga bounded candidate proposals;
+- reusable base-character identity with `sheet | description | free` modes;
+- action intent, pose/expression/gaze, support/motion/depth semantics;
+- background, balloons/dialogue, SFX/effects;
+- Panel Peek/List/Chips, Crop Guide, camera/figure diagnostic, Manga Check.
 
----
+### AI handoff
+
+- selected-page AI generation ZIP;
+- selected-page Review/archive ZIP;
+- manifest-first handoff;
+- clean-vs-annotated visual separation;
+- Character Sheet requirement diagnostics;
+- strict exact-text allowlist;
+- current-page render contract against prior-context carryover;
+- producer/build provenance in exported manifest.
 
 ## Delivery phases
 
-| Phase | Priority | Goal | Key work | Status |
-|---:|:---:|---|---|:---:|
-| 0 | S | Storage / stable identity | `workId`, page/container identity, IndexedDB, import conflict protection | **Shipped** |
-| 1 | S | Multi-page Core | page CRUD/reorder/number/title/selection persistence | **Shipped in 0.13.0** |
-| 2 | S | Work / Volume / Folder management | work library, volume/chapter/folder UI, page moves | **Shipped in 0.14.0** |
-| 2.5 | S | Manga-first editor shell / navigation UX | work title + breadcrumb + P001 page navigation + explorer-style hierarchy + Japanese-first clarity | **Shipped in 0.15.0** |
-| 3 | S | Backup / Restore | complete backup ZIP, checksum, preview, transactional restore | **Next** |
-| 4 | S | Scoped Export | page selection/range/volume/work export contracts | Planned |
-| 5 | S | Panel-first / Hybrid generation | per-panel units, generation groups, deterministic composition | Planned |
-| 6 | A | Cross-page continuity | reference assets, location/prop/outfit continuity | Planned |
-| 7 | A/B | Manga direction expansion | spatial grammar, perspective, eye-flow, gutters, spreads, typesetting | Planned |
+| Phase | Priority | Goal | Status |
+|---:|:---:|---|:---:|
+| 0 | S | Storage / stable identity | **Shipped** |
+| 1 | S | Multi-page Core | **Shipped in 0.13.0** |
+| 2 | S | Work / Volume / Folder management | **Shipped in 0.14.0** |
+| 2.5 | S | Manga-first editor shell / navigation UX | **Shipped in 0.15.0; docs/guide hardened in 0.15.1** |
+| 3 | S | Backup / Restore | **Next** |
+| 4 | S | Scoped Export | Planned |
+| 5 | S | Panel-first / Hybrid generation | Planned |
+| 6 | A | Cross-page continuity / Reference Assets | Planned |
+| 7 | A/B | Manga direction expansion | Planned |
 
-## Phase 2.5 — Manga-first editor shell / navigation UX
+## Sequencing principle
 
-This phase exists because Backup/Restore, scoped export, and panel-first generation all depend on users understanding the active `work → container → page` context. Building those features on the previous mixed header/page-tab navigation would create avoidable rework.
+Strategic priority and implementation order are different.
 
-### Navigation hierarchy
-- application header owns only application-level actions;
-- current work title has its own line below the application header;
-- breadcrumb represents container ancestry plus current page;
-- page navigation is a first-class context control above the canvas;
-- the Page tab owns manuscript/layout settings, not work-library or hierarchy navigation.
+A strategically important feature may depend on lower-headline-priority enabling work. Pull forward only prerequisites whose later addition would cause meaningful rework, identity/schema churn, or destructive migration.
 
-### Explorer-style work structure
-- Work Structure opens a tree of work → optional volume/chapter/folder → page;
-- flat works show pages directly under the work;
-- page selection happens directly from the tree;
-- existing detailed page and hierarchy CRUD remain available as advanced editing controls rather than primary navigation;
-- hierarchy data semantics remain `volume | chapter | folder` with stable IDs and referential page ownership.
+Current dependency shape:
 
-### Page display naming
-- user-visible page code is `P001` minimum three-digit zero padding;
-- canonical `pageNumber` remains an integer and does not store padded text;
-- page title remains optional secondary metadata;
-- unnamed pages display page code first and use localized panel counts only as secondary metadata.
+```text
+Storage / stable identity
+        ↓
+Multi-page core
+        ↓
+Work hierarchy
+        ↓
+Manga-first navigation shell
+        ↓
+Backup / Restore
+        ↓
+Scoped Export
+        ↓
+Panel-first / Hybrid
+        ↓
+Cross-page continuity
+        ↓
+Manga direction expansion
+```
 
-### Japanese-first UI clarity
-- remove English-only fallback labels from the primary Japanese authoring surface where they are not interoperability terms;
-- translate editor-only camera/role/status labels while keeping semantic enum values unchanged;
-- rename `追加スタイル指示` to `追加の画風・仕上げ指示（任意）` with a Japanese example;
-- keep professional English terms only where they are intentionally paired with Japanese for interoperability or learning.
+Panel-first remains strategically important, but it should be built after stable work/page/panel identity and explicit export scope exist.
 
-## Phase 3 — Backup / Restore
+## Phase 3 — Backup / Restore — Next
+
+### Goal
+
+Make a work recoverable and transferable before generation/export scope expands further.
 
 ### Backup package
-- whole-work backup ZIP containing the complete semantic project state;
-- optional explicit inclusion of browser-local reusable assets/template libraries once their file roles are defined;
-- backup manifest with schema/version, work identity, file roles, counts, checksums, and creation metadata;
-- deterministic ordered paths so identical logical scope is inspectable and reproducible where timestamps are excluded.
 
-### Restore
-- inspect/preview backup before mutating IndexedDB;
-- show work title/ID, page count, container count, character count, and included optional libraries;
-- conflict choices for same `workId`: replace, import as new work, or cancel;
-- transactional restore so partial failure does not leave mixed state;
-- import-as-new must reuse the full-work identity regeneration/remapping contract from Phase 2.
+Introduce a dedicated backup format separate from AI generation/review packages.
 
-### Integrity validation
-- required-file presence;
-- checksum verification;
-- JSON parseability/schema compatibility;
-- declared-vs-actual counts;
-- no semantic/aesthetic AI judgment in backup validation.
+Candidate shape:
+
+```text
+<work>.manga-backup.zip
+├─ backup-manifest.json
+├─ project.manga.json
+├─ templates/
+│  └─ custom-templates.json      # when explicitly included by the contract
+├─ assets/
+│  ├─ index.json                 # future reference assets when supported
+│  └─ <content-addressed files>
+└─ thumbnails/                   # optional/rebuildable
+```
+
+### Required behavior
+
+- whole-work project state;
+- backup schema/version;
+- work identity;
+- file roles and counts;
+- checksums/hashes;
+- explicit optional-library inclusion;
+- restore preview before mutation;
+- corrupted/mismatched backup rejection before mutation;
+- generation ZIP must not be mistaken for a full backup.
+
+### Restore conflict behavior
+
+If imported backup `workId` does not exist, restore normally.
+
+If the same `workId` exists, block and require one choice:
+
+1. **別作品として取り込む** — import as a new work with identity remapping;
+2. **既存作品を上書き** — destructive replace after explicit confirmation;
+3. **キャンセル**.
+
+Never infer overwrite from title equality alone.
+
+Restore should be transactional: failure leaves the existing library untouched.
+
+### Verification
+
+- backup from one browser restores in a clean browser;
+- required files/hashes/schema/counts are validated;
+- same-work conflicts cannot silently overwrite;
+- failed restore does not leave mixed partial state;
+- restored work/page opens correctly.
 
 ## Phase 4 — Scoped Export
 
-- export current page (existing behavior);
-- selected pages;
-- page range;
-- container/volume;
+### Goal
+
+Export exactly the pages the user intends.
+
+### Scopes
+
+- current page (existing behavior);
+- explicit selected pages;
+- page range such as `3-5,8`;
+- container / volume / chapter;
 - whole work;
+- explicit two-page spread as a special shared-canvas scope.
+
+### Contract
+
 - manifest declares exact scope and ordered work/container/page IDs/numbers;
-- multi-page prompt/package conventions remain explicit rather than relying on downstream inference;
-- provider adapters remain at the export boundary.
+- single-page package remains self-contained;
+- multi-page package gets a root batch/work manifest plus per-page self-contained contracts;
+- root prompt orchestrates; it does not replace per-page execution prompts;
+- selected page 7 export must not silently inherit unrelated page 6/8 semantics;
+- provider adapters remain at export boundary.
 
-## Phase 5 — Panel-first / Hybrid generation contract
+## Phase 5 — Panel-first / Hybrid generation
 
-- export a self-contained generation contract per ordinary isolated panel;
-- preserve explicit shared-canvas generation groups for cross-panel breakout, shared-background, or spread effects;
-- deterministic page composition after panel generation;
-- exact geometry and crop/placement metadata for recomposition;
-- targeted re-generation can replace one generation unit without invalidating unrelated panels;
-- no requirement for a semantic AI result validator as part of the core pipeline.
+### Goal
+
+Reduce whole-page instruction failure and enable targeted re-generation while preserving manga-specific cross-panel effects.
+
+### Planned behavior
+
+- normal isolated panels become self-contained generation units;
+- each unit includes clean cropped blueprint, semantic contract, references, and output naming;
+- cross-panel breakout/shared-background/spread cases use explicit `generationGroupId` or equivalent shared-canvas groups;
+- deterministic compositor recipe records exact crop/placement geometry;
+- one failed/re-generated unit can be replaced without invalidating unrelated panels;
+- page-first export remains available during transition;
+- no semantic AI result-grader is required as a core pipeline gate.
+
+### Verification
+
+- generated panel units can reconstruct the authored page geometry exactly;
+- grouped effects are not accidentally split;
+- dimensions/naming/crop/placement are deterministically checkable.
 
 ## Phase 6 — Cross-page continuity / Reference Asset Library
 
-- generalize references beyond Character Sheets to characters, locations, props, outfits, vehicles, styles, poses, and lighting;
-- browser-local registration and thumbnail binding;
-- explicit continuity-lock / soft-reference modes;
-- named locations such as `bedroom-A` / `classroom-A` with inherited anchors;
-- prop owner/hand/location/state and costume variant continuity;
-- optional safe inclusion of registered reference files in generation packages;
-- never silently upload private assets.
+### Goal
+
+Make long works more stable across pages without silently uploading private reference material.
+
+### Planned reference types
+
+- character;
+- location;
+- prop;
+- outfit/costume;
+- vehicle;
+- style;
+- pose;
+- lighting.
+
+### Planned semantics
+
+- stable reference IDs;
+- browser-local registration/thumbnail binding;
+- continuity-lock vs soft-reference modes;
+- location/prop/outfit state transitions;
+- inherited work/container defaults with page overrides;
+- optional explicit inclusion in generation/backup packages;
+- no silent remote upload.
 
 ## Phase 7 — Manga direction expansion
 
-### Spatial continuity grammar
+### Spatial continuity
+
 - 180-degree action axis;
-- per-character screen side;
-- entry/exit edge and movement direction;
-- eyeline vectors and shot/reverse-shot relationship;
-- intentional-axis-break override;
-- Manga Check warnings for accidental left/right inversion.
+- screen side;
+- entry/exit direction;
+- eyeline vectors;
+- shot/reverse-shot relation;
+- intentional axis-break override;
+- advisory warnings for accidental inversion.
 
-### Perspective / lens contract
-- horizon line and vanishing-point semantics;
-- camera height, pitch, roll, and focal-length equivalent;
-- richer target-body-region framing beyond current distance/viewpoint labels;
-- optional perspective guide export without turning the product into a full 3D drawing application.
+### Perspective / lens
 
-### Depth layers / occlusion
-- foreground / midground / background semantic bands;
-- explicit front/behind relations;
+- horizon/vanishing-point semantics;
+- camera height/pitch/roll;
+- focal-length equivalent;
+- richer body-region framing;
+- optional perspective guide export without becoming a full 3D package.
+
+### Depth / occlusion
+
+- foreground/midground/background bands;
+- front/behind relations;
 - per-entity occlusion constraints;
-- stronger near-object generation maps.
+- stronger near-object maps.
 
 ### Eye-flow / focal path
+
 - primary focal target per panel;
 - entry/exit reading vectors;
-- page-level eye-flow visualization;
-- warnings when focal flow fights selected RTL/LTR reading order;
-- integrate balloon placement into eye-flow rather than treating text as an independent overlay.
+- page-level flow visualization;
+- RTL/LTR conflict warnings;
+- balloon placement integrated into eye-flow reasoning.
 
 ### Gutter / transition semantics
-- encode temporal gap, spatial continuity, and transition rhythm between panels;
-- distinguish moment-to-moment, action-to-action, subject-to-subject, and scene transitions;
-- make gutter width/overlap suggestions advisory, not automatic authority.
+
+- temporal gap;
+- spatial continuity;
+- moment/action/subject/scene transition type;
+- advisory gutter width/overlap suggestions.
 
 ### Spread / page-turn
-- two-page spreads and binding-safe zones;
-- page-turn/reveal intent;
-- scene-level pacing across page boundaries;
-- preserve ordinary single-page editing/export semantics unless an explicit spread/group is selected.
 
-### Text production
-- balloon-tail target / speaker visual connection;
-- deterministic final Japanese vertical typesetting;
-- punctuation, ruby, kenten, tate-chu-yoko;
-- SFX rotation/path controls;
-- deterministic post-render lettering composition after image generation.
+- two-page spreads;
+- binding-safe zones;
+- page-turn/reveal intent;
+- scene pacing across pages;
+- preserve normal single-page semantics unless explicit spread/group is selected.
+
+### Deterministic text production
+
+- balloon-tail target;
+- final vertical Japanese typesetting;
+- punctuation/ruby/kenten/tate-chu-yoko;
+- SFX rotation/path;
+- deterministic post-render lettering composition.
 
 ## Additional authoring candidates
 
-### Pose Studio + Contact Graph
-- direct joint dragging for head / shoulders / elbows / hands / hip / knees / feet;
-- reusable pose presets, mirroring, reset, support/center-of-gravity/torso controls;
-- semantic contact edges such as hand→shoulder, arm→back, foot→ground, hand→prop;
-- contact validation for hugs, grabs, throws, strikes, hand-holding, and prop handling.
+### Pose Studio / Contact Graph
 
-### Panel geometry
-- drag/shared panel boundaries;
-- irregular/diagonal frames;
-- inset/overlap and safer bleed visualization;
-- extend reading-order grouping rules for arbitrary geometry;
-- favorites/recent templates and import/export template packs.
+- direct joint dragging;
+- saved/mirrored pose presets;
+- support/center-of-gravity/torso controls;
+- semantic contact edges for hugs/grabs/throws/strikes/hand-holding/props.
 
-### Provider-adapter ecosystem
+### Advanced panel geometry
+
+- drag/shared boundaries;
+- diagonal/irregular frames;
+- inset/overlap;
+- safer bleed visualization;
+- reading-order rules for arbitrary geometry.
+
+### Provider adapters
+
 - ChatGPT-oriented package adapter;
 - Gemini-oriented package adapter;
-- ComfyUI / ControlNet adapter for pose/depth/edge/segmentation conditioning;
-- capability declarations so unsupported features degrade explicitly instead of being silently discarded;
-- core project state remains provider-independent.
-
-## Longer-term / optional
-
-- script → story/beat/page planning assistance;
-- revision/diff history beyond current Undo/Redo;
-- collaboration only if privacy/hosting boundaries are intentionally introduced;
-- animatic/audio/timeline features only if the product scope expands beyond manga planning.
+- ComfyUI / ControlNet adapter;
+- capability declarations and explicit degradation;
+- canonical project state remains provider-independent JSON.
 
 ## Explicit non-goals for now
 
-Manga Blueprint Studio should not become a replacement for a full illustration application, full 3D package, cloud collaboration suite, or hosted proprietary image-generation service. Its differentiator remains **human-directed manga semantics that can be handed to multiple downstream generators with explicit, inspectable contracts**.
+Manga Blueprint Studio is not currently intended to become:
+
+- a full illustration application;
+- a complete 3D scene package;
+- a hosted proprietary image-generation service;
+- a cloud collaboration suite by default.
+
+Its differentiator remains **human-directed manga semantics that can be inspected, edited, and handed to multiple downstream generators with explicit contracts**.
