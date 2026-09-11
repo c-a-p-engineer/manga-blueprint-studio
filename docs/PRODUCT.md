@@ -261,17 +261,22 @@ Story Template Studio provides recognizable editable story/beat patterns.
 Templates may be discovered by:
 
 - category;
-- free-text search over title/description/use case/tags/actions;
-- visual cards and layout thumbnails;
+- free-text search over title/description/use case/tags/actions **and presentation terms** such as `衝撃枠`, `集中線`, or `枠無し`;
+- visual cards and shape-aware layout thumbnails;
+- presentation chips that summarize diagonal geometry, special frame types, line effects, and breakout;
 - panel count;
 - beat-flow preview;
-- cast expectations/filters where available.
+- cast/relationship/dialogue/art quick filters where available;
+- presentation quick filters for `演出あり / 演出なし`, diagonal panels, `impact / borderless / inset` frames, `focus / speed / impact / tension / silence` line effects, and breakout.
+
+Quick-filter groups are conjunctive across groups, so users can ask for combinations such as **2人表示 + 集中線** or **斜めコマ + 衝撃枠**. Within a single group, choosing another value replaces the prior value. The shipped catalog includes multiple concrete samples for the presentation filters so filters are useful as an effect sampler rather than empty taxonomy.
 
 Categories include romance, battle, emotion, daily, comedy, suspense, character introduction, and custom.
 
 ### Apply behavior
 
 - browsing/filtering/searching/previewing does not mutate the current page;
+- template selection is card-first; the duplicate legacy Story Template dropdown is not presented as a second selection surface;
 - applying over authored content requires explicit confirmation;
 - sample dialogue/SFX inclusion is explicitly controlled;
 - applied state becomes ordinary editable project state;

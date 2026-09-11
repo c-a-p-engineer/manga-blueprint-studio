@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.16.1
+## Shipped through Prototype 0.16.2
 
 ### Foundation / persistence
 
@@ -60,7 +60,8 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 - irregular layout presets: **斜め3コマ** and **斜め4コマ 2×2**;
 - polygon-aware editor border/hit area and clean/annotated PNG clipping;
 - **Prototype 0.16.1 annotated panel-number badge follows the authored top-right quadrilateral corner inward while reshaping** rather than following the compatibility bounding box;
-- Story Template Studio with discovery/beat-flow/bounded derivation/custom local templates;
+- Story Template Studio with card-first discovery, beat-flow/bounded derivation/custom local templates;
+- **Prototype 0.16.2 Story Template presentation catalog** with compound cast/story/presentation quick filters, presentation chips, shape-aware diagonal thumbnails, 演出あり / 演出なし comparison, and multiple samples for special frames/line effects/breakout;
 - Smart Manga bounded candidate proposals;
 - reusable base-character identity with `sheet | description | free` modes;
 - action intent, pose/expression/gaze, support/motion/depth semantics;

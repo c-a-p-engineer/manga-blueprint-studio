@@ -46,7 +46,7 @@ requirePhrase('docs/README.md','Only status authority');
 requirePhrase('docs/README.md','USER-GUIDE.md');
 requirePhrase('docs/README.md','web/guide.html');
 
-for(const phrase of ['P001','作品構成','ページ設定','AI生成ZIP','Story Template','Smart Manga','斜め3コマ','四隅を直接編集']){
+for(const phrase of ['P001','作品構成','ページ設定','AI生成ZIP','Story Template','Smart Manga','斜め3コマ','四隅を直接編集','衝撃枠','集中線','演出なし']){
   requirePhrase('docs/USER-GUIDE.md',phrase);
   requirePhrase('web/guide.html',phrase);
 }
@@ -57,7 +57,7 @@ requirePhrase('web/guide.html','選択中の1ページ');
 requirePhrase('web/guide.html','./guide.css');
 requirePhrase('web/guide.html','href="./"');
 
-for(const phrase of ['Manga-first editor shell','Work Structure / 作品構成','Page settings / ページ設定','P001','selected-page scoped','Panel shape','two explicit rows']){
+for(const phrase of ['Manga-first editor shell','Work Structure / 作品構成','Page settings / ページ設定','P001','selected-page scoped','Panel shape','two explicit rows','presentation quick filters','2人表示 + 集中線']){
   requirePhrase('docs/PRODUCT.md',phrase);
 }
 rejectPhrase('docs/PRODUCT.md','The Page tab must support:');
