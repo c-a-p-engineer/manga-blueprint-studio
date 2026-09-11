@@ -21,6 +21,10 @@ Prototype 0.16.2 turns Story Template discovery into a practical manga-effect sa
 - export manifest remains `manga-blueprint-export-manifest/3`;
 - existing rectangle and quadrilateral panel geometry remain compatible.
 
+## Verification
+
+Repository validation now checks the presentation-filter contract, compound-filter hooks, shaped-thumbnail integration, and minimum sample coverage for impact/borderless/inset frames plus focus/speed/impact/tension/silence effects. CI remains the static contract check; deployed-page availability is verified separately after merge.
+
 ## Cache freshness
 
 The application version is bumped to **0.16.2** so versioned runtime-chunk URLs fetch the new Story Template catalog and filter behavior after GitHub Pages deployment.
