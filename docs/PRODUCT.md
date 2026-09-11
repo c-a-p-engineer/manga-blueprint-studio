@@ -326,9 +326,9 @@ Identity modes:
 
 A Character Sheet is therefore optional, not universal.
 
-New works begin with six editable starter base characters in `description` mode: high-school boy/girl, adult man/woman, and male/female background characters. These are intentionally generic starting constraints, not finished identities. Existing/imported works are not silently populated; the Character tab may explicitly add any missing starter.
+New works begin with six editable starter base characters in `description` mode: high-school boy/girl, adult man/woman, and male/female background characters. These remain generic starting identities, but each starter now carries concrete hair, eye, and fully specified everyday/school clothing so downstream rendering never has to infer clothing from the planning figure. Existing/imported works are not silently populated; the Character tab may explicitly add any missing starter.
 
-Stick figures are pose/placement references. They communicate body relation, pose, approximate scale, and direction, not finished character appearance.
+Stick figures are pose/placement references. They communicate body relation, pose, approximate scale, and direction, not finished character appearance or clothing state. Generation must use explicit character outfit guidance when present; an unspecified outfit falls back to ordinary scene-appropriate clothing rather than treating a stick figure as unclothed.
 
 ## Camera, pose, depth, and scene semantics
 

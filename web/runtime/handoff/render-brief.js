@@ -66,7 +66,7 @@ function referenceRoles30(){
     source:'*_clean.png',
     role:'spatial-layout',
     controls:['panel-geometry','panel-proportions','reading-order-geometry','approximate-character-placement','approximate-character-scale','pose-direction'],
-    doesNotControl:['character-appearance','render-style','visible-text']
+    doesNotControl:['character-appearance','clothing-state','render-style','visible-text']
   }];
   for(const ch of usedCharacterIds30().map(characterBrief30)){
     if(ch.identityMode!=='sheet'||!ch.referenceKey)continue;
@@ -86,7 +86,7 @@ function preservationContract30(){
     preserveExact:['panel-count','panel-boundaries','panel-proportions','reading-order-geometry','allowlisted-visible-text'],
     preserveStrong:['character-identity','relative-character-placement','relative-character-scale','story-action-intent','gaze-relationships','physical-contact','camera-intent','scene-continuity'],
     guidanceOnly:['stick-figure-joint-coordinates','pose-figure-anatomy-details'],
-    doNotInherit:['stick-figure-appearance','authoring-labels','panel-numbers','ui-metadata','review-annotations'],
+    doNotInherit:['stick-figure-appearance','stick-figure-clothing-state','authoring-labels','panel-numbers','ui-metadata','review-annotations'],
     doNotAdd:['extra-panels','extra-visible-characters','unlisted-visible-text','replacement-story-or-genre','replacement-setting','unlisted-titles-or-captions']
   };
 }
@@ -169,6 +169,8 @@ function renderBriefText30(){
     '',
     'REFERENCE IMAGE ROLES:',
     '- CLEAN Manga Blueprint PNG = SPATIAL LAYOUT reference. Preserve exact panel geometry/proportions and strong relative spatial relationships. Do NOT copy stick-figure appearance.',
+    '- Stick figures are abstract pose/placement guides only. Do not interpret a stick figure as an unclothed body or as clothing guidance.',
+    '- Render each character using the explicit outfit in CHARACTER IDENTITY GUIDANCE. If outfit is unspecified, use ordinary scene-appropriate clothing; never infer nudity from the planning stick figure.',
     ...brief.referenceRoles.filter(x=>x.role==='character-identity').map(x=>`- ${x.source} = CHARACTER IDENTITY reference for ${x.characterId}. Preserve identity; do NOT take pose, camera, or panel layout from this image.`),
     '',
     'CHANGE:',
@@ -254,7 +256,10 @@ if(typeof exportManifest08==='function'){
       preserveIntentionalNegativeSpace:true,
       panelGeometryConstraint:'exact',
       characterSpatialRelationshipConstraint:'strong',
-      stickFigureJointConstraint:'guidance-only'
+      stickFigureJointConstraint:'guidance-only',
+      stickFigureDoesNotImplyNudity:true,
+      explicitCharacterOutfitPriority:true,
+      unspecifiedOutfitFallback:'ordinary-scene-appropriate-clothing'
     });
     return manifest;
   };

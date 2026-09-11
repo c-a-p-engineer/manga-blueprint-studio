@@ -29,7 +29,11 @@ const required=[
   "preserveIntentionalNegativeSpace:true",
   "panelGeometryConstraint:'exact'",
   "characterSpatialRelationshipConstraint:'strong'",
-  "stickFigureJointConstraint:'guidance-only'"
+  "stickFigureJointConstraint:'guidance-only'",
+  "stickFigureDoesNotImplyNudity:true",
+  "explicitCharacterOutfitPriority:true",
+  'Do not interpret a stick figure as an unclothed body',
+  'never infer nudity from the planning stick figure'
 ];
 for(const token of required){
   if(!text.includes(token))throw new Error(`render brief contract missing: ${token}`);

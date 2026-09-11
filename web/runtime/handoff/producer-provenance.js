@@ -5,7 +5,7 @@
 function producerBuildInfo31(){
   const fallback={
     schema:'manga-blueprint-build-info/1',
-    appVersion:'0.17.0',
+    appVersion:'0.17.1',
     gitCommit:null,
     buildSource:'vite-runtime-fallback',
     deployedAt:null

@@ -59,33 +59,33 @@ Object.assign(i18n.en,{
 const STARTER_CHARACTER_PRESETS_36=Object.freeze({
   'starter-highschool-male':{
     label:'starterHighschoolMale36',
-    ja:{summary:'高校生年代の男子。学園・日常シーン向けの汎用キャラクター。固有の顔立ちや髪型は編集前提。',outfit:'学校制服',features:''},
-    en:{summary:'A high-school-age boy for general school and everyday scenes. Facial features and hairstyle are intentionally left editable.',outfit:'school uniform',features:''}
+    ja:{summary:'高校生年代の男子。学園・日常シーン向けの汎用キャラクター。完成絵では服を着た人物として描く。',hair:'短い黒髪',eyes:'茶色い目',outfit:'白い長袖シャツ、紺のブレザー、グレーのスラックス、黒い靴の学校制服',features:'清潔感のある一般的な制服姿'},
+    en:{summary:'A high-school-age boy for general school and everyday scenes. Render him as a clothed character in finished art.',hair:'short black hair',eyes:'brown eyes',outfit:'school uniform: white long-sleeve shirt, navy blazer, gray trousers, black shoes',features:'clean, ordinary school-uniform appearance'}
   },
   'starter-highschool-female':{
     label:'starterHighschoolFemale36',
-    ja:{summary:'高校生年代の女子。学園・日常シーン向けの汎用キャラクター。固有の顔立ちや髪型は編集前提。',outfit:'学校制服',features:''},
-    en:{summary:'A high-school-age girl for general school and everyday scenes. Facial features and hairstyle are intentionally left editable.',outfit:'school uniform',features:''}
+    ja:{summary:'高校生年代の女子。学園・日常シーン向けの汎用キャラクター。完成絵では服を着た人物として描く。',hair:'肩までの黒髪',eyes:'茶色い目',outfit:'白い長袖ブラウス、紺のブレザー、膝丈のプリーツスカート、黒いハイソックス、ローファーの学校制服',features:'清潔感のある一般的な制服姿'},
+    en:{summary:'A high-school-age girl for general school and everyday scenes. Render her as a clothed character in finished art.',hair:'shoulder-length black hair',eyes:'brown eyes',outfit:'school uniform: white long-sleeve blouse, navy blazer, knee-length pleated skirt, black knee socks, loafers',features:'clean, ordinary school-uniform appearance'}
   },
   'starter-adult-male':{
     label:'starterAdultMale36',
-    ja:{summary:'成人男性。日常・仕事シーン向けの汎用キャラクター。年齢感や職業、髪型は作品に合わせて編集する前提。',outfit:'シンプルな日常着',features:''},
-    en:{summary:'An adult man for general everyday or work scenes. Exact age, occupation, and hairstyle are intentionally left editable.',outfit:'simple everyday clothes',features:''}
+    ja:{summary:'成人男性。日常・仕事シーン向けの汎用キャラクター。完成絵では服を着た人物として描く。',hair:'短い黒髪',eyes:'茶色い目',outfit:'無地の長袖シャツ、チノパン、スニーカーのシンプルな日常着',features:'落ち着いた一般的な成人男性'},
+    en:{summary:'An adult man for general everyday or work scenes. Render him as a clothed character in finished art.',hair:'short black hair',eyes:'brown eyes',outfit:'simple everyday outfit: plain long-sleeve shirt, chino trousers, sneakers',features:'ordinary understated adult appearance'}
   },
   'starter-adult-female':{
     label:'starterAdultFemale36',
-    ja:{summary:'成人女性。日常・仕事シーン向けの汎用キャラクター。年齢感や職業、髪型は作品に合わせて編集する前提。',outfit:'シンプルな日常着',features:''},
-    en:{summary:'An adult woman for general everyday or work scenes. Exact age, occupation, and hairstyle are intentionally left editable.',outfit:'simple everyday clothes',features:''}
+    ja:{summary:'成人女性。日常・仕事シーン向けの汎用キャラクター。完成絵では服を着た人物として描く。',hair:'肩までの黒髪',eyes:'茶色い目',outfit:'長袖ブラウス、アンクル丈パンツ、フラットシューズのシンプルな日常着',features:'落ち着いた一般的な成人女性'},
+    en:{summary:'An adult woman for general everyday or work scenes. Render her as a clothed character in finished art.',hair:'shoulder-length black hair',eyes:'brown eyes',outfit:'simple everyday outfit: long-sleeve blouse, ankle-length trousers, flat shoes',features:'ordinary understated adult appearance'}
   },
   'starter-mob-male':{
     label:'starterMobMale36',
-    ja:{summary:'背景・群衆・通行人向けの男性モブ。主役より目立たない、固有特徴を抑えた汎用外見。',outfit:'シンプルな日常着',features:'目立つ固有特徴なし'},
-    en:{summary:'A male background/crowd/passersby character with deliberately low visual distinctiveness so he does not compete with the main cast.',outfit:'simple everyday clothes',features:'no prominent identifying feature'}
+    ja:{summary:'背景・群衆・通行人向けの男性モブ。主役より目立たない全身着衣の汎用外見。',hair:'短い黒髪',eyes:'茶色い目',outfit:'グレーのパーカー、黒いロングパンツ、スニーカーの目立たない日常着',features:'目立つ固有特徴なし'},
+    en:{summary:'A fully clothed male background/crowd/passersby character with deliberately low visual distinctiveness.',hair:'short black hair',eyes:'brown eyes',outfit:'low-key everyday outfit: gray hoodie, black full-length trousers, sneakers',features:'no prominent identifying feature'}
   },
   'starter-mob-female':{
     label:'starterMobFemale36',
-    ja:{summary:'背景・群衆・通行人向けの女性モブ。主役より目立たない、固有特徴を抑えた汎用外見。',outfit:'シンプルな日常着',features:'目立つ固有特徴なし'},
-    en:{summary:'A female background/crowd/passersby character with deliberately low visual distinctiveness so she does not compete with the main cast.',outfit:'simple everyday clothes',features:'no prominent identifying feature'}
+    ja:{summary:'背景・群衆・通行人向けの女性モブ。主役より目立たない全身着衣の汎用外見。',hair:'肩までの黒髪',eyes:'茶色い目',outfit:'カーディガン、クルーネックのトップス、ロングパンツ、スニーカーの目立たない日常着',features:'目立つ固有特徴なし'},
+    en:{summary:'A fully clothed female background/crowd/passersby character with deliberately low visual distinctiveness.',hair:'shoulder-length black hair',eyes:'brown eyes',outfit:'low-key everyday outfit: cardigan, crew-neck top, full-length trousers, sneakers',features:'no prominent identifying feature'}
   }
 });
 const STARTER_CHARACTER_IDS_36=Object.keys(STARTER_CHARACTER_PRESETS_36);
@@ -100,7 +100,7 @@ function starterCharacter36(id){
     poseId:'stand',
     notes:'',
     identityMode:'description',
-    appearance:{summary:localized.summary,hair:'',eyes:'',outfit:localized.outfit,features:localized.features||''}
+    appearance:{summary:localized.summary,hair:localized.hair||'',eyes:localized.eyes||'',outfit:localized.outfit,features:localized.features||''}
   };
 }
 function addMissingStarterCharacters36(target=project){
