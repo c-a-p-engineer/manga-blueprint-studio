@@ -374,6 +374,9 @@ Story Template is the canonical product feature name.
 
 Custom-template library is separate from project autosave until backup/restore explicitly defines bundling. The new **斜め3コマ / 斜め4コマ 2×2** entries are page-layout presets, not a second Story Template feature.
 
+- `integration/template-character-cast.js` owns the non-serialized cast choice between template discovery and canonical apply. It routes the selected reusable base character(s) into the existing one-visible/two-visible apply pipeline instead of introducing another template state model.
+- the same integration wraps **new-work creation only** to seed six editable description-mode starters; normal project normalization/import does not silently add them to existing works.
+
 ## Smart Manga architecture
 
 Smart Manga generates bounded, non-mutating candidates from purpose/panel count/seed/variant/intensity and optional character placement.

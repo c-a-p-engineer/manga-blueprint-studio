@@ -275,6 +275,9 @@ Categories include romance, battle, emotion, daily, comedy, suspense, character 
 
 ### Apply behavior
 
+- the redundant legacy middle preview is not presented as a second Story Template surface; the selected template, cast selectors, sample-text option, and primary apply action form one task-oriented apply area;
+- after choosing a template card, the user explicitly chooses the reusable character(s) that will be used before applying;
+- one-visible templates use the selected primary character; two-visible templates require and use two distinct selected reusable characters;
 - browsing/filtering/searching/previewing does not mutate the current page;
 - template selection is card-first; the duplicate legacy Story Template dropdown is not presented as a second selection surface;
 - applying over authored content requires explicit confirmation;
@@ -319,6 +322,8 @@ Identity modes:
 3. `free` — no sheet required; downstream model may choose a simple consistent appearance.
 
 A Character Sheet is therefore optional, not universal.
+
+New works begin with six editable starter base characters in `description` mode: high-school boy/girl, adult man/woman, and male/female background characters. These are intentionally generic starting constraints, not finished identities. Existing/imported works are not silently populated; the Character tab may explicitly add any missing starter.
 
 Stick figures are pose/placement references. They communicate body relation, pose, approximate scale, and direction, not finished character appearance.
 

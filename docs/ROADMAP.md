@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.16.2
+## Shipped through Prototype 0.16.3
 
 ### Foundation / persistence
 
@@ -50,6 +50,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 
 ### Manga authoring
 
+- **Prototype 0.16.3 template cast UX**: card → explicit reusable-character selection → apply, removal of the redundant middle preview, exact selected-cast routing for one/two-visible templates, and six editable starter characters for new works;
 - dynamic manuscript/canvas presets;
 - RTL/LTR panel reading direction;
 - geometry-based panel order synchronization;

@@ -49,6 +49,17 @@ It owns UI presentation such as:
 
 `P001` is derived UI formatting; canonical `pageNumber` remains numeric.
 
+### `integration/template-character-cast.js`
+
+Owns the cross-feature boundary between Story Template selection and reusable-character identity:
+
+- explicit primary/second-character choice before template apply;
+- exact selected-cast routing into the canonical template application pipeline;
+- the task-first apply card that replaces the redundant middle preview;
+- six generic editable starter character definitions for new works and explicit quick-add for existing works.
+
+Template browsing remains non-mutating; character-library mutation happens only during new-work creation or explicit starter-add actions.
+
 ## Public guide
 
 The full user guide is a static public page:
