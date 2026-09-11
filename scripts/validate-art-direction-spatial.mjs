@@ -2,14 +2,14 @@ import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const read = path => fs.readFileSync(path, 'utf8');
-const app = read('web/app.js');
+const bootstrap = read('web/src/legacy-runtime.ts');
 const art = readRuntime('artDirectionReadiness');
 const spatial = readRuntime('spatialSemantics');
 const schema = JSON.parse(read('schema/manga-blueprint.schema.json'));
 
 for (const key of ['artDirectionReadiness','spatialSemantics']) {
-  const file=runtimePaths[key],src=`./${file.slice('web/'.length)}`;
-  if (!app.includes(src)) throw new Error(`Bootstrap must load ${src}`);
+  const file=runtimePaths[key],src=file.slice('web/'.length);
+  if (!bootstrap.includes(`'${src}'`)) throw new Error(`TypeScript bootstrap must load ${src}`);
 }
 
 for (const phrase of [
