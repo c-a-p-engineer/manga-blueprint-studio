@@ -9,10 +9,12 @@ type LegacyRuntimeGlobal=typeof globalThis&{
 const runtime=globalThis as LegacyRuntimeGlobal;
 let applyingTemplate=false;
 let composeQueued=false;
+let pagePanelObserver:MutationObserver|null=null;
 
 const byId=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T|null;
 const currentLanguage=()=>((byId<HTMLSelectElement>('languageSelect')?.value||document.documentElement.lang||'ja').toLowerCase().startsWith('en')?'en':'ja');
 const copy=(ja:string,en:string)=>currentLanguage()==='en'?en:ja;
+const setTextIfChanged=(node:Element|null,value:string)=>{if(node&&node.textContent!==value)node.textContent=value;};
 
 function disableLegacyHierarchyEditor(){
   const removeLegacy=()=>byId('containerManager16')?.remove();
@@ -73,9 +75,9 @@ function ensureTemplateHeader(shell:HTMLElement){
     const kicker=header.querySelector('.phase1-kicker');
     const title=header.querySelector('h3');
     const lead=header.querySelector('p');
-    if(kicker)kicker.textContent=copy('おすすめの開始方法','Recommended start');
-    if(title)title.textContent=copy('テンプレートからページを作る','Build the page from a template');
-    if(lead)lead.textContent=copy('コマ割り・演出・セリフ例をまとめて選び、使用キャラクターを決めて適用します。','Choose layout, direction and sample dialogue together, select the cast, then apply.');
+    setTextIfChanged(kicker,copy('おすすめの開始方法','Recommended start'));
+    setTextIfChanged(title,copy('テンプレートからページを作る','Build the page from a template'));
+    setTextIfChanged(lead,copy('コマ割り・演出・セリフ例をまとめて選び、使用キャラクターを決めて適用します。','Choose layout, direction and sample dialogue together, select the cast, then apply.'));
   }
 }
 
@@ -133,6 +135,7 @@ function composeTemplateWorkflow(){
 
   ensureFeedback(shell);
   ensureManualLayoutDisclosure(pagePanel);
+  pagePanelObserver?.takeRecords();
 }
 
 function applyTemplateFromPrimaryAction(event:Event){
@@ -178,7 +181,7 @@ export function installPhaseOneUi(){
   byId('languageSelect')?.addEventListener('change',queueCompose);
   const pagePanel=document.querySelector<HTMLElement>('.tool-panel[data-section="page"]');
   if(pagePanel){
-    const observer=new MutationObserver(queueCompose);
-    observer.observe(pagePanel,{childList:true,subtree:true});
+    pagePanelObserver=new MutationObserver(queueCompose);
+    pagePanelObserver.observe(pagePanel,{childList:true,subtree:true});
   }
 }
