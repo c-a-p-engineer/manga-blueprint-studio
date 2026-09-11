@@ -1,0 +1,111 @@
+name: One-shot template cast documentation sync
+
+on:
+  push:
+    branches: [work/template-cast-starters]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/template-cast-starters
+          fetch-depth: 0
+      - name: Synchronize current docs and release note
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def read(path): return Path(path).read_text()
+          def write(path,text): Path(path).write_text(text)
+          def must_replace(text,old,new,path):
+              if old not in text:
+                  raise SystemExit(f'{path}: missing anchor: {old[:100]!r}')
+              return text.replace(old,new,1)
+
+          # README / release headline
+          path='README.md'; text=read(path)
+          text=must_replace(text,'## Current prototype: 0.16.2','## Current prototype: 0.16.3',path)
+          text=re.sub(r'Prototype \*\*0\.16\.2\*\* expands Story Template discovery.*?while Prototype 0\.16\.1 remains the panel-number geometry follow-up and 0\.16\.0 remains the quadrilateral foundation\.',
+              'Prototype **0.16.3** simplifies Story Template application into one task-first flow: choose a template card, explicitly choose the character(s) to use, then apply. The redundant middle preview is removed, two-visible templates use the two selected reusable characters, and new works start with six editable starter characters (high-school boy/girl, adult man/woman, male/female background characters). Prototype 0.16.2 remains the presentation-filter catalog release.',text,flags=re.S)
+          text=must_replace(text,'- Story Template Studio with card-first selection, compound quick filters for cast/story/presentation, presentation chips, diagonal thumbnails, and bounded Smart Manga proposals;',
+              '- Story Template Studio with card-first selection, compound quick filters, explicit pre-apply character selection, a single apply surface, presentation chips, diagonal thumbnails, and bounded Smart Manga proposals;\n- six editable description-mode starter characters are created for new works, while existing/imported works are not silently changed and can add the same starters explicitly;',path)
+          text=must_replace(text,'Story Template cards can be narrowed by 2人表示・恋愛などの条件と、斜めコマ・衝撃枠・集中線などの演出条件を組み合わせて探せます。',
+              'Story Template cards can be narrowed by 2人表示・恋愛などの条件と、斜めコマ・衝撃枠・集中線などの演出条件を組み合わせて探せます。カードを選んだ後は、使用するキャラクターを明示してから適用します。',path)
+          text=must_replace(text,'Cards expose presentation chips so a sample can be found and applied without opening every template. Smart Manga remains a separate bounded proposal system.',
+              'Cards expose presentation chips so a sample can be found without opening every template. The old middle preview is removed: after selecting a card, the apply card asks which reusable character(s) to use and the primary action applies that exact cast. Smart Manga remains a separate bounded proposal system.',path)
+          text=must_replace(text,'The planning stick figure communicates pose/placement rather than finished appearance.',
+              'New works start with six editable description-mode bases: high-school boy/girl, adult man/woman, and male/female background characters. Existing/imported works are left unchanged; the Character tab can add any of these starters explicitly.\n\nThe planning stick figure communicates pose/placement rather than finished appearance.',path)
+          text=text.replace('docs/PROTOTYPE-0.16.2.md','docs/PROTOTYPE-0.16.3.md')
+          text=text.replace('Current application baseline: **Prototype 0.16.2**.','Current application baseline: **Prototype 0.16.3**.')
+          write(path,text)
+
+          # Product contract
+          path='docs/PRODUCT.md'; text=read(path)
+          anchor='- template selection is card-first; the duplicate legacy Story Template dropdown is not presented as a second selection surface;'
+          insert=anchor+'\n- the redundant legacy middle preview is not presented as a second Story Template surface; the selected template, cast selectors, sample-text option, and primary apply action form one task-oriented apply area;\n- after choosing a template card, the user explicitly chooses the reusable character(s) that will be used before applying;\n- one-visible templates use the selected primary character; two-visible templates require and use two distinct selected reusable characters;'
+          text=must_replace(text,anchor,insert,path)
+          anchor='Stick figures are pose/placement references. They communicate body relation, pose, approximate scale, and direction, not finished character appearance.'
+          insert='New works begin with six editable starter base characters in `description` mode: high-school boy/girl, adult man/woman, and male/female background characters. These are intentionally generic starting constraints, not finished identities. Existing/imported works are not silently populated; the Character tab may explicitly add any missing starter.\n\n'+anchor
+          text=must_replace(text,anchor,insert,path)
+          write(path,text)
+
+          # User guide
+          path='docs/USER-GUIDE.md'; text=read(path)
+          anchor='テンプレートは**カードを選ぶだけ**で選択されます。以前の重複した「ストーリーテンプレート」ドロップダウンは表示しません。カードには、そのテンプレートで使う主な演出がチップで表示されます。'
+          insert=anchor+'\n\nカードを選ぶと、その下に **使用するキャラクター** が出ます。1人表示では主役を1人、2人表示テンプレートでは主役と2人目を別々に選んでから **このキャラクターでテンプレートを使う** を押します。以前の中段プレビューは廃止し、「カード選択 → キャラ選択 → 適用」の1本の流れに整理しています。'
+          text=must_replace(text,anchor,insert,path)
+          anchor='The stick figure is a **pose and placement reference**, not the character\'s finished appearance.'
+          insert='新規作品には、編集可能な汎用ベースとして **高校生男子 / 高校生女子 / 成人男性 / 成人女性 / モブ男性 / モブ女性** の6人が最初から入ります。全員「文章で指定」方式のたたき台で、名前・容姿・服装は自由に変更できます。既存作品や読み込んだ作品へは勝手に追加せず、**キャラ → かんたん追加** から必要なものだけ追加できます。\n\n'+anchor
+          text=must_replace(text,anchor,insert,path)
+          write(path,text)
+
+          # Public guide
+          path='web/guide.html'; text=read(path)
+          anchor='<p>カードには使用する主な演出がチップで表示されます。重複していたストーリーテンプレートの選択ドロップダウンは表示しません。</p>'
+          insert=anchor+'<p>カード選択後は、その下の<strong>使用するキャラクター</strong>で主役を選びます。2人表示テンプレートでは2人目も別に選択し、<strong>このキャラクターでテンプレートを使う</strong>で適用します。以前の中段プレビューは廃止し、カード → キャラ → 適用の順に整理しています。</p>'
+          text=must_replace(text,anchor,insert,path)
+          anchor='<section id="character">\n        <h2>キャラクター：Character Sheet は必須ではない</h2>'
+          insert=anchor+'\n        <div class="callout"><strong>新規作品には6人のスターターがあります。</strong> 高校生男子 / 高校生女子 / 成人男性 / 成人女性 / モブ男性 / モブ女性。すべて編集可能な汎用のたたき台です。既存作品には自動追加せず、キャラタブの「かんたん追加」から必要なものを足せます。</div>'
+          text=must_replace(text,anchor,insert,path)
+          write(path,text)
+
+          # Roadmap status
+          path='docs/ROADMAP.md'; text=read(path)
+          text=text.replace('## Shipped through Prototype 0.16.2','## Shipped through Prototype 0.16.3',1)
+          anchor='- Story Template Studio with discovery/beat-flow/bounded derivation/custom local templates;'
+          insert=anchor+'\n- **Prototype 0.16.3 template cast UX**: card → explicit reusable-character selection → apply, removal of the redundant middle preview, exact selected-cast routing for one/two-visible templates, and six editable starter characters for new works;'
+          text=must_replace(text,anchor,insert,path)
+          write(path,text)
+
+          # Architecture ownership
+          path='docs/ARCHITECTURE.md'; text=read(path)
+          anchor='- browser-local custom templates store reusable direction/normalized geometry but exclude finished character-specific identity.'
+          insert=anchor+'\n- `integration/template-character-cast.js` owns the non-serialized cast choice between template discovery and canonical apply. It routes the selected reusable base character(s) into the existing one-visible/two-visible apply pipeline instead of introducing another template state model.\n- the same integration wraps **new-work creation only** to seed six editable description-mode starters; normal project normalization/import does not silently add them to existing works.'
+          text=must_replace(text,anchor,insert,path)
+          write(path,text)
+
+          # Runtime ownership map
+          path='web/runtime/README.md'; text=read(path)
+          anchor='## Public guide'
+          section='''### `integration/template-character-cast.js`\n\nOwns the cross-feature boundary between Story Template selection and reusable-character identity:\n\n- explicit primary/second-character choice before template apply;\n- exact selected-cast routing into the canonical template application pipeline;\n- the task-first apply card that replaces the redundant middle preview;\n- six generic editable starter character definitions for new works and explicit quick-add for existing works.\n\nTemplate browsing remains non-mutating; character-library mutation happens only during new-work creation or explicit starter-add actions.\n\n'''
+          text=must_replace(text,anchor,section+anchor,path)
+          write(path,text)
+
+          # New release note
+          Path('docs/PROTOTYPE-0.16.3.md').write_text('''# Prototype 0.16.3 — Template cast selection and starter characters\n\nPrototype 0.16.3 simplifies Story Template application around the actual authoring task: choose a template, choose who appears, then apply.\n\n## What changed\n\n- Removed the redundant middle Story Template preview surface.\n- Kept card-first template discovery and presentation filters as the single selection surface.\n- Added an explicit **使用するキャラクター / Characters to use** apply card below the template gallery.\n- One-visible templates use the selected primary reusable character.\n- Two-visible templates require two distinct selected reusable characters and use those exact two characters.\n- Rebound the final apply action to the presentation-aware canonical pipeline, so selected panel geometry/effects and selected cast are applied together.\n- New works start with six editable description-mode starters: high-school boy/girl, adult man/woman, and male/female background characters.\n- Existing/imported works are not silently modified; the Character tab provides explicit quick-add buttons for the same starter set.\n- Mobile controls stack the cast selectors and keep the primary apply action touch-friendly.\n\n## Compatibility\n\n- Project format remains `manga-blueprint/0.2`.\n- Export manifest remains `manga-blueprint-export-manifest/3`.\n- Template browsing/filtering/cast selection remains non-mutating until explicit apply.\n- Starter characters use the existing reusable-character `description` identity contract; no schema change is required.\n\n## Cache freshness\n\nThe application version is **0.16.3** so GitHub Pages requests the new integration runtime instead of stale cached chunks.\n\n## Documentation\n\nCurrent behavior is synchronized in `docs/PRODUCT.md`, `docs/USER-GUIDE.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, the runtime documentation, the repository README, and the public `/guide.html`.\n''')
+
+          # Remove this one-shot workflow before committing.
+          Path('.github/workflows/template-cast-doc-sync.yml').unlink()
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Document template cast and starter character UX as 0.16.3'
+          git push origin HEAD:work/template-cast-starters
