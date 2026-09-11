@@ -46,10 +46,12 @@ requirePhrase('docs/README.md','Only status authority');
 requirePhrase('docs/README.md','USER-GUIDE.md');
 requirePhrase('docs/README.md','web/guide.html');
 
-for(const phrase of ['P001','作品構成','ページ設定','AI生成ZIP','Story Template','Smart Manga','斜め3コマ','四隅を直接編集','2段ヘッダー']){
+for(const phrase of ['P001','作品構成','ページ設定','AI生成ZIP','Story Template','Smart Manga','斜め3コマ','四隅を直接編集']){
   requirePhrase('docs/USER-GUIDE.md',phrase);
   requirePhrase('web/guide.html',phrase);
 }
+requirePhrase('docs/USER-GUIDE.md','two rows');
+requirePhrase('web/guide.html','2段ヘッダー');
 requirePhrase('docs/USER-GUIDE.md','Current export is **the selected page only**.');
 requirePhrase('web/guide.html','選択中の1ページ');
 requirePhrase('web/guide.html','./guide.css');
