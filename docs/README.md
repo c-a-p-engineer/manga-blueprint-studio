@@ -74,8 +74,8 @@ A change is not documentation-complete until the affected authority and user-fac
 Use these names in current documentation and UI:
 
 - **作品 / Work** — one manga work/project.
-- **作品構成 / Work Structure** — explorer-style hierarchy/navigation.
-- **巻 / Volume**, **章 / Chapter**, **フォルダ / Folder** — optional organizational containers.
+- **作品エクスプローラー / Work Explorer** — active work titleから開く、作品切替＋ページツリーのfile-explorer-style navigation.
+- **巻 / Volume**, **章 / Chapter**, **フォルダ / Folder** — compatibility data for existing/imported works; dedicated editing is not a primary UI surface.
 - **P001** — visible page code; underlying `pageNumber` remains numeric.
 - **ページ設定 / Page settings** — manuscript/layout/current-page configuration, not primary work/page navigation.
 - **ストーリーテンプレート / Story Template** — the single canonical template feature name.

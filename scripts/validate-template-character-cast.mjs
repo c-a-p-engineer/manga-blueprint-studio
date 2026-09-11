@@ -33,6 +33,10 @@ for(const token of [
   "preview.hidden=true",
   'templateUseWithCast36',
   'starterCharacters36',
+  'templateWorkflowTop36',
+  'relocateTemplateWorkflow36',
+  'templateUseDialogue36',
+  "apply.classList.add('primary')",
   '@media(max-width:760px)'
 ])requireText(runtime,token,'template cast integration');
 

@@ -9,19 +9,21 @@ const shell=fs.readFileSync(shellPath,'utf8');
 const app=fs.readFileSync('web/app.js','utf8');
 for(const phrase of [
   "padStart(3,'0')",
-  "workLibrary:'作品一覧'",
-  "structure:'作品構成'",
+  "workLibrary:'作品管理'",
+  "structure:'作品エクスプローラー'",
   "tabPage:'ページ設定'",
   "artNotes:'追加の画風・仕上げ指示（任意）'",
   "workRoot:'作品直下'",
   "pageManagerSlot17",
-  "containerManagerSlot17",
   "structureTree17",
-  "moveExistingManagers17",
-  "workLibraryBtn16"
+  "explorerWorks17",
+  "newWorkExplorer17",
+  "openStoredWork16",
+  "currentWorkButton17"
 ]){
   if(!shell.includes(phrase))throw new Error(`Editor shell contract missing ${JSON.stringify(phrase)}`);
 }
+if(shell.includes('structureEditSummary17')||shell.includes('containerManagerSlot17'))throw new Error('Dedicated volume/chapter/folder editor must not remain in the primary work explorer.');
 if(!app.includes("['ui/editor-shell', './runtime/ui/editor-shell.js']"))throw new Error('web/app.js does not load editor shell runtime.');
 
 const workHierarchy=fs.readFileSync('web/runtime/authoring/work-library-hierarchy.js','utf8');

@@ -62,18 +62,18 @@ On narrow mobile screens, the app header uses two explicit rows: branding/taglin
 The editor presents the current manga location above the canvas:
 
 - work title on its own line;
-- work title opens the Work Library;
+- work title opens the **Work Explorer**, which combines work switching and page-tree navigation;
 - breadcrumb shows optional volume/chapter/folder ancestry plus current page;
 - page codes use minimum three-digit display formatting such as `P001`;
 - previous/next/add page actions live in the same current-page context;
 - a direct page strip allows page switching;
-- **作品構成 / Work Structure** opens the work explorer.
+- there is no separate 「作品構成」 button; the work title itself is the explorer entry point.
 
 `P001` is display formatting only. Canonical `pageNumber` remains a positive integer.
 
-### Work Structure / 作品構成
+### Work Explorer / 作品エクスプローラー
 
-Work Structure is the primary hierarchy/navigation surface.
+Work Explorer is the primary work/page navigation surface and follows a file-explorer mental model.
 
 It presents:
 
@@ -93,7 +93,7 @@ Requirements:
 - direct page selection from the tree;
 - ungrouped/root pages and grouped pages may coexist;
 - `volume`, `chapter`, and `folder` containers may nest;
-- advanced page/container CRUD remains available without becoming the primary navigation model;
+- page operations remain available as advanced controls; dedicated volume/chapter/folder editing is not shown in the primary UI;
 - on narrow screens the structure view may become a full-screen/modal explorer, but the information hierarchy remains the same.
 
 ### Page settings / ページ設定
@@ -150,7 +150,7 @@ Language preference and browser-local custom Story Templates are separate local-
 
 ## Multi-page authoring
 
-The current-page navigation/Work Structure + advanced page controls must support:
+The current-page navigation/Work Explorer + advanced page controls must support:
 
 - selecting a page without mutating another page;
 - adding a page;
@@ -275,6 +275,9 @@ Categories include romance, battle, emotion, daily, comedy, suspense, character 
 
 ### Apply behavior
 
+- Story Template discovery is presented inside the upper Page settings / panel-layout flow rather than as a separate middle Story Template section;
+- the sample-dialogue/SFX checkbox sits in the same apply flow and decides whether template dialogue/SFX is created;
+- the primary apply button remains visible in that same upper surface;
 - the redundant legacy middle preview is not presented as a second Story Template surface; the selected template, cast selectors, sample-text option, and primary apply action form one task-oriented apply area;
 - after choosing a template card, the user explicitly chooses the reusable character(s) that will be used before applying;
 - one-visible templates use the selected primary character; two-visible templates require and use two distinct selected reusable characters;
