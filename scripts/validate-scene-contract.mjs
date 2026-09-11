@@ -3,10 +3,10 @@ import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const app=readRuntime('sceneContract');
 const fallback=readRuntime('castFallback');
-const bootstrap=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 
-const sceneSrc=`./${runtimePaths.sceneContract.slice('web/'.length)}`;
-const fallbackSrc=`./${runtimePaths.castFallback.slice('web/'.length)}`;
+const sceneSrc=runtimePaths.sceneContract.slice('web/'.length);
+const fallbackSrc=runtimePaths.castFallback.slice('web/'.length);
 const required = [
   sceneSrc,
   "quickStatus22",
@@ -34,7 +34,8 @@ const required = [
 
 for (const needle of required) {
   const source = needle === sceneSrc ? bootstrap : app;
-  if (!source.includes(needle)) throw new Error(`Prototype 0.12 contract missing: ${needle}`);
+  const expected=needle===sceneSrc?`'${needle}'`:needle;
+  if (!source.includes(expected)) throw new Error(`Prototype 0.12 contract missing: ${needle}`);
 }
 
 const fallbackRequired = [
@@ -47,7 +48,8 @@ const fallbackRequired = [
 ];
 for (const needle of fallbackRequired) {
   const source = needle === fallbackSrc ? bootstrap : fallback;
-  if (!source.includes(needle)) throw new Error(`Prototype 0.12.1 cast fallback missing: ${needle}`);
+  const expected=needle===fallbackSrc?`'${needle}'`:needle;
+  if (!source.includes(expected)) throw new Error(`Prototype 0.12.1 cast fallback missing: ${needle}`);
 }
 
 const affectionateTemplates = ['affectionDaily','teaseBlush','faceClose','afterSchoolTwo','pamper','foreheadTouch','surpriseHug','shoulderLean'];
