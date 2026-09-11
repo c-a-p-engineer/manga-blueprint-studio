@@ -85,6 +85,12 @@ The roadmap now pulls a minimum **convex quadrilateral panel** foundation forwar
 
 The planned first slice includes four independently draggable corners, diagonal/trapezoid presets, validation against invalid quadrilaterals, and shape-aware rendering/export/hit testing while retaining rectangle compatibility.
 
+## Documentation continuity
+
+Current user-facing documentation remains anchored by `docs/USER-GUIDE.md`, and the public full guide remains available at `/guide.html`.
+
+This release changes AI handoff documentation and versioned contracts; it does not replace the existing manga-first editor navigation workflow described by those guides.
+
 ## Validation
 
 The render-brief validator now checks the new reference-role, preservation, and Design Direction contracts.
