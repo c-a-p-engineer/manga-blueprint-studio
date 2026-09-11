@@ -3,7 +3,7 @@ import vm from 'node:vm';
 
 const presentationPath='web/runtime/templates/presentation-contract.js';
 const source=fs.readFileSync(presentationPath,'utf8');
-const app=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const runtimePaths=fs.readFileSync('scripts/runtime-paths.mjs','utf8');
 
 for(const token of [
@@ -17,8 +17,10 @@ for(const token of [
   "panel.style.bleed='none'"
 ])if(!source.includes(token))throw new Error(`Story Template presentation contract missing: ${token}`);
 
-if(!app.includes("['templates/presentation-contract', './runtime/templates/presentation-contract.js']"))throw new Error('presentation-contract runtime chunk is not loaded');
-if(app.indexOf("./runtime/authoring/panel-geometry.js")>app.indexOf("./runtime/templates/presentation-contract.js"))throw new Error('presentation-contract must load after panel-geometry');
+const geometryPath='runtime/authoring/panel-geometry.js';
+const presentationRuntimePath='runtime/templates/presentation-contract.js';
+if(!bootstrap.includes(`'${presentationRuntimePath}'`))throw new Error('presentation-contract runtime chunk is not loaded');
+if(bootstrap.indexOf(`'${geometryPath}'`)>bootstrap.indexOf(`'${presentationRuntimePath}'`))throw new Error('presentation-contract must load after panel-geometry');
 if(!runtimePaths.includes("templatePresentationContract: 'web/runtime/templates/presentation-contract.js'"))throw new Error('runtime path registry is missing template presentation contract');
 
 const page={panels:[]};
