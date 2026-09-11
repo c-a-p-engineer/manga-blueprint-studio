@@ -2,11 +2,11 @@ import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const app=readRuntime('templateLetteringOrder');
-const bootstrap=fs.readFileSync('web/app.js','utf8');
+const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const schema=JSON.parse(fs.readFileSync('schema/manga-blueprint.schema.json','utf8'));
 
-const src=`./${runtimePaths.templateLetteringOrder.slice('web/'.length)}`;
-if(!bootstrap.includes(src))throw new Error(`Template/lettering integration runtime is not loaded by bootstrap: ${src}`);
+const src=runtimePaths.templateLetteringOrder.slice('web/'.length);
+if(!bootstrap.includes(`'${src}'`))throw new Error(`Template/lettering integration runtime is not loaded by TypeScript bootstrap: ${src}`);
 
 for(const token of [
   'ensureSfxWritingState17',
