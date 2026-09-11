@@ -23,8 +23,10 @@ for(const phrase of [
   'manifest.producer=producerManifest31()',
   "projectFormat:'manga-blueprint/0.2'",
   "manifestSchema:'manga-blueprint-export-manifest/3'",
-  "renderBriefSchema:'manga-blueprint-render-brief/1'"
+  "renderBriefSchema:'manga-blueprint-render-brief/2'",
+  "designDirectionSchema:'manga-blueprint-design-direction-pass/1'"
 ])if(!app.includes(phrase))throw new Error(`Missing producer provenance contract: ${phrase}`);
+if(app.includes("renderBriefSchema:'manga-blueprint-render-brief/1'"))throw new Error('Stale render brief schema remains in producer provenance');
 
 const pages=fs.readFileSync('.github/workflows/pages.yml','utf8');
 for(const phrase of ['GITHUB_SHA','github-pages','build-info.json','deployedAt']){
