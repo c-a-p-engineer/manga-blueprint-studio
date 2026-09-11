@@ -1,11 +1,11 @@
-// Prototype 0.15.1: export producer provenance and deployed-source diagnostics.
+// Prototype 0.15.2: export producer provenance and deployed-source diagnostics.
 // This is intentionally separate from project-state identity: it describes which
 // application build produced the package, so stale Pages/cache exports are debuggable.
 
 function producerBuildInfo31(){
   const fallback={
     schema:'manga-blueprint-build-info/1',
-    appVersion:'0.15.1',
+    appVersion:'0.15.2',
     gitCommit:null,
     buildSource:'runtime-fallback',
     deployedAt:null
@@ -24,7 +24,8 @@ function producerManifest31(){
     deployedAt:build.deployedAt||null,
     projectFormat:'manga-blueprint/0.2',
     manifestSchema:'manga-blueprint-export-manifest/3',
-    renderBriefSchema:'manga-blueprint-render-brief/1'
+    renderBriefSchema:'manga-blueprint-render-brief/2',
+    designDirectionSchema:'manga-blueprint-design-direction-pass/1'
   };
 }
 

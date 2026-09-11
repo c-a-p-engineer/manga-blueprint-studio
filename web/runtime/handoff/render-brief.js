@@ -1,6 +1,5 @@
-// Prototype 0.14.0: concise page render brief, context-isolated handoff, and explicit reference/preservation contracts.
-// Downstream generators receive a high-signal contract before the detailed prompt,
-// while existing semantic JSON / clean PNG remain the authoritative sources.
+// Concise page render brief, context-isolated handoff, explicit reference/preservation contracts,
+// and a bounded pre-render design-direction pass. Semantic JSON / clean PNG remain authoritative.
 
 Object.assign(i18n.ja,{
   readinessGuardPoseConflict30:'出来事は「構える / 間合いを測る」ですが、人物ポーズが通常立ちです。Guard stance / 構えるへ変更するとモデル差を減らせます。',
@@ -91,6 +90,41 @@ function preservationContract30(){
     doNotAdd:['extra-panels','extra-visible-characters','unlisted-visible-text','replacement-story-or-genre','replacement-setting','unlisted-titles-or-captions']
   };
 }
+function designDirectionPass32(ordered=[...(currentPage().panels||[])].sort((a,b)=>a.order-b.order)){
+  const areas=ordered.map(panel=>({order:panel.order,area:Math.max(0,Number(panel.rect?.w)||0)*Math.max(0,Number(panel.rect?.h)||0)}));
+  const hero=areas.reduce((best,item)=>!best||item.area>best.area?item:best,null);
+  return {
+    schema:'manga-blueprint-design-direction-pass/1',
+    authority:'derived-guidance-only',
+    purpose:'establish visual hierarchy before rendering without rewriting authored manga structure',
+    heroPanelCandidate:hero?.order||null,
+    eyeFlow:ordered.map(panel=>panel.order),
+    derive:[
+      'page-level-focal-hierarchy',
+      'within-panel-primary-focus',
+      'negative-space-distribution',
+      'value-and-color-contrast',
+      'detail-density-rhythm',
+      'local-subject-emphasis'
+    ],
+    mayAdjust:[
+      'micro-composition-inside-existing-panel-boundaries',
+      'negative-space-inside-existing-panels',
+      'local-value-color-and-detail-emphasis'
+    ],
+    mustPreserve:[
+      'panel-count','panel-boundaries','panel-proportions','reading-order','story-action-intent',
+      'camera-intent','visible-cast','character-identity','relative-character-placement','exact-visible-text'
+    ],
+    rules:[
+      'treat-authored-panel-size-and-order-as-existing-hierarchy-signals',
+      'follow-authored-reading-order-for-eye-flow',
+      'do-not-make-every-panel-equally-detailed-or-equally-contrasty-by-default',
+      'do-not-fill-intentional-negative-space-with-decoration',
+      'do-not-use-design-guidance-to-rewrite-story-genre-setting-or-camera'
+    ]
+  };
+}
 function renderBriefObject30(){
   const ordered=[...(currentPage().panels||[])].sort((a,b)=>a.order-b.order);
   const scene=sceneSummary30();
@@ -107,6 +141,7 @@ function renderBriefObject30(){
     allowedVisibleText:exactVisibleText30(),
     referenceRoles:referenceRoles30(),
     preservation:preservationContract30(),
+    designDirection:designDirectionPass32(ordered),
     panels:ordered.map(panel=>({
       order:panel.order,
       role:panel.role||'',
@@ -119,7 +154,7 @@ function renderBriefObject30(){
   };
 }
 function renderBriefText30(){
-  const brief=renderBriefObject30(),scene=brief.scene,p=brief.preservation;
+  const brief=renderBriefObject30(),scene=brief.scene,p=brief.preservation,d=brief.designDirection;
   const lines=[
     'CURRENT PAGE RENDER CONTRACT — READ THIS FIRST:',
     '- This export is a COMPLETE, SELF-CONTAINED contract for the current manga page.',
@@ -147,7 +182,16 @@ function renderBriefText30(){
     'DO NOT INHERIT:',
     `- ${p.doNotInherit.join(', ')}.`,
     'DO NOT ADD:',
-    `- ${p.doNotAdd.join(', ')}.`
+    `- ${p.doNotAdd.join(', ')}.`,
+    '',
+    'DESIGN DIRECTION PASS — DERIVED GUIDANCE ONLY:',
+    '- Before final rendering, derive a concise visual-design plan for this authored page.',
+    `- Existing eye-flow order is Panel ${d.eyeFlow.join(' → Panel ')||'none'}. Follow it; do not reorder panels.`,
+    `- Largest-area emphasis candidate is ${d.heroPanelCandidate?`Panel ${d.heroPanelCandidate}`:'unspecified'}. Treat this only as a hierarchy signal, not permission to change geometry or story importance.`,
+    '- Decide within the existing panels: primary focal target, negative-space use, value/color contrast, and detail-density rhythm.',
+    '- Preserve intentional quiet/empty regions. Do not decorate every gap or make every panel equally dense, glossy, or high-contrast.',
+    `- You MAY adjust only: ${d.mayAdjust.join(', ')}.`,
+    `- You MUST preserve: ${d.mustPreserve.join(', ')}.`
   ];
   lines.push('CURRENT PANEL BEATS:');
   for(const panel of brief.panels){
@@ -190,6 +234,7 @@ if(typeof exportManifest08==='function'){
     manifest.renderBrief=renderBriefObject30();
     manifest.referenceRoles=referenceRoles30();
     manifest.preservationContract=preservationContract30();
+    manifest.designDirectionPass=designDirectionPass32();
     manifest.contextIsolation={
       selfContainedPage:true,
       ignorePriorConversationUnlessRepeated:true,
@@ -204,6 +249,9 @@ if(typeof exportManifest08==='function'){
       artDirectionDoesNotChangeStoryGenre:true,
       explicitReferenceRoles:true,
       separateChangeFromPreservation:true,
+      deriveVisualHierarchyBeforeRendering:true,
+      designDirectionCannotOverrideAuthoredStructure:true,
+      preserveIntentionalNegativeSpace:true,
       panelGeometryConstraint:'exact',
       characterSpatialRelationshipConstraint:'strong',
       stickFigureJointConstraint:'guidance-only'
@@ -227,4 +275,4 @@ applyLanguage=function(){
 
 installRenderBriefHelp30();
 render();
-document.querySelector('footer')&&(document.querySelector('footer').textContent='Prototype 0.14.0 · explicit reference + preservation contract');
+document.querySelector('footer')&&(document.querySelector('footer').textContent='Prototype 0.15.2 · render contract + design direction pass');

@@ -75,10 +75,11 @@ It records, where applicable:
 - Story Template provenance;
 - panel intent index;
 - derived lettering metadata;
+- derived Design Direction Pass;
 - compact user handoff text;
 - producer/build provenance.
 
-`.manga.json` remains the complete semantic project contract. Manifest indexes are convenient read-first summaries rather than competing project state.
+`.manga.json` remains the complete semantic project contract. Manifest indexes and derived guidance are convenient read-first summaries rather than competing project state.
 
 ## Authority split
 
@@ -226,6 +227,53 @@ The key distinction is that panel geometry can be exact while planning-stick ana
 The generated prompt includes a concise current-page contract that instructs the downstream assistant to render **only the exported current page** and reject unrelated carryover from prior conversation turns or prior generated images.
 
 This remains essential even when the assistant can see earlier chat context.
+
+## Derived Design Direction Pass
+
+Prototype 0.15.2 adds a bounded pre-render **Design Direction Pass** to the handoff.
+
+The purpose is to make the downstream renderer decide visual hierarchy **before** drawing instead of treating every region with the same emphasis. This pass is derived guidance only; it is not saved as a second authoring source of truth.
+
+The pass may derive:
+
+- page-level focal hierarchy;
+- primary focus inside each authored panel;
+- eye flow following the authored reading order;
+- negative-space distribution;
+- value/color contrast hierarchy;
+- detail-density rhythm;
+- local subject emphasis.
+
+It may adjust only micro-composition **inside the existing panel boundaries**, local negative space, and local value/color/detail emphasis.
+
+It must preserve:
+
+- panel count;
+- panel boundaries and proportions;
+- reading order;
+- story action intent;
+- authored camera intent;
+- visible cast;
+- character identity;
+- relative character placement;
+- exact visible text.
+
+The largest panel may be surfaced as an emphasis candidate because panel area is an existing hierarchy signal. It is **not** permission to reinterpret story importance, resize panels, or rewrite the page.
+
+The pass also explicitly discourages a common generative failure mode: making every panel equally detailed, equally glossy, equally contrasty, or filling intentional empty space with decorative objects/effects.
+
+Conceptually the prompt order is:
+
+```text
+CURRENT PAGE RENDER CONTRACT
+→ REFERENCE ROLES
+→ CHANGE / PRESERVE / DO NOT INHERIT / DO NOT ADD
+→ DESIGN DIRECTION PASS
+→ CURRENT PANEL BEATS
+→ detailed generation prompt
+```
+
+If a future editor adds human-authored design controls, those should be represented separately as authored `designIntent` (or equivalent). AI-derived design guidance must not silently become canonical project state.
 
 ## Character identity modes
 
@@ -382,7 +430,8 @@ Generated manifests include build metadata such as:
     "deployedAt": "<ISO timestamp>",
     "projectFormat": "manga-blueprint/0.2",
     "manifestSchema": "manga-blueprint-export-manifest/3",
-    "renderBriefSchema": "manga-blueprint-render-brief/1"
+    "renderBriefSchema": "manga-blueprint-render-brief/2",
+    "designDirectionSchema": "manga-blueprint-design-direction-pass/1"
   }
 }
 ```

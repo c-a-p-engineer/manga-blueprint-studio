@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.15.1
+## Current prototype: 0.15.2
 
-Prototype **0.15.1** keeps the 0.15.0 manga-first editor shell and synchronizes the current documentation around the shipped workflow. It also adds a dedicated public user guide screen.
+Prototype **0.15.2** keeps the manga-first editor shell and full user guide from 0.15.1, and adds a bounded **Design Direction Pass** to the AI handoff. Before rendering, downstream models are asked to derive focal hierarchy, eye flow, negative space, contrast, and detail-density rhythm while preserving the authored panel geometry, story action, camera intent, cast, identity, and exact visible text.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -36,7 +36,7 @@ The current release supports:
 - action intent, pose/expression/gaze, camera/depth/support/motion semantics, backgrounds, dialogue/SFX, and manga effects;
 - Panel Peek/List/Chips, camera/figure diagnostics, Crop Guide, and non-blocking Manga Check;
 - selected-page AI generation ZIP and Review/archive ZIP with manifest-first handoff;
-- strict visible-text allowlisting and producer provenance;
+- strict visible-text allowlisting, reference-role/preservation contracts, bounded Design Direction Pass, and producer provenance;
 - Japanese-first mobile UI and English localization;
 - dedicated current user guide in Markdown and as a public web page.
 
@@ -132,6 +132,8 @@ The current AI generation ZIP contains:
 
 The manifest is read first. The clean PNG controls spatial composition; semantic JSON/prompt control story/camera/pose/background/lettering semantics; character guidance or required external Character Sheets control identity; art direction controls rendering language; only exact `TEXT TO RENDER` entries are permitted as visible manga text.
 
+Before final rendering, the handoff now includes a **derived Design Direction Pass**. It may decide focal emphasis, negative-space usage, local contrast, and detail-density rhythm inside the authored panels. It is guidance only and cannot change panel count/boundaries, reading order, story actions, camera intent, cast, identity, or exact text.
+
 The Review/archive ZIP contains the same state-linked materials plus annotated PNG and is not the default generation input.
 
 Typical handoff:
@@ -170,18 +172,19 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.15.1.md`](docs/PROTOTYPE-0.15.1.md) — current release note.
+- [`docs/PROTOTYPE-0.15.2.md`](docs/PROTOTYPE-0.15.2.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.15.1**.
+Current application baseline: **Prototype 0.15.2**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;
-- current-page render brief: `manga-blueprint-render-brief/1`;
+- current-page render brief: `manga-blueprint-render-brief/2`;
+- derived design direction: `manga-blueprint-design-direction-pass/1`;
 - producer provenance: `manga-blueprint-producer/1`;
 - build metadata: `manga-blueprint-build-info/1`.
 
