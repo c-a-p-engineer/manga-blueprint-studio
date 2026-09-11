@@ -19,12 +19,15 @@ The current product supports:
 - page/panel authoring;
 - rectangle or convex-quadrilateral panel geometry;
 - direct four-corner panel-shape editing and irregular layout presets;
+- optional snap-assisted corner editing, visible alignment guides, and near-horizontal/vertical correction;
+- robust reading-order synchronization for shaped panels using visual-center geometry rather than bounding-box protrusions;
+- contextual explanations for frame styles, bleed, and breakout;
 - reusable character identity;
 - Story Template Studio and Smart Manga;
 - manga-specific camera/background/text/effect semantics;
 - selected-page AI generation/review handoff packages.
 
-The current product does **not** yet provide full backup/restore, multi-page/range/container/work-wide AI export, panel-first generation packages, generalized cross-page reference assets, arbitrary polygon/curved panel frames, or deterministic final post-generation typesetting. Those remain roadmap items.
+The current product does **not** yet provide full backup/restore, multi-page/range/container/work-wide AI export, panel-first generation packages, generalized cross-page reference assets, arbitrary polygon/curved panel frames, linked neighboring-edge dragging, or deterministic final post-generation typesetting. Those remain roadmap items.
 
 ## Primary mental model
 
@@ -55,7 +58,7 @@ The application header owns app-level actions such as:
 
 It should not carry the active work title as a large action that competes with app-level controls.
 
-On narrow mobile screens, the app header uses two explicit rows: branding/tagline first, then Help / Undo / Redo / language. Action labels remain single-line instead of wrapping inside individual buttons.
+On narrow mobile screens, the app header uses two explicit rows: branding/tagline first, then Help / Undo / Redo / language. Action labels remain single-line instead of wrapping inside individual buttons. If a legacy/runtime insertion path temporarily places a Work Library control in the topbar, mobile presentation must hide it there until the editor-context shell re-homes it.
 
 ### Current work / page context
 
@@ -194,7 +197,9 @@ The product supports dynamic page size and named manuscript presets, including s
 
 Japanese manga RTL is the default panel reading direction; LTR is supported.
 
-Panel `order` must remain synchronized with current geometry + reading direction on committed render paths. The same resulting order drives:
+Panel `order` must remain synchronized with current geometry + reading direction on committed render paths. Rectangle panels use their visual center. Shaped panels use the centroid of the authored polygon plus adaptive row grouping rather than the minimum x/y of the compatibility bounding box. This prevents a single diagonal corner protrusion from unexpectedly promoting a mostly-lower/later panel ahead of the visually earlier panel.
+
+The same resulting order drives:
 
 - canvas panel numbers;
 - Story Template thumbnail numbering and beat placement;
@@ -227,7 +232,7 @@ A panel always retains `rect` as its compatibility bounding box. It may addition
 When `shape.kind = quad` exists:
 
 - its four points are authoritative for the visible panel boundary, selection hit area, and clipping;
-- `rect` is synchronized to the quadrilateral bounding box for compatibility with existing placement/order systems;
+- `rect` is synchronized to the quadrilateral bounding box for compatibility with existing placement systems;
 - the panel inspector offers rectangle, diagonal-left/right, trapezoid-left/right, and custom shape choices;
 - **四隅を直接編集** exposes four visible handles that may be dragged independently;
 - invalid self-intersection, near-zero area, and unusably short edges are rejected;
@@ -236,7 +241,14 @@ When `shape.kind = quad` exists:
 - irregular shapes currently disable bleed instead of applying rectangular bleed semantics to a non-rectangular edge;
 - splitting an irregular panel currently degrades explicitly to rectangular children based on its bounding box.
 
-Arbitrary 5+ point polygons, curves, linked shared-edge dragging, snapping, and topology-aware splitting are not current behavior.
+Panel-editing assistance is non-canonical authoring UI:
+
+- **吸着補正** may snap a dragged corner to nearby page edges/center, other panel corners, or horizontal/vertical coordinates from the current panel;
+- active x/y snaps show editor-only guide lines and never appear in clean AI output;
+- **近い辺を水平・垂直に補正** only straightens edges already near those axes, preserving deliberate diagonals;
+- snapping/guides do not create or store a second geometry model; the resulting authored quad points remain canonical.
+
+Arbitrary 5+ point polygons, curves, linked shared-edge dragging, and topology-aware splitting are not current behavior.
 
 ## Story action intent
 
@@ -333,6 +345,17 @@ Balloon authoring includes speech/thought/shout/whisper/narration/off-screen typ
 
 Frame/effect authoring includes border/bleed/breakout and speed/focus/impact/tension/silence-style line effects plus SFX/onomatopoeia.
 
+Frame terminology must be understandable in the UI:
+
+- **通常枠 / normal** — standard solid frame;
+- **枠なし / borderless** — no visible frame line, useful for open/atmospheric presentation;
+- **小窓 / inset** — lighter/thinner frame for a small reaction/detail/supplemental panel;
+- **衝撃枠 / impact** — a thick dashed authoring frame signaling a strongly emphasized beat such as strike/shock/decisive moment;
+- **断ち切り / bleed** — extend a compatible rectangular panel to the page edge;
+- **ブチ抜き / breakout** — allow a subject/foreground element to extend outside the panel boundary.
+
+These explanations are authoring guidance. They do not become visible manga text.
+
 ## Reading direction vs lettering direction
 
 These are separate contracts.
@@ -342,7 +365,8 @@ These are separate contracts.
 `meta.readingDirection = rtl | ltr`
 
 - `rtl` is Japanese manga default;
-- this controls panel sequence/numbering.
+- this controls panel sequence/numbering;
+- irregular panels use robust shape visual centers for ordering, so a lone corner protrusion does not determine reading sequence by itself.
 
 ### Text writing direction
 
@@ -410,7 +434,7 @@ The app provides:
 - a dedicated full user guide page at `web/guide.html` / public `/guide.html`;
 - Markdown source guidance at `docs/USER-GUIDE.md`.
 
-The full guide should explain the manga-first mental model, current screen layout, hierarchy, P001 page codes, editing tabs, panel-shape editing, Story Template vs Smart Manga, identity modes, and AI handoff without requiring knowledge of internal runtime names.
+The full guide should explain the manga-first mental model, current screen layout, hierarchy, P001 page codes, editing tabs, panel-shape editing/alignment assistance, frame terminology, Story Template vs Smart Manga, identity modes, and AI handoff without requiring knowledge of internal runtime names.
 
 ## AI-safe output boundary
 
@@ -430,7 +454,7 @@ Reusable character guidance and only the separately required Character Sheets co
 
 Only exact strings explicitly allowlisted under `TEXT TO RENDER` may become visible manga text.
 
-Forbidden authoring text includes character display names/IDs, panel numbers, camera terms, Story Template name, action intent, writing-mode labels, Panel Peek/List/Chip summaries, Crop Guide labels, and editor UI text.
+Forbidden authoring text includes character display names/IDs, panel numbers, camera terms, Story Template name, action intent, writing-mode labels, Panel Peek/List/Chip summaries, Crop Guide labels, alignment guides, and editor UI text.
 
 ## Manifest-first handoff
 
@@ -494,10 +518,14 @@ A current release is product-compatible when all relevant items remain true:
 - container hierarchy supports root/grouped pages and non-destructive confirmed deletion;
 - page display codes are minimum three-digit padded while `pageNumber` stays numeric;
 - RTL/LTR and panel geometry drive consistent panel order across UI and handoff;
+- a single protruding corner on a shaped panel does not unexpectedly reorder visually separate rows;
 - rectangle-only pages remain compatible;
 - optional quadrilateral panels use one convex four-point boundary consistently for editor border, hit testing, clipping, clean output, and render-brief geometry;
 - invalid quadrilateral corner movement is rejected and direct shape editing participates in Undo/Redo;
 - irregular layout presets create editable quadrilateral panels rather than decorative overlays;
+- optional snapping/guides assist authoring without creating a second persisted geometry model or leaking into clean AI output;
+- near-horizontal/vertical correction does not flatten deliberate diagonals;
+- frame terminology is explained in plain language in the editor/user guide;
 - writing direction remains independent from panel reading order;
 - Story Template browsing and Smart Manga candidate browsing do not mutate project state;
 - character identity modes do not universally require Character Sheets;
