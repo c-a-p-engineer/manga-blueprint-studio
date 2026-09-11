@@ -24,29 +24,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-      - name: Prepare Pages artifact
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build production site
+        run: npm run build
+
+      - name: Add portable schema, examples, and build provenance
         run: |
-          rm -rf _site
-          mkdir -p _site/schema _site/examples
-          cp -R web/. _site/
-          cp schema/manga-blueprint.schema.json _site/schema/
-          if [ -d examples ]; then cp -R examples/. _site/examples/; fi
+          mkdir -p dist/schema dist/examples
+          cp schema/manga-blueprint.schema.json dist/schema/
+          if [ -d examples ]; then cp -R examples/. dist/examples/; fi
           node - <<'NODE'
           const fs = require('node:fs');
           const info = JSON.parse(fs.readFileSync('web/build-info.json', 'utf8'));
           info.gitCommit = process.env.GITHUB_SHA || null;
-          info.buildSource = 'github-pages';
+          info.buildSource = 'github-pages-vite';
           info.deployedAt = new Date().toISOString();
-          fs.writeFileSync('_site/build-info.json', `${JSON.stringify(info, null, 2)}\n`);
+          fs.writeFileSync('dist/build-info.json', `${JSON.stringify(info, null, 2)}\n`);
           NODE
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deployment
