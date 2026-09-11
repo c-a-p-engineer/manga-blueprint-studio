@@ -1,0 +1,41 @@
+name: Phase 1 one-shot sync
+
+on:
+  push:
+    branches: [work/phase1-ts-vite-template-ux]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: ${{ !contains(github.event.head_commit.message, '[phase1-sync]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: work/phase1-ts-vite-template-ux
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate lockfile
+        run: npm install --package-lock-only --no-audit --no-fund
+
+      - name: Synchronize current documentation
+        run: node scripts/phase1-sync-docs.mjs
+
+      - name: Commit synchronized Phase 1 state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No sync changes"
+            exit 0
+          fi
+          git commit -m "Synchronize Phase 1 docs and lockfile [phase1-sync]"
+          git push origin HEAD:work/phase1-ts-vite-template-ux
