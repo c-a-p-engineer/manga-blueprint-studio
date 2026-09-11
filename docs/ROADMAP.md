@@ -2,7 +2,7 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped through Prototype 0.15.2
+## Shipped through Prototype 0.16.0
 
 ### Foundation / persistence
 
@@ -34,7 +34,8 @@
 - explorer-style **Work Structure / 作品構成**;
 - detailed page/container CRUD retained as advanced controls;
 - **Page settings / ページ設定** separated from primary navigation;
-- Japanese-first cleanup of primary authoring/status/style labels.
+- Japanese-first cleanup of primary authoring/status/style labels;
+- **Prototype 0.16.0 mobile header** uses an explicit branding row plus an app-action row so action labels do not wrap inside buttons.
 
 ### Documentation / user guidance
 
@@ -54,6 +55,10 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 - geometry-based panel order synchronization;
 - vertical/horizontal lettering direction with per-balloon/per-SFX overrides;
 - common panel layouts and 4-koma variants;
+- **Prototype 0.16.0 convex-quadrilateral panel boundaries** with direct four-corner editing;
+- panel-shape presets: rectangle, diagonal-left/right, trapezoid-left/right;
+- irregular layout presets: **斜め3コマ** and **斜め4コマ 2×2**;
+- polygon-aware editor border/hit area and clean/annotated PNG clipping;
 - Story Template Studio with discovery/beat-flow/bounded derivation/custom local templates;
 - Smart Manga bounded candidate proposals;
 - reusable base-character identity with `sheet | description | free` modes;
@@ -72,6 +77,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 - current-page render contract against prior-context carryover;
 - explicit reference-role and preservation contracts;
 - **Prototype 0.15.2 bounded Design Direction Pass** for focal hierarchy, eye flow, negative space, contrast, and detail-density rhythm without changing authored manga structure;
+- optional quadrilateral points exposed with each panel's geometry in the current render brief;
 - producer/build provenance in exported manifest.
 
 ## Delivery phases
@@ -85,7 +91,7 @@ Prototype 0.15.1 aligned current documentation with the shipped 0.15 editor shel
 | 2.6 | A | Bounded Design Direction handoff | **Shipped in 0.15.2** |
 | 3 | S | Backup / Restore | **Next** |
 | 4 | S | Scoped Export | Planned |
-| 4.5 | S-enabler | Advanced Panel Geometry — quadrilateral foundation | Planned before Panel-first |
+| 4.5 | S-enabler | Advanced Panel Geometry — quadrilateral foundation | **First slice shipped in 0.16.0** |
 | 5 | S | Panel-first / Hybrid generation | Planned |
 | 6 | A | Cross-page continuity / Reference Assets | Planned |
 | 7 | A/B | Manga direction expansion | Planned |
@@ -111,7 +117,7 @@ Backup / Restore
         ↓
 Scoped Export
         ↓
-Advanced Panel Geometry (quadrilateral enabling slice)
+Advanced Panel Geometry (quadrilateral first slice shipped; further hardening can continue)
         ↓
 Panel-first / Hybrid
         ↓
@@ -120,7 +126,7 @@ Cross-page continuity
 Manga direction expansion
 ```
 
-Panel-first remains strategically important, but deterministic panel crops/composition should be built against the intended panel-shape model rather than hard-coding rectangle-only assumptions and rewriting the compositor later.
+Panel-first remains strategically important, but deterministic panel crops/composition should build against the shipped panel-shape model rather than hard-coding rectangle-only assumptions and rewriting the compositor later.
 
 ## Phase 3 — Backup / Restore — Next
 
@@ -208,29 +214,32 @@ Export exactly the pages the user intends.
 
 ### Why before Panel-first
 
-Current serialized panels are rectangle-first (`rect: x/y/w/h`). That is enough for standard grids but not for diagonal/trapezoid frames. Panel-first will need deterministic crop masks, placement, hit testing, reading-order geometry, and final recomposition. Adding arbitrary panel shapes **after** that compositor would create avoidable rework, so the minimum geometry foundation is pulled forward before Phase 5.
+Serialized panels remain rectangle-compatible through `rect: x/y/w/h`, but Prototype 0.16.0 adds an optional convex-quadrilateral `shape`. Panel-first will need deterministic crop masks, placement, hit testing, reading-order geometry, and final recomposition. Shipping the common shape model first avoids building the future compositor around rectangle-only assumptions.
 
-### First enabling slice
+### Shipped first slice — Prototype 0.16.0
 
-Support **convex quadrilateral panels** as the first irregular-shape model. This covers most useful diagonal manga frames without jumping immediately to arbitrary polygons or Bézier curves.
+Support **convex quadrilateral panels** as the first irregular-shape model. This covers common diagonal/trapezoid frames without jumping immediately to arbitrary polygons or Bézier curves.
 
-Planned authoring behavior:
+Shipped authoring behavior:
 
-- selected panel can enter **コマ形状 / Panel shape** editing mode;
+- selected panel has **コマ形状 / Panel shape** controls;
 - four visible corner handles can be dragged independently;
 - presets: rectangle, diagonal-left, diagonal-right, trapezoid-left, trapezoid-right;
-- one action restores the panel to its rectangular bounding box;
-- optional snapping to page margins / neighboring guide coordinates;
-- invalid self-intersection, near-zero area, or unusably short edges are rejected or clamped;
-- normal rectangle workflows remain fast and unchanged.
+- resetting to rectangle uses the current quadrilateral bounding box;
+- invalid self-intersection, near-zero area, and unusably short edges are rejected;
+- normal rectangle workflows remain unchanged unless a shape is selected;
+- Page settings includes **斜め3コマ** and **斜め4コマ 2×2** irregular layout presets;
+- canvas resizing scales quadrilateral points together with the page;
+- irregular shapes currently disable bleed rather than pretending rectangular bleed semantics still apply.
 
-Planned data direction:
+Current data contract:
 
 ```json
 {
   "rect": {"x": 35, "y": 35, "w": 355, "h": 350},
   "shape": {
     "kind": "quad",
+    "preset": "custom",
     "points": [
       {"x": 35, "y": 35},
       {"x": 390, "y": 55},
@@ -241,40 +250,49 @@ Planned data direction:
 }
 ```
 
-`rect` remains the bounding-box / compatibility representation during the transition. `shape` becomes authoritative for clipping and border rendering when present. Exact schema naming may change during implementation, but the ownership rule should remain: one panel has one canonical visible boundary.
+`rect` is the bounding-box / compatibility representation. `shape` is authoritative for the visible boundary, clipping, and hit testing when present. One panel still has one canonical visible boundary.
 
-### Systems that must become shape-aware together
+### Shape-aware systems in the first slice
 
 - editor rendering and selection/hit testing;
 - clean PNG and annotated PNG clipping/borders;
-- panel chips/numbers/guides;
-- template/layout application and normalization;
-- reading-order synchronization (centroid/bounding box + explicit `order`, not rectangle assumptions only);
-- split/delete/duplicate behavior;
-- bleed/breakout rules;
-- AI clean-blueprint semantics and render brief;
-- later Panel-first crop mask and deterministic compositor.
+- panel shape presets and layout-template application;
+- project normalization/schema compatibility;
+- canvas resize scaling;
+- reading-order synchronization through the shape bounding box + explicit `order`;
+- AI clean-blueprint semantics and render-brief geometry;
+- page duplication/full-work cloning through ordinary project-state cloning.
 
-### Explicitly deferred from the first slice
+Splitting an irregular panel currently uses its compatibility bounding box and produces rectangular child panels. This is explicit degradation rather than an attempt to infer new irregular child topology.
 
+### Deferred geometry expansion
+
+- snapping corner handles to page margins / neighboring guide coordinates;
+- linked/shared-boundary dragging across neighboring panels;
 - arbitrary 5+ point polygons;
 - concave/self-intersecting frames;
 - Bézier/curved borders;
-- fully linked shared-boundary dragging across neighboring panels;
-- automatic topology repair for arbitrary freeform layouts.
+- topology-aware splitting of irregular panels;
+- automatic topology repair for arbitrary freeform layouts;
+- generalized bleed semantics for irregular edges.
 
-Those can follow once quadrilateral geometry proves stable. Shared-boundary editing is valuable, but should build on the same shape model rather than become a separate geometry system.
+Those can follow once the quadrilateral geometry proves stable. Shared-boundary editing should build on the same shape model rather than become a separate geometry system.
 
 ### Verification
 
-- old rectangle-only projects load with no visible change;
-- rectangle ↔ quadrilateral conversion is undoable and reversible;
-- corner dragging cannot produce an invalid panel;
-- selected/hit-tested region matches the rendered polygon;
-- clean and annotated exports preserve the same panel boundary;
-- RTL/LTR order remains deterministic for skewed panels;
+For the shipped first slice:
+
+- old rectangle-only projects load with no visible geometry change;
+- rectangle ↔ quadrilateral conversion participates in Undo/Redo;
+- corner dragging rejects invalid quadrilaterals;
+- selected/hit-tested region uses the rendered polygon;
+- clean and annotated exports use the same polygon boundary;
+- RTL/LTR order remains deterministic through the compatibility bounding box;
 - templates that do not opt into irregular geometry remain rectangles;
+- the render brief exposes the same authored quad points;
 - future Panel-first compositor can consume the same polygon/mask contract.
+
+Remaining interaction/visual QA should continue to include narrow mobile screens, corner-handle touch ergonomics, and combinations with breakout/effects.
 
 ## Phase 5 — Panel-first / Hybrid generation
 
@@ -396,7 +414,7 @@ Make long works more stable across pages without silently uploading private refe
 
 After the quadrilateral foundation ships:
 
-- linked/shared-boundary dragging;
+- snapping and linked/shared-boundary dragging;
 - inset/overlap authoring;
 - arbitrary polygon exploration if real manga use cases justify it;
 - safer bleed visualization across irregular edges;
