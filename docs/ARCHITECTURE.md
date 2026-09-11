@@ -13,7 +13,7 @@ The explicit script order is a compatibility contract because later chunks inten
 ```text
 web/runtime/
 ├─ core/         project state, persistence, rendering, export/input, base events
-├─ authoring/    page/work/container, panel geometry, and reusable-character authoring
+├─ authoring/    page/work/container, panel geometry/editing assist, reusable characters
 ├─ assist/       bounded Smart Manga assistance
 ├─ identity/     character identity and appearance handoff
 ├─ story/        story-readable panel semantics
@@ -77,17 +77,40 @@ web/runtime/
 - shape preset application;
 - direct four-corner editing and validation;
 - polygon border/hit/clip rendering;
-- irregular page-layout presets;
+- irregular page-layout presets such as **斜め3コマ** and **斜め4コマ 2×2**;
 - shape-aware page-size scaling;
+- geometry-following annotated panel-number placement;
 - render-brief geometry enrichment.
 
-It intentionally loads after `handoff/render-brief.js` so it can extend the current render-brief object without creating a second AI-handoff implementation. It loads before producer provenance so exported producer metadata remains the final manifest wrapper.
+It intentionally loads after `handoff/render-brief.js` so it can extend the current render-brief object without creating a second AI-handoff implementation.
+
+`authoring/panel-editing-assist.js`
+
+- wraps the existing four-corner pointer path rather than creating a second shape editor;
+- optionally snaps a dragged corner to nearby page edges/center, other-panel corner coordinates, and same-panel alignment coordinates;
+- draws transient blue x/y alignment guides in annotated/editor rendering only;
+- provides near-horizontal/vertical edge correction without flattening deliberate diagonals outside the correction tolerance;
+- provides plain-language explanations for normal/borderless/inset/impact frames, bleed, and breakout.
+
+Snap state and guide lines are transient editor state. They are not serialized, do not alter the schema, and never enter clean AI output. Only the resulting canonical `Panel.shape.points` are persisted.
 
 Other `authoring/` chunks own page/layout/camera, character library/export surfaces, and localization/export hardening.
 
+### Ordering owner
+
+`ordering/reading-order.js`
+
+- synchronizes panel `order` with `meta.readingDirection` on committed render paths;
+- rectangle panels derive a visual-center anchor from `rect`;
+- quadrilateral panels derive a polygon centroid from `shape.points`;
+- panels are grouped into visual rows using an adaptive vertical tolerance, then sorted right-to-left or left-to-right by the row anchor;
+- a single diagonal corner that protrudes upward/rightward therefore does not by itself promote an otherwise lower/later panel.
+
+The resulting sequence remains the single reading-order source used by editor numbering and handoff semantics.
+
 ### UI owners
 
-`ui/editor-shell.js` is the presentation/navigation layer for the manga-first shell. It deliberately **reuses existing page/work/container functions** instead of creating a second project-state model.
+`ui/editor-shell.js` is the final presentation/navigation layer for the manga-first shell. It deliberately **reuses existing page/work/container functions** instead of creating a second project-state model.
 
 It owns presentation such as:
 
@@ -102,7 +125,7 @@ It owns presentation such as:
 
 Because this chunk is presentation-only, `P001` is never serialized as a string replacement for numeric `pageNumber`.
 
-`ui/mobile-header.js` loads after `ui/editor-shell.js` and owns only narrow-screen app-header composition. At `<=760px`, it explicitly uses a branding/tagline row followed by a four-column Help / Undo / Redo / language action row. It does not own work/page state.
+`ui/mobile-header.js` owns only narrow-screen app-header composition. At `<=760px`, it explicitly uses a branding/tagline row followed by a four-column Help / Undo / Redo / language action row. Work identity belongs in the editor-context shell, not the app header. Its selectors are intentionally strong enough to override older editor-shell mobile declarations, and an accidentally/transiently inserted Work Library button is hidden in the topbar until re-homed.
 
 ## Serialized project state
 
@@ -145,7 +168,7 @@ The JSON Schema is canonical for machine-readable field shape: `schema/manga-blu
 
 ### Panel geometry representation
 
-`Panel.rect` remains required for compatibility. Prototype 0.16.0 adds optional:
+`Panel.rect` remains required for compatibility. Prototype 0.16.0 added optional `Panel.shape`:
 
 ```text
 Panel.shape
@@ -157,14 +180,14 @@ Panel.shape
 When `shape.kind = quad` exists:
 
 - `shape.points` is authoritative for the visible border, SVG hit target, and clip path;
-- `rect` is synchronized to the shape's bounding box;
-- reading-order logic may continue to use the synchronized bounding box + explicit `order` while the shape model is limited to non-overlapping convex quadrilaterals;
+- `rect` is synchronized to the shape's bounding box for compatibility with legacy placement/sizing paths;
+- reading order uses the polygon's visual centroid rather than bounding-box minimum x/y;
 - old rectangle-only projects require no migration;
 - invalid/non-convex shape input normalizes back to rectangle compatibility rather than entering an unusable geometry state;
 - irregular shapes currently force `style.bleed = none` because legacy bleed semantics are rectangular;
 - splitting an irregular panel currently consumes its bounding box and produces rectangular children.
 
-This is one shape system, not a decorative overlay. Editor rendering, clean/review export, hit testing, and AI handoff all consume the same boundary.
+This is one shape system, not a decorative overlay. Editor rendering, clean/review export, hit testing, reading semantics, and AI handoff all consume the same authored boundary.
 
 ## Identity model
 
@@ -202,7 +225,7 @@ Full-work duplication/import-as-new additionally regenerates work/container IDs 
 
 Reusable semantic character IDs may remain unchanged because they identify the same fictional character inside the copied work rather than a placement instance. Optional `Panel.shape` is ordinary project state and is cloned together with the authored panel.
 
-## Editor selection state
+## Editor selection and transient assistance state
 
 Editor selection is not serialized as competing project semantics.
 
@@ -218,6 +241,8 @@ selectedContainerId16   // hierarchy inspector selection
 `currentPage()` resolves `selectedPageId`, with defensive fallback only for stale selection.
 
 Page selection is editor state. Structural page edits are project mutations and participate in Undo/Redo snapshots. A completed corner-handle drag is committed as one Undo/Redo edit rather than one history entry per pointer move.
+
+Panel snapping adds only transient state such as enabled/disabled preference for the current runtime session and active x/y guide coordinates. A snap becomes project state only indirectly when the dragged canonical point is committed. Guide lines are never serialized.
 
 Work switches/import boundaries reset editor history so Undo/Redo does not cross independent work identity.
 
@@ -329,7 +354,20 @@ Deleting a container is non-destructive to page content:
 - `rtl` Japanese default;
 - `ltr` supported.
 
-Committed render paths synchronize panel `order` from current geometry + reading direction. Quadrilateral panels keep `rect` synchronized to their bounding box, so the same deterministic ordering path remains valid for the current convex/non-overlap slice. This sequence is shared by:
+Committed render paths synchronize panel `order` from current geometry + reading direction.
+
+The ordering algorithm deliberately distinguishes canonical geometry from a fragile bounding-box extremum:
+
+1. derive a visual anchor for each panel;
+2. rectangle anchor = rect center;
+3. quadrilateral anchor = polygon centroid;
+4. group anchors into visual rows with adaptive tolerance based partly on panel height;
+5. sort rows top-to-bottom;
+6. sort each row right-to-left for RTL or left-to-right for LTR.
+
+This makes diagonal/freeform authoring predictable: a small corner that reaches farther upward/rightward than its neighbors does not alone become the reading-order authority.
+
+The synchronized sequence is shared by:
 
 - canvas panel badges;
 - Story Template preview numbering;
@@ -372,7 +410,7 @@ Story Template is the canonical product feature name.
 - bounded derivation creates temporary proposal state, not continuing authority;
 - browser-local custom templates store reusable direction/normalized geometry but exclude finished character-specific identity.
 
-Custom-template library is separate from project autosave until backup/restore explicitly defines bundling. The new **斜め3コマ / 斜め4コマ 2×2** entries are page-layout presets, not a second Story Template feature.
+Custom-template library is separate from project autosave until backup/restore explicitly defines bundling. **斜め3コマ / 斜め4コマ 2×2** are page-layout presets, not a second Story Template feature.
 
 ## Smart Manga architecture
 
@@ -412,6 +450,8 @@ These are derived authoring views rather than parallel models.
 - Panel List/page overview reads current panel state in reading order;
 - Panel Chips/guide overlays are injected into editor/review presentation and omitted from clean AI output.
 
+Alignment guides from `authoring/panel-editing-assist.js` follow the same rule: authoring/review only, never clean AI output.
+
 ## Camera diagnostic / Manga Check
 
 Camera/figure-scale diagnostics, Crop Guide, and Manga Check derive warnings from current authored state.
@@ -422,7 +462,7 @@ They are advisory. Warnings do not mutate project state automatically and do not
 
 ### Editor / review
 
-May include authoring metadata, colored anatomy/pose guides, Panel Chips, `ⓘ`, Crop Guide, selected states, lettering preview, and panel-shape corner handles. Handles are authoring UI and never belong in clean output.
+May include authoring metadata, colored anatomy/pose guides, Panel Chips, `ⓘ`, Crop Guide, selected states, lettering preview, panel-shape corner handles, and active snapping guide lines. These are authoring UI and never belong in clean output.
 
 ### Clean AI visual
 
@@ -450,7 +490,7 @@ It preserves:
 
 `manga-blueprint-export-manifest/3` is read first and records package identity, file roles, generation inputs, character guidance/Sheet requirements, Story Template provenance, panel intent index, lettering metadata, and producer provenance where available.
 
-`authoring/panel-geometry.js` enriches each current render-brief panel with its compatibility rect and optional quad points. The clean PNG and semantic geometry therefore refer to the same authored boundary.
+`authoring/panel-geometry.js` enriches each current render-brief panel with its compatibility rect and optional quad points. The clean PNG and semantic geometry therefore refer to the same authored boundary. `authoring/panel-editing-assist.js` does not alter the handoff contract; snapping/guides are editor assistance only.
 
 Current manifest/render indexes are **selected-page scoped**. Multi-page/range/container/work export requires an explicit later scope contract.
 
@@ -475,7 +515,7 @@ The in-editor Help modal remains a compact reference and links to the full guide
 
 ## Privacy / deployment
 
-All core authoring, panel-shape editing, local search/template selection, lint, hashing, ZIP generation, project persistence, and hierarchy management execute in the browser.
+All core authoring, panel-shape editing/alignment assistance, local search/template selection, lint, hashing, ZIP generation, project persistence, and hierarchy management execute in the browser.
 
 Core behavior must not silently upload project state or private Character Sheets.
 
@@ -488,7 +528,7 @@ Static/CI validation covers deterministic contracts such as:
 - syntax;
 - runtime registration/order;
 - schema shape and compatible normalization;
-- convex-quadrilateral geometry contract and mobile-header contract;
+- convex-quadrilateral geometry, snapping/alignment-assist, robust reading-order, and mobile-header contracts;
 - work/page/container persistence behavior;
 - manga-first editor shell contract;
 - Story Template/Smart Manga contracts;
@@ -497,4 +537,4 @@ Static/CI validation covers deterministic contracts such as:
 - version/document synchronization;
 - documentation-map/user-guide/public-guide presence and terminology.
 
-Visual/interaction quality remains separate evidence. A passing CI job does not prove a mobile layout or touch handle is visually good; public UI changes should be inspected from a deployed or equivalent rendered artifact when possible.
+Visual/interaction quality remains separate evidence. A passing CI job does not prove a mobile layout, snapping feel, or touch handle is visually good; public UI changes should be inspected from a deployed or equivalent rendered artifact when possible.

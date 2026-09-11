@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.16.1
+## Current prototype: 0.16.2
 
-Prototype **0.16.1** is a focused Advanced Panel Geometry polish release. When a quadrilateral panel is reshaped, the annotated panel-number badge now follows the authored top-right corner inward instead of staying attached to the panel bounding box. Prototype 0.16.0 remains the foundation for editable convex quadrilaterals, diagonal/trapezoid presets, irregular layout templates, polygon-aware export, and the two-row mobile header.
+Prototype **0.16.2** hardens freeform panel editing. Irregular-panel reading order now uses each panel's visual center rather than a bounding-box corner, so a single slanted corner does not unexpectedly become an earlier panel. Four-corner editing gains optional snapping to nearby page/other-panel alignment coordinates, editor-only blue alignment guides, and a one-click correction for edges that are already nearly horizontal/vertical. The panel inspector also explains frame styles such as **衝撃枠**, **断ち切り**, and **ブチ抜き**. The mobile app header is reinforced as a true two-row layout with work identity kept outside app-level controls.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -31,7 +31,11 @@ The current release supports:
 - optional nested `volume | chapter | folder` organization with non-destructive container deletion;
 - manuscript/canvas presets, Japanese RTL or LTR reading, and geometry-based panel order synchronization;
 - rectangle and convex-quadrilateral panel boundaries with direct four-corner editing and irregular layout presets;
+- **斜め3コマ** and **斜め4コマ 2×2** layout presets;
+- snap-assisted four-corner editing with visible alignment guides and near-horizontal/vertical correction;
+- robust irregular-panel reading order based on panel visual centers rather than bounding-box protrusions;
 - annotated panel-number badges that follow the edited quadrilateral corner instead of the compatibility bounding box;
+- contextual explanations for normal/borderless/inset/impact frames, bleed, and breakout;
 - vertical Japanese lettering by default with horizontal/per-balloon/per-SFX overrides;
 - Story Template Studio and bounded Smart Manga proposals;
 - reusable character identity with `sheet | description | free` modes;
@@ -60,7 +64,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.s
 1. Open/create a **作品**.
 2. Choose `P001` or another page above the canvas, or open **作品構成** to navigate the explorer tree.
 3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. `斜め3コマ` and `斜め4コマ 2×2` start with irregular panel boundaries.
-4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. The annotated panel number follows the edited top-right corner. Then refine character, background, dialogue, and effects.
+4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. With **吸着補正** enabled, nearby horizontal/vertical/page/other-panel coordinates show blue guides and snap into place. The annotated panel number follows the edited top-right corner.
 5. In **出力**, download the **AI生成ZIP** for the current page and copy the short manifest-first handoff message.
 6. Attach Character Sheets only for characters whose manifest says they are required.
 
@@ -104,6 +108,17 @@ Rectangle-only projects remain valid. A panel may additionally store:
 
 `shape` is authoritative for the visible boundary and clipping when present; `rect` remains its bounding-box compatibility representation. The editor accepts only usable convex quadrilaterals and prevents self-intersection/near-zero edges. Irregular panels currently disable bleed; reset the shape to **長方形** before using bleed again.
 
+Reading order is still geometry-driven, but shaped panels use their visual centroid for row/RTL-LTR ordering. A lone corner that intrudes slightly upward or sideways does not by itself move that panel earlier in the sequence.
+
+### Frame terminology
+
+- **通常枠** — standard solid border.
+- **枠なし** — no visible border; useful for atmosphere/open space.
+- **小窓** — lighter inset/detail/reaction frame.
+- **衝撃枠** — thick dashed authoring frame for a strongly emphasized beat such as an attack, shock, or decisive moment.
+- **断ち切り** — extend a rectangular panel to the page edge.
+- **ブチ抜き** — allow a character/foreground element to extend outside the panel boundary.
+
 ## Story Template terminology
 
 **Story Template / ストーリーテンプレート is the single canonical template feature name.** “Scene Template” is not another product feature or alias.
@@ -141,7 +156,7 @@ Balloon / SFX override
   horizontal-tb
 ```
 
-Changing text writing direction never changes panel reading order.
+Changing writing direction never changes panel reading order.
 
 ## AI handoff
 
@@ -196,14 +211,14 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.16.1.md`](docs/PROTOTYPE-0.16.1.md) — current release note.
+- [`docs/PROTOTYPE-0.16.2.md`](docs/PROTOTYPE-0.16.2.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.16.1**.
+Current application baseline: **Prototype 0.16.2**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;

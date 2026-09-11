@@ -53,7 +53,7 @@ On narrow mobile screens the header is deliberately **two rows**:
 
 This prevents labels such as 「元に戻す」「やり直す」 from wrapping into awkward multi-line buttons.
 
-The current work name is not mixed into these app-level actions.
+The current work name is not mixed into these app-level actions. It belongs to the manga-context area below the header.
 
 ### 2. Work / page context above the canvas
 
@@ -115,6 +115,7 @@ Use for the selected panel:
 - focal/composition notes;
 - frame style, breakout, and bleed where compatible;
 - **コマ形状 / Panel shape**;
+- **整列補助** for freeform quadrilateral editing;
 - support/motion/depth semantics where available.
 
 #### キャラ / 背景 / 文字 / 演出 / 出力
@@ -142,7 +143,7 @@ A page title is optional. The page code remains the visible locator even when th
 
 ## Panel layouts and shaped panels
 
-Prototype 0.16.0 adds real editable irregular panel geometry.
+Prototype 0.16.x provides real editable irregular panel geometry.
 
 ### Irregular layout templates
 
@@ -172,6 +173,36 @@ Press **四隅を直接編集**. Four blue handles appear on the selected panel.
 
 The editor accepts only usable convex quadrilaterals. A move is rejected when it would create a self-intersection, almost-zero area, or unusably short edge.
 
+### Alignment assist / 吸着補正
+
+With **吸着補正を使う** enabled, a dragged corner can snap to nearby:
+
+- page left/right/top/bottom edges;
+- page horizontal/vertical center;
+- another panel's corner x/y coordinate;
+- another corner of the current panel, making exact horizontal/vertical alignment easier.
+
+When a snap is active, a blue authoring-only guide line appears. These guides never enter the clean AI PNG.
+
+If an edge is already almost horizontal or vertical, **近い辺を水平・垂直に補正** can straighten it. Deliberately diagonal edges are left alone unless they are already within the small correction tolerance.
+
+### Reading order with diagonal panels
+
+Japanese manga remains RTL: visually upper/right panels come before lower/left panels. For shaped panels, the editor does **not** decide order from the single furthest top/right corner. It uses the panel's visual center plus row grouping.
+
+That means a tiny diagonal corner that sticks upward or sideways does not by itself turn a later panel into Panel 1. The **読み順で番号振り直し** action still reflects the current page geometry and selected RTL/LTR direction.
+
+### Frame styles: what do they mean?
+
+The **コマ枠** section now explains the selected frame style inline.
+
+- **通常枠** — standard solid panel border. Use this for most panels.
+- **枠なし** — no visible border. Useful for atmosphere, memory, open space, or a softer transition.
+- **小窓** — thinner/lighter frame intended for a small reaction, detail, or supplemental panel.
+- **衝撃枠** — thick dashed authoring frame for a strongly emphasized beat such as a strike, shock, or decisive moment. It is a direction cue, not visible explanatory text.
+- **断ち切り** — extend a compatible rectangular panel to the page edge. Irregular panels currently disable it.
+- **ブチ抜き** — allow a character or foreground element to extend beyond the panel boundary.
+
 Important current behavior:
 
 - rectangle-only old projects remain compatible;
@@ -179,7 +210,7 @@ Important current behavior:
 - irregular panels currently disable **断ち切り** rather than pretending rectangular bleed rules work on a slanted edge;
 - resetting the shape to **長方形** uses the current bounding box;
 - splitting an irregular panel currently creates rectangular child panels from its bounding box;
-- arbitrary 5+ point polygons, curved borders, snapping, and linked neighboring-edge dragging are not shipped yet.
+- arbitrary 5+ point polygons, curved borders, and linked neighboring-edge dragging are not shipped yet.
 
 ## Works, volumes, chapters, and folders
 
@@ -222,7 +253,7 @@ The stick figure is a **pose and placement reference**, not the character's fini
 - `rtl` — Japanese manga: right to left.
 - `ltr` — left to right.
 
-This controls panel numbering and reading order.
+This controls panel numbering and reading order. For irregular panels, a robust visual-center anchor is used so a single protruding corner does not unexpectedly reorder a page.
 
 ### Text writing direction
 
@@ -287,7 +318,7 @@ The following remain roadmap work:
 
 ### The mobile header buttons wrap onto multiple lines
 
-Prototype 0.16.0 uses a two-row mobile header. If an old one-row layout remains after deployment, reload the latest page; entrypoint/runtime URLs are versioned to reduce stale-cache mixing.
+Prototype 0.16.2 reinforces the mobile header as two rows: branding first, then Help / Undo / Redo / language. The work title belongs in the separate manga-context area. If an older one-row layout remains after deployment, reload the latest page; runtime URLs are versioned to reduce stale-cache mixing.
 
 ### I cannot find another page
 
