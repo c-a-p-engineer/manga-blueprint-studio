@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#111827" />
   <title>使い方 — Manga Blueprint Studio</title>
-  <meta name="description" content="Manga Blueprint Studio の現在の使い方。作品、P001ページ、コマ形状、ストーリーテンプレート、AI生成ZIPまでを漫画制作の流れに沿って説明します。" />
+  <meta name="description" content="Manga Blueprint Studio の現在の使い方。作品、P001ページ、斜めコマ・四隅編集、整列補助、ストーリーテンプレート、AI生成ZIPまでを漫画制作の流れに沿って説明します。" />
   <link rel="stylesheet" href="./guide.css" />
 </head>
 <body>
@@ -28,6 +28,7 @@
       <a href="#structure">作品構成</a>
       <a href="#page-settings">ページ設定</a>
       <a href="#panel-shape">斜めコマ・四隅編集</a>
+      <a href="#frame-style">コマ枠の意味</a>
       <a href="#story-tools">Story Template / Smart Manga</a>
       <a href="#character">キャラクター</a>
       <a href="#direction">読み方向・文字方向</a>
@@ -64,7 +65,7 @@
       <section id="screen">
         <h2>画面の見方</h2>
         <div class="card-grid">
-          <article class="card"><h3>① アプリヘッダー</h3><p>アプリ全体の操作だけを置きます。スマホでは、上段をタイトルと説明、下段を「使い方 / 元に戻す / やり直す / 言語」にした<strong>2段ヘッダー</strong>です。</p></article>
+          <article class="card"><h3>① アプリヘッダー</h3><p>アプリ全体の操作だけを置きます。スマホでは、上段をタイトルと説明、下段を「使い方 / 元に戻す / やり直す / 言語」にした<strong>2段ヘッダー</strong>です。作品名はこのヘッダーとは分離します。</p></article>
           <article class="card"><h3>② 作品・ページ位置</h3><p>作品名、パンくず、現在ページ <code>P001</code>、前後移動、ページ追加、作品構成があります。</p></article>
           <article class="card"><h3>③ 漫画キャンバス</h3><p>現在ページのコマ割りを確認します。コマ・人物・吹き出しをタップして編集対象を選びます。</p></article>
           <article class="card"><h3>④ 下の編集タブ</h3><p>ページ設定 / コマ / キャラ / 背景 / 文字 / 演出 / 出力。現在のページや選択中のコマを編集します。</p></article>
@@ -99,7 +100,7 @@
 
       <section id="panel-shape">
         <h2>斜めコマ・台形・四隅編集</h2>
-        <p>Prototype 0.16.0 では、斜め枠は見た目だけではなく<strong>実際のコマ境界</strong>として保存されます。</p>
+        <p>Prototype 0.16.x では、斜め枠は見た目だけではなく<strong>実際のコマ境界</strong>として保存されます。</p>
         <div class="compare">
           <article><h3>ページ全体から始める</h3><p><strong>ページ設定 → コマ割り</strong>で「斜め3コマ」「斜め4コマ 2×2」を選ぶと、最初から変形可能な四角形コマでページを作れます。</p></article>
           <article><h3>1コマだけ変形する</h3><p>コマを選択し、<strong>コマ → コマ形状</strong>で長方形、左右の斜め、左右の台形を選べます。</p></article>
@@ -112,7 +113,35 @@
           <li><strong>編集終了</strong><span>Undo/Redoでも戻せます。</span></li>
         </ol>
         <div class="callout"><strong>安全策：</strong> 自己交差、ほぼゼロ面積、極端に短い辺になる移動は拒否されます。変形コマでは現在「断ち切り」を無効化しています。</div>
+
+        <h3>線や位置を揃える：吸着補正</h3>
+        <p><strong>吸着補正を使う</strong>をONにした状態で四隅をドラッグすると、近い位置へ自動で吸着します。</p>
+        <ul>
+          <li>ページの上下左右端・中央</li>
+          <li>他のコマの四隅のX/Y位置</li>
+          <li>同じコマの他の四隅のX/Y位置</li>
+        </ul>
+        <p>吸着中は<strong>青い補助線</strong>が表示されます。補助線は編集画面専用で、AI用クリーンPNGには入りません。</p>
+        <p>ほぼ水平・垂直になっている辺は、<strong>近い辺を水平・垂直に補正</strong>でまとめて整えられます。意図した斜め線まで勝手に水平化しないよう、近い辺だけが対象です。</p>
+
+        <h3>斜めコマの読み順</h3>
+        <p>日本漫画のRTLでは基本的に<strong>上段の右側 → 左側 → 次の段</strong>です。ただし変形コマは、一番右上に飛び出した1点だけで順番を決めません。コマ全体の<strong>見た目の中心</strong>と段のまとまりから読み順を決めます。</p>
+        <div class="callout"><strong>つまり：</strong> 2コマ目の斜め角が少し右上へ食い込んでも、それだけで1コマ目へ昇格しないようにしています。必要なら「読み順で番号振り直し」で現在の配置から再同期できます。</div>
+
         <p>古い長方形だけの作品はそのまま使えます。変形コマの境界は、画面の枠・タップ判定・クリップ・クリーンPNG・AI向けRender Briefで同じ4点を使います。</p>
+      </section>
+
+      <section id="frame-style">
+        <h2>コマ枠の意味</h2>
+        <p>「衝撃枠」などは画像生成AI向けの謎の専門用語ではなく、漫画の<strong>見せ方を指定する編集上の意味</strong>です。選択中のコマでは説明も表示されます。</p>
+        <div class="card-grid">
+          <article class="card"><h3>通常枠</h3><p>標準の実線。ほとんどのコマはこれでOKです。</p></article>
+          <article class="card"><h3>枠なし</h3><p>境界線を描かない見せ方。余韻、回想、開放感のある場面向けです。</p></article>
+          <article class="card"><h3>小窓</h3><p>細めの枠。反応、細部、補足などの小さなコマを意識した指定です。</p></article>
+          <article class="card"><h3>衝撃枠</h3><p>太い破線で強い瞬間を示す制作上の目印。攻撃、驚き、決めなど、通常枠より強調したいコマ向けです。</p></article>
+          <article class="card"><h3>断ち切り</h3><p>コマをページ端まで伸ばす指定。現在は長方形コマで使います。</p></article>
+          <article class="card"><h3>ブチ抜き</h3><p>人物や前景をコマ枠の外へ飛び出させる演出です。</p></article>
+        </div>
       </section>
 
       <section id="tabs">
@@ -120,7 +149,7 @@
         <div class="feature-table" role="table" aria-label="編集タブの役割">
           <div class="feature-row feature-head" role="row"><strong>タブ</strong><strong>何を決める？</strong></div>
           <div class="feature-row" role="row"><strong>ページ設定</strong><span>原稿サイズ、読み方向、画風、コマ割り、ページ全体の開始パターン</span></div>
-          <div class="feature-row" role="row"><strong>コマ</strong><span>出来事、カメラ、構図、枠、ブチ抜き、コマ形状</span></div>
+          <div class="feature-row" role="row"><strong>コマ</strong><span>出来事、カメラ、構図、枠、ブチ抜き、コマ形状、整列補助</span></div>
           <div class="feature-row" role="row"><strong>キャラ</strong><span>見た目の参照方法、ポーズ、表情、視線、位置・大きさ</span></div>
           <div class="feature-row" role="row"><strong>背景</strong><span>場所、時間、天気、雰囲気、描き込み量</span></div>
           <div class="feature-row" role="row"><strong>文字</strong><span>吹き出し、話者、セリフ、縦書き/横書き</span></div>
@@ -151,7 +180,7 @@
       <section id="direction">
         <h2>読み方向と文字方向は別</h2>
         <div class="compare">
-          <article><h3>コマの読み方向</h3><p><code>rtl</code> = 日本漫画の右→左、<code>ltr</code> = 左→右。コマ番号と読む順番を決めます。</p></article>
+          <article><h3>コマの読み方向</h3><p><code>rtl</code> = 日本漫画の右→左、<code>ltr</code> = 左→右。コマ番号と読む順番を決めます。斜めコマは1つの飛び出した角ではなく、コマ全体の見た目の中心を基準に段と左右関係を判定します。</p></article>
           <article><h3>文字の書き方向</h3><p><code>vertical-rl</code> = 縦書き日本語、<code>horizontal-tb</code> = 横書き。</p></article>
         </div>
       </section>
@@ -164,7 +193,7 @@
 &lt;prefix&gt;_prompt.txt
 &lt;prefix&gt;_manifest.json</code></pre>
         <p>最初に <code>*_manifest.json</code> を読ませてください。クリーンPNGはコマ境界と空間配置、JSON/Promptは出来事・カメラ・背景・文字方向などの意味を伝えます。</p>
-        <p>斜め・台形コマは同じ4点境界がクリーンPNGとRender Briefへ入り、Design Direction Passもその境界を変更できません。</p>
+        <p>斜め・台形コマは同じ4点境界がクリーンPNGとRender Briefへ入り、Design Direction Passもその境界を変更できません。編集時の青い吸着ガイドはクリーンPNGには入りません。</p>
         <pre><code>このZIPを展開して、最初に中の *_manifest.json を読んで、その内容に従って漫画を生成してください。
 Character Sheet が必要と書かれているキャラクターは、別途添付した Character Sheet 画像を対応付けて使ってください。</code></pre>
       </section>
@@ -184,7 +213,9 @@ Character Sheet が必要と書かれているキャラクターは、別途添�
       <section id="trouble">
         <h2>困ったとき</h2>
         <div class="card-grid">
-          <article class="card"><h3>スマホのヘッダーが古い1段表示</h3><p>0.16.0では2段表示です。更新直後に古い表示が残る場合はページを再読込してください。エントリポイントとruntime URLはバージョン付きです。</p></article>
+          <article class="card"><h3>スマホのヘッダーが1段・ボタンが縦割れになる</h3><p>0.16.2ではタイトル/説明と操作列を明示的な2段ヘッダーにしています。作品名はその下の漫画コンテキストへ分離されます。更新直後に古い表示が残る場合はページを再読込してください。</p></article>
+          <article class="card"><h3>斜めにしたらコマ番号が入れ替わった</h3><p>0.16.2では一番飛び出した角だけではなくコマ全体の見た目の中心で読み順を判定します。必要なら「読み順で番号振り直し」を使います。</p></article>
+          <article class="card"><h3>線が微妙に水平・垂直にならない</h3><p>「吸着補正を使う」をONにして四隅を動かすか、「近い辺を水平・垂直に補正」を使います。</p></article>
           <article class="card"><h3>別ページが見つからない</h3><p>キャンバス上のページバーか<strong>作品構成</strong>を使います。</p></article>
           <article class="card"><h3>生成画像に編集ラベルが出た</h3><p>確認用注釈PNGではなく<strong>AI生成ZIP / clean PNG</strong>を使います。</p></article>
           <article class="card"><h3>斜めコマを元に戻したい</h3><p>コマ形状で<strong>長方形</strong>を選ぶか、Undoを使います。</p></article>
