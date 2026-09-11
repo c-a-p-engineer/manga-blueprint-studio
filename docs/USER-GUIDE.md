@@ -203,6 +203,8 @@ Use it for recognizable story/beat patterns such as confession, reaction, battle
 
 テンプレートは**カードを選ぶだけ**で選択されます。以前の重複した「ストーリーテンプレート」ドロップダウンは表示しません。カードには、そのテンプレートで使う主な演出がチップで表示されます。
 
+カードを選ぶと、その下に **使用するキャラクター** が出ます。1人表示では主役を1人、2人表示テンプレートでは主役と2人目を別々に選んでから **このキャラクターでテンプレートを使う** を押します。以前の中段プレビューは廃止し、「カード選択 → キャラ選択 → 適用」の1本の流れに整理しています。
+
 クイック絞り込みでは、1人表示 / 2人表示 / 恋愛 / バトルなどに加えて、次の演出からサンプルを探せます。
 
 - **演出あり / 演出なし** — 演出を使った例と素の構成を比較;
@@ -224,6 +226,8 @@ A reusable base character can use one of three appearance modes:
 - **Character Sheet** — attach the external sheet when generation requires it;
 - **文章で指定** — text appearance guidance; no sheet required;
 - **AIにおまかせ** — downstream model chooses a simple consistent appearance.
+
+新規作品には、編集可能な汎用ベースとして **高校生男子 / 高校生女子 / 成人男性 / 成人女性 / モブ男性 / モブ女性** の6人が最初から入ります。全員「文章で指定」方式のたたき台で、名前・容姿・服装は自由に変更できます。既存作品や読み込んだ作品へは勝手に追加せず、**キャラ → かんたん追加** から必要なものだけ追加できます。
 
 The stick figure is a **pose and placement reference**, not the character's finished appearance.
 

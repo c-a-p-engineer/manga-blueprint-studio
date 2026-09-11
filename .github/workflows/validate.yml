@@ -31,6 +31,7 @@ jobs:
           node --check scripts/validate-panel-geometry.mjs
           node --check scripts/validate-story-template-presentation.mjs
           node --check scripts/validate-template-discovery-presentation.mjs
+          node --check scripts/validate-template-character-cast.mjs
           node --check scripts/validate-project-storage-foundation.mjs
           node --check scripts/validate-multi-page-core.mjs
           node --check scripts/validate-work-library-hierarchy.mjs
@@ -113,6 +114,9 @@ jobs:
 
       - name: Validate Story Template discovery / presentation filters
         run: node scripts/validate-template-discovery-presentation.mjs
+
+      - name: Validate template character selection / starter cast
+        run: node scripts/validate-template-character-cast.mjs
 
       - name: Validate producer provenance
         run: node scripts/validate-producer-provenance.mjs
