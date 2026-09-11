@@ -49,7 +49,7 @@ for(const phrase of ['P001','作品構成','ページ設定','AI生成ZIP','Stor
   requirePhrase('docs/USER-GUIDE.md',phrase);
   requirePhrase('web/guide.html',phrase);
 }
-requirePhrase('docs/USER-GUIDE.md','選択中の1ページ');
+requirePhrase('docs/USER-GUIDE.md','Current export is **the selected page only**.');
 requirePhrase('web/guide.html','選択中の1ページ');
 requirePhrase('web/guide.html','./guide.css');
 requirePhrase('web/guide.html','href="./"');
