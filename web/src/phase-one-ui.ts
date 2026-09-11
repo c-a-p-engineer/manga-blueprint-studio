@@ -44,9 +44,9 @@ function ensureManualLayoutDisclosure(pagePanel:HTMLElement){
   pagePanel.insertBefore(details,start);
   let cursor:Element|null=start;
   while(cursor&&cursor!==end){
-    const next=cursor.nextElementSibling;
+    const nextSibling:Element|null=cursor.nextElementSibling;
     details.appendChild(cursor);
-    cursor=next;
+    cursor=nextSibling;
   }
   return details;
 }
