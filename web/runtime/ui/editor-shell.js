@@ -1,5 +1,6 @@
 // Prototype 0.15.0: manga-first editor shell, breadcrumb context, page navigation, and explorer-style hierarchy.
 // This layer reorganizes existing authoring controls without changing project semantics.
+// Mobile app-header composition belongs to ui/mobile-header.js, not this shell.
 
 const editorShellText17={
   ja:{
@@ -117,7 +118,6 @@ function ensureEditorShell17(){
 .structure-advanced17{margin-top:10px;border:1px solid #d8dee8;border-radius:10px;background:#fff}.structure-advanced17>summary{cursor:pointer;font-weight:800;padding:10px 12px}.structure-advanced17>div{padding:0 10px 10px}.structure-advanced17 .page-manager15,.structure-advanced17 .container-manager16{margin:0;background:#f8fafc}.structure-advanced17 #pageManagerList15{display:none}
 #containerManager16,#pageManager15{margin-bottom:0!important}.tool-panel[data-section="page"]>#containerManager16,.tool-panel[data-section="page"]>#pageManager15{display:none!important}
 @media(max-width:760px){
-  .topbar{position:static;min-height:54px;display:flex!important;flex-direction:row!important;align-items:center!important;padding:8px 10px!important}.tagline{display:none}.brand{font-size:16px}.top-actions{width:auto!important;margin-left:auto;flex-wrap:nowrap!important}.top-actions>*{flex:0 0 auto!important;min-height:36px!important;padding:6px 8px!important}.top-actions #helpBtn span,.top-actions #undoBtn span,.top-actions #redoBtn span{display:none}.top-actions select{max-width:92px}
   .editor-context-shell17{position:static}.editor-context-main17{padding:8px 10px}.editor-work-title17{font-size:16px;max-width:72vw}.editor-page-line17{grid-template-columns:38px minmax(125px,1fr) 38px 38px auto}.editor-page-line17 button{min-height:38px;padding:5px 8px}.editor-page-strip17{padding-top:6px}.page-strip-title17{display:none}.structure-dialog17{width:100vw;max-width:none;height:100dvh;max-height:none;border-radius:0;margin:0}.structure-shell17{max-height:100dvh;padding:14px}.structure-head17{top:-14px;padding-top:14px}
 }
 @media(max-width:430px){.editor-context-actions17 #workLibraryBtn16{font-size:11px}.editor-structure-button17{font-size:11px}.editor-page-line17{grid-template-columns:36px minmax(110px,1fr) 36px 36px auto;gap:4px}.editor-page-line17 button{padding:4px 6px}}
