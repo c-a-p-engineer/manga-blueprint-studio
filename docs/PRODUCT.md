@@ -533,3 +533,17 @@ The primary Page-settings task is now **Story Template first**:
 Browsing remains non-mutating. Manual panel-layout controls remain available behind progressive disclosure for direct editing. The legacy volume/chapter/folder editor is not a primary Page-settings surface; existing hierarchy data remains compatible and is navigated through **Work Explorer / 作品エクスプローラー**.
 
 The production shell is now built through Vite with a TypeScript entry. This is a migration boundary, not a claim that every legacy runtime owner is already converted.
+
+
+## Panel-layout grammar — Prototype 0.18.0
+
+Story Template panel layout is selected by visual purpose, not by decoration. The current grammar provides `duel2`, `opposed3`, `zigzag4`, `stair4`, `build4`, and `detail5`. Dynamic neighboring panels use a shared parallel diagonal seam with a narrow constant gutter instead of independently skewed rectangles that create large white wedges or a central cross.
+
+The product contract is:
+
+- Japanese RTL readability is more important than decorative irregularity.
+- Horizontal progression inside a tier uses a tighter gutter than the inter-tier drop.
+- Hero/payoff layouts must have meaningful panel-area contrast rather than equal boxes.
+- Quiet/intimate templates may deliberately keep stable rectangular layouts.
+- Legacy `diagonal3` / `diagonal4` IDs stay load-compatible and resolve to the corrected shared-seam geometry.
+- Template search keeps the existing `斜めコマ` discovery path for the new diagonal families.
