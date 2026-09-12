@@ -126,3 +126,9 @@ The regression validator checks:
 7. new diagonal families still participate in the existing `斜めコマ` discovery filter.
 
 These checks prove geometry and catalog contracts, not visual taste. Public page rendering and generated manga still require separate visual/interaction review when available.
+
+## Verification boundary
+
+The deterministic CI evidence for this change covers layout geometry, bounded whitespace, area hierarchy, runtime load order, Story Template application contracts, search/discovery integration, documentation synchronization, and version synchronization. It does **not** by itself prove that every layout is aesthetically optimal after image generation.
+
+A final generated-manga review remains a separate acceptance layer because subject crop, speech-balloon placement, and rendered background density are model-dependent. Browser automation that incurs metered usage is intentionally not part of this verification path; public deployment is verified through build/deploy status and free fetch-only inspection, while visual manga quality should be reviewed from actual generated samples.
