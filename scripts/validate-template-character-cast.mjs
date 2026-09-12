@@ -1,18 +1,18 @@
 import fs from 'node:fs';
+import {runtimeLoadOrder,runtimePaths,readRuntime} from './runtime-paths.mjs';
 
 const read=path=>fs.readFileSync(path,'utf8');
-const runtime=read('web/runtime/integration/template-character-cast.js');
-const bootstrap=read('web/src/legacy-runtime.ts');
+const runtime=readRuntime('templateCharacterCast');
 const phaseOneUi=read('web/src/phase-one-ui.ts');
 
 function requireText(source,text,label){
   if(!source.includes(text))throw new Error(`${label} missing ${JSON.stringify(text)}`);
 }
 
-requireText(bootstrap,"['integration/template-character-cast','runtime/integration/template-character-cast.js']",'runtime registration');
-const discoveryIndex=bootstrap.indexOf("['templates/discovery-presentation'");
-const castIndex=bootstrap.indexOf("['integration/template-character-cast'");
-const producerIndex=bootstrap.indexOf("['handoff/producer-provenance'");
+if(runtimePaths.templateCharacterCast!=='web/runtime/integration/template-character-cast.js')throw new Error('Template cast integration runtime owner is not registered');
+const discoveryIndex=runtimeLoadOrder.indexOf('templateDiscoveryPresentation');
+const castIndex=runtimeLoadOrder.indexOf('templateCharacterCast');
+const producerIndex=runtimeLoadOrder.indexOf('producerProvenance');
 if(!(discoveryIndex>=0&&castIndex>discoveryIndex&&producerIndex>castIndex))throw new Error('Template cast integration must load after discovery presentation and before producer/UI tail.');
 
 for(const id of [
