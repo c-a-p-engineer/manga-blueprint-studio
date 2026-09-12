@@ -1,17 +1,20 @@
 name: Validate prototype
 
 on:
-  push:
-    branches: [master]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: validate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,141 +23,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Install build dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
 
-      - name: Typecheck Phase 1 source
-        run: npm run typecheck
-
-      - name: Build Vite production artifact
-        run: npm run build
-
-      - name: Validate Vite artifact shape
-        run: |
-          test -f dist/index.html
-          test -f dist/guide.html
-          test -f dist/runtime/core/foundation.js
-          grep -q 'assets/' dist/index.html
-
-      - name: Check JavaScript syntax
-        run: |
-          node --check web/app.js
-          node --check scripts/runtime-paths.mjs
-          node --check scripts/validate-runtime-layout.mjs
-          node --check scripts/validate-render-brief.mjs
-          node --check scripts/validate-producer-provenance.mjs
-          node --check scripts/validate-panel-geometry.mjs
-          node --check scripts/validate-panel-layout-grammar.mjs
-          node --check scripts/validate-inset-panels.mjs
-          node --check scripts/validate-editor-disclosure.mjs
-          node --check scripts/validate-story-template-presentation.mjs
-          node --check scripts/validate-template-discovery-presentation.mjs
-          node --check scripts/validate-template-character-cast.mjs
-          node --check scripts/validate-project-storage-foundation.mjs
-          node --check scripts/validate-multi-page-core.mjs
-          node --check scripts/validate-work-library-hierarchy.mjs
-          node --check scripts/validate-editor-shell.mjs
-          node --check scripts/validate-documentation-sync.mjs
-          node --check scripts/validate-version-sync.mjs
-          node --check scripts/validate-phase1-toolchain.mjs
-          find web/runtime -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
-
-      - name: Validate Phase 1 toolchain / UX contract
-        run: npm run validate:phase1
-
-      - name: Validate semantic runtime layout
-        run: node scripts/validate-runtime-layout.mjs
-
-      - name: Validate repository contract
-        run: node scripts/validate.mjs
-
-      - name: Validate project storage foundation
-        run: node scripts/validate-project-storage-foundation.mjs
-
-      - name: Validate multi-page core
-        run: node scripts/validate-multi-page-core.mjs
-
-      - name: Validate work library / hierarchy
-        run: node scripts/validate-work-library-hierarchy.mjs
-
-      - name: Validate manga-first editor shell
-        run: node scripts/validate-editor-shell.mjs
-
-      - name: Validate Panel Peek mobile contract
-        run: node scripts/validate-panel-peek.mjs
-
-      - name: Validate Template Studio contract
-        run: node scripts/validate-template-studio.mjs
-
-      - name: Validate writing-direction contract
-        run: node scripts/validate-writing-direction.mjs
-
-      - name: Validate reading-order synchronization
-        run: node scripts/validate-reading-order.mjs
-
-      - name: Validate lettering / reading integration
-        run: node scripts/validate-lettering-reading-integration.mjs
-
-      - name: Validate art direction / spatial semantics
-        run: node scripts/validate-art-direction-spatial.mjs
-
-      - name: Validate cross-model handoff hardening
-        run: node scripts/validate-cross-model-handoff.mjs
-
-      - name: Validate template camera / dialogue quality
-        run: node scripts/validate-template-quality.mjs
-
-      - name: Validate scene contract / quick status
-        run: node scripts/validate-scene-contract.mjs
-
-      - name: Validate desktop responsive layout
-        run: node scripts/validate-desktop-layout.mjs
-
-      - name: Validate authoring clarity
-        run: node scripts/validate-authoring-clarity.mjs
-
-      - name: Validate template cast meaning
-        run: node scripts/validate-template-cast-meaning.mjs
-
-      - name: Validate two-visible templates / quick filters
-        run: node scripts/validate-two-visible-filters.mjs
-
-      - name: Validate per-panel cast visibility
-        run: node scripts/validate-panel-cast-flow.mjs
-
-      - name: Validate generation contract hardening
-        run: node scripts/validate-generation-contract.mjs
-
-      - name: Validate current-page render brief
-        run: node scripts/validate-render-brief.mjs
-
-      - name: Validate quadrilateral panel geometry
-        run: node scripts/validate-panel-geometry.mjs
-
-      - name: Validate panel layout grammar
-        run: node scripts/validate-panel-layout-grammar.mjs
-
-      - name: Validate inset panel contract
-        run: node scripts/validate-inset-panels.mjs
-
-      - name: Validate editor disclosure UX contract
-        run: node scripts/validate-editor-disclosure.mjs
-
-      - name: Validate Story Template presentation contract
-        run: node scripts/validate-story-template-presentation.mjs
-
-      - name: Validate Story Template discovery / presentation filters
-        run: node scripts/validate-template-discovery-presentation.mjs
-
-      - name: Validate template character selection / starter cast
-        run: node scripts/validate-template-character-cast.mjs
-
-      - name: Validate producer provenance
-        run: node scripts/validate-producer-provenance.mjs
-
-      - name: Validate documentation / user guide synchronization
-        run: node scripts/validate-documentation-sync.mjs
-
-      - name: Validate version/document synchronization
-        run: node scripts/validate-version-sync.mjs
+      - name: Validate production contract
+        run: npm run validate
