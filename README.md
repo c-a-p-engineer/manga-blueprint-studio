@@ -107,11 +107,13 @@ Rectangle-only projects remain valid. A panel may additionally store:
 
 `shape` is authoritative for the visible boundary and clipping when present; `rect` remains its bounding-box compatibility representation. The editor accepts only usable convex quadrilaterals and prevents self-intersection/near-zero edges. Irregular panels currently disable bleed; reset the shape to **長方形** before using bleed again.
 
+An optional `Panel.inset` relation can make one ordinary panel a one-level child of another panel. The child keeps its own stable panel identity and `rect`, and the AI handoff preserves that physical panel-in-panel relation.
+
 ## Story Template terminology
 
 **Story Template / ストーリーテンプレート is the single canonical template feature name.** “Scene Template” is not another product feature or alias.
 
-Story Template Studio provides recognizable editable beat patterns. Selection is card-first; the old duplicate Story Template dropdown is hidden. Story Templates now choose a panel-layout family by visual purpose: dynamic pressure/impact uses shared diagonal seams, dialogue/reaction uses staggered rectangles, and emotional buildup/reveal uses deliberate small-to-large area contrast. Quick filters can be combined across cast/relationship/dialogue/art and presentation features such as diagonal panels, impact/borderless/inset frames, focus/speed/impact/tension/silence effects, breakout, and 演出あり / 演出なし. Cards expose presentation chips so a sample can be found without opening every template. The old middle preview is removed: after selecting a card, the apply card asks which reusable character(s) to use and the primary action applies that exact cast. Smart Manga remains a separate bounded proposal system. Both remain non-mutating until explicit apply.
+Story Template Studio provides recognizable editable beat patterns. Selection is card-first; the old duplicate Story Template dropdown is hidden. Story Templates now choose a panel-layout family by visual purpose: dynamic pressure/impact uses shared diagonal seams, dialogue/reaction uses staggered rectangles, and emotional buildup/reveal uses deliberate small-to-large area contrast. Quick filters can be combined across cast/relationship/dialogue/art and presentation features such as diagonal panels, impact/borderless/inset-style frames, focus/speed/impact/tension/silence effects, breakout, and 演出あり / 演出なし. Cards expose presentation chips so a sample can be found without opening every template. The old middle preview is removed: after selecting a card, the apply card asks which reusable character(s) to use and the primary action applies that exact cast. Smart Manga remains a separate bounded proposal system. Both remain non-mutating until explicit apply.
 
 ## Character Sheet is optional
 
@@ -159,7 +161,7 @@ The current AI generation ZIP contains:
 <prefix>_manifest.json
 ```
 
-The manifest is read first. The clean PNG controls spatial composition, including an authored quadrilateral panel boundary when present; semantic JSON/prompt control story/camera/pose/background/lettering semantics; character guidance or required external Character Sheets control identity; art direction controls rendering language; only exact `TEXT TO RENDER` entries are permitted as visible manga text.
+The manifest is read first. The clean PNG controls spatial composition, including authored quadrilateral and inset-panel boundaries when present; semantic JSON/prompt control story/camera/pose/background/lettering semantics; character guidance or required external Character Sheets control identity; art direction controls rendering language; only exact `TEXT TO RENDER` entries are permitted as visible manga text.
 
 Before final rendering, the handoff includes a **derived Design Direction Pass**. It may decide focal emphasis, negative-space usage, local contrast, and detail-density rhythm inside the authored panels. It is guidance only and cannot change panel count/boundaries, reading order, story actions, camera intent, cast, identity, or exact text.
 
@@ -203,20 +205,20 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.18.0.md`](docs/PROTOTYPE-0.18.0.md) — current release note.
+- [`docs/PROTOTYPE-0.19.0.md`](docs/PROTOTYPE-0.19.0.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.18.0**.
+Current application baseline: **Prototype 0.19.0**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;
 - current-page render brief: `manga-blueprint-render-brief/2`;
 - derived design direction: `manga-blueprint-design-direction-pass/1`;
-- panel geometry: rectangle or optional convex `quad` shape;
+- panel geometry: rectangle or optional convex `quad` shape, with an optional one-level `Panel.inset` relation;
 - producer provenance: `manga-blueprint-producer/1`;
 - build metadata: `manga-blueprint-build-info/1`.
 
