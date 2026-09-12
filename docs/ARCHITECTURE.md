@@ -12,6 +12,7 @@ The explicit legacy script order remains a compatibility contract because later 
 
 ```text
 web/runtime/
+├─ manifest.json canonical ordered registry for the compatibility runtime
 ├─ core/         project state, persistence, rendering, export/input, base events
 ├─ authoring/    page/work/container, panel geometry, and reusable-character authoring
 ├─ assist/       bounded Smart Manga assistance
@@ -25,7 +26,7 @@ web/runtime/
 └─ ui/           presentation-only layout, clarity, editor shell, and mobile header
 ```
 
-`web/src/legacy-runtime.ts` is the production compatibility loader, while `scripts/runtime-paths.mjs` mirrors semantic owners for validators. `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` files, duplicate/missing registrations, and unregistered runtime JavaScript.
+`web/runtime/manifest.json` is the single source of truth for legacy runtime key, semantic chunk ID, browser path, and load order. `web/src/legacy-runtime.ts` consumes that registry for production loading, while `scripts/runtime-paths.mjs` derives the existing validator-facing key/path API from the same data. `scripts/validate-runtime-layout.mjs` rejects chronology-named `web/app-N.js` files, duplicate/missing registrations, unregistered runtime JavaScript, and reintroduced inline path lists.
 
 ### Core owners
 
