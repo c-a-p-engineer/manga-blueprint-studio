@@ -1,11 +1,7 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app=readRuntime('interactionGenerationContract');
-const src=runtimePaths.interactionGenerationContract.slice('web/'.length);
-
-if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap must load ${src}`);
+if(runtimePaths.interactionGenerationContract!=='web/runtime/handoff/interaction-generation-contract.js')throw new Error('Interaction-generation runtime owner is not registered');
 
 for(const phrase of [
   "'approach-right'",
