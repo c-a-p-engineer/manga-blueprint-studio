@@ -22,12 +22,12 @@ if(!html.includes('<option value="inset">小窓風枠 / Inset-style border</opti
 if(html.includes('<option value="inset">小窓 / Inset</option>'))throw new Error('Ambiguous old inset border label still present');
 
 for(const phrase of [
-  "copy('テンプレート','Template')",
-  "copy('原稿設定','Manuscript')",
-  "copy('手動コマ割り','Manual layout')",
-  "copy('内容・役割','Content + role')",
-  "copy('カメラ','Camera')",
-  "copy('枠・形状','Frame + shape')"
+  "template:['テンプレート','Template']",
+  "manuscript:['原稿設定','Manuscript']",
+  "layout:['手動コマ割り','Manual layout']",
+  "'内容・役割','Content + role'",
+  "'カメラ','Camera'",
+  "'枠・形状','Frame + shape'"
 ]){
   if(!ts.includes(phrase))throw new Error(`Expected task-first label missing: ${phrase}`);
 }
