@@ -41,6 +41,7 @@ export const LEGACY_RUNTIME_CHUNKS=Object.freeze([
   ['handoff/interaction-generation-contract','runtime/handoff/interaction-generation-contract.js'],
   ['handoff/render-brief','runtime/handoff/render-brief.js'],
   ['authoring/panel-geometry','runtime/authoring/panel-geometry.js'],
+  ['authoring/inset-panels','runtime/authoring/inset-panels.js'],
   ['templates/presentation-contract','runtime/templates/presentation-contract.js'],
   ['templates/discovery-presentation','runtime/templates/discovery-presentation.js'],
   ['templates/panel-layout-grammar','runtime/templates/panel-layout-grammar.js'],

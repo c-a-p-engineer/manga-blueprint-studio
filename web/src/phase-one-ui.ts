@@ -53,6 +53,111 @@ function ensureManualLayoutDisclosure(pagePanel:HTMLElement){
   return details;
 }
 
+type PageModeId='template'|'manuscript'|'layout';
+let activePageMode:PageModeId='template';
+
+function ensureDisclosure(id:string,titleJa:string,titleEn:string,helpJa:string,helpEn:string,open=false){
+  let details=byId<HTMLDetailsElement>(id);
+  if(!details){
+    details=document.createElement('details');
+    details.id=id;
+    details.className='phase1-disclosure';
+    details.open=open;
+    const summary=document.createElement('summary');
+    summary.innerHTML='<strong></strong><span></span>';
+    details.appendChild(summary);
+  }
+  setTextIfChanged(details.querySelector('summary strong'),copy(titleJa,titleEn));
+  setTextIfChanged(details.querySelector('summary span'),copy(helpJa,helpEn));
+  return details;
+}
+
+function moveNodeInto(host:HTMLElement,node:Element|null){
+  if(node&&node.parentElement!==host)host.appendChild(node);
+}
+
+function setPageMode19(root:HTMLElement,mode:PageModeId,focus=false){
+  activePageMode=mode;
+  const buttons=[...root.querySelectorAll<HTMLButtonElement>('[data-page-mode]')];
+  const panels=[...root.querySelectorAll<HTMLElement>('[data-page-mode-panel]')];
+  buttons.forEach(button=>{
+    const selected=button.dataset.pageMode===mode;
+    button.setAttribute('aria-selected',selected?'true':'false');
+    button.tabIndex=selected?0:-1;
+    if(selected&&focus)button.focus();
+  });
+  panels.forEach(panel=>{panel.hidden=panel.dataset.pageModePanel!==mode;});
+}
+
+function refreshPageModeLabels19(root:HTMLElement){
+  const labels:Record<PageModeId,[string,string]>={
+    template:['テンプレート','Template'],manuscript:['原稿設定','Manuscript'],layout:['手動コマ割り','Manual layout']
+  };
+  root.querySelectorAll<HTMLButtonElement>('[data-page-mode]').forEach(button=>{
+    const mode=button.dataset.pageMode as PageModeId;
+    const label=labels[mode];if(label)setTextIfChanged(button,copy(label[0],label[1]));
+  });
+}
+
+function ensurePageSubmodes19(pagePanel:HTMLElement,shell:HTMLElement,manualDisclosure:HTMLDetailsElement|null){
+  let root=byId<HTMLElement>('phase1PageModes');
+  if(!root){
+    root=document.createElement('section');root.id='phase1PageModes';root.className='phase1-page-modes';
+    root.innerHTML=`<div class="phase1-page-subtabs" role="tablist" aria-label="Page authoring mode">
+      <button id="phase1PageModeTemplate" type="button" role="tab" data-page-mode="template" aria-controls="phase1PageModeTemplatePanel"></button>
+      <button id="phase1PageModeManuscript" type="button" role="tab" data-page-mode="manuscript" aria-controls="phase1PageModeManuscriptPanel"></button>
+      <button id="phase1PageModeLayout" type="button" role="tab" data-page-mode="layout" aria-controls="phase1PageModeLayoutPanel"></button>
+    </div>
+    <div id="phase1PageModeTemplatePanel" role="tabpanel" aria-labelledby="phase1PageModeTemplate" data-page-mode-panel="template"></div>
+    <div id="phase1PageModeManuscriptPanel" role="tabpanel" aria-labelledby="phase1PageModeManuscript" data-page-mode-panel="manuscript"></div>
+    <div id="phase1PageModeLayoutPanel" role="tabpanel" aria-labelledby="phase1PageModeLayout" data-page-mode-panel="layout"></div>`;
+    const manuscriptStart=[...pagePanel.children].find(element=>element instanceof HTMLElement&&element.dataset.i18n==='canvasSize') as HTMLElement|undefined;
+    if(manuscriptStart)pagePanel.insertBefore(root,manuscriptStart);else pagePanel.prepend(root);
+    const manuscriptPane=root.querySelector<HTMLElement>('[data-page-mode-panel="manuscript"]')!;
+    let cursor:Element|null=manuscriptStart||null;
+    while(cursor&&cursor!==shell&&cursor!==manualDisclosure){
+      const next=cursor.nextElementSibling;manuscriptPane.appendChild(cursor);cursor=next;
+    }
+    root.querySelector<HTMLElement>('[data-page-mode-panel="template"]')!.appendChild(shell);
+    if(manualDisclosure){manualDisclosure.open=true;manualDisclosure.classList.add('phase1-manual-layout-pane');root.querySelector<HTMLElement>('[data-page-mode-panel="layout"]')!.appendChild(manualDisclosure);}
+    const tabs=[...root.querySelectorAll<HTMLButtonElement>('[data-page-mode]')];
+    tabs.forEach(button=>button.addEventListener('click',()=>setPageMode19(root!,button.dataset.pageMode as PageModeId)));
+    root.querySelector('.phase1-page-subtabs')?.addEventListener('keydown',event=>{
+      if(!(event instanceof KeyboardEvent))return;
+      const current=tabs.findIndex(button=>button===document.activeElement);if(current<0)return;
+      let next=current;
+      if(event.key==='ArrowRight')next=(current+1)%tabs.length;else if(event.key==='ArrowLeft')next=(current-1+tabs.length)%tabs.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=tabs.length-1;else return;
+      event.preventDefault();setPageMode19(root!,tabs[next].dataset.pageMode as PageModeId,true);
+    });
+  }else{
+    const templatePane=root.querySelector<HTMLElement>('[data-page-mode-panel="template"]');
+    const layoutPane=root.querySelector<HTMLElement>('[data-page-mode-panel="layout"]');
+    if(templatePane&&shell.parentElement!==templatePane)templatePane.appendChild(shell);
+    if(layoutPane&&manualDisclosure&&manualDisclosure.parentElement!==layoutPane)layoutPane.appendChild(manualDisclosure);
+  }
+  refreshPageModeLabels19(root);setPageMode19(root,activePageMode);
+}
+
+function ensurePanelDisclosures19(){
+  const panelSection=document.querySelector<HTMLElement>('.tool-panel[data-section="panel"]');if(!panelSection)return;
+  const selectedSummary=byId('selectedPanelSummary');if(!selectedSummary)return;
+  const content=ensureDisclosure('phase1PanelContentDisclosure','内容・役割','Content + role','コマの物語上の役割を設定','Set the narrative role of this panel',true);
+  const camera=ensureDisclosure('phase1PanelCameraDisclosure','カメラ','Camera','距離・角度・視点・構図','Distance, angle, viewpoint and composition');
+  const frame=ensureDisclosure('phase1PanelFrameDisclosure','枠・形状','Frame + shape','枠、断ち切り、四隅、差し込みコマ','Border, bleed, geometry and inset panels');
+  if(!content.parentElement)selectedSummary.insertAdjacentElement('afterend',content);
+  if(!camera.parentElement)content.insertAdjacentElement('afterend',camera);
+  if(!frame.parentElement)camera.insertAdjacentElement('afterend',frame);
+  moveNodeInto(content,byId('panelRole')?.closest('label')||null);
+  const cameraHeading=[...panelSection.children].find(element=>element instanceof HTMLElement&&element.dataset.i18n==='cameraHeading')||null;
+  moveNodeInto(camera,cameraHeading);
+  for(const id of ['cameraQuickPreset','cameraDistance','cameraAngle','cameraViewpoint','cameraFocus','cameraIntent'])moveNodeInto(camera,byId(id)?.closest('label')||null);
+  moveNodeInto(camera,byId('cameraHelp'));
+  const frameHeading=[...panelSection.children].find(element=>element instanceof HTMLElement&&element.dataset.i18n==='frameHeading')||null;
+  moveNodeInto(frame,frameHeading);
+  for(const id of ['borderStyle','bleedEdge','breakoutMode'])moveNodeInto(frame,byId(id)?.closest('label')||null);
+  moveNodeInto(frame,byId('panelShapeControls33'));moveNodeInto(frame,byId('insetPanelControls19'));
+}
+
 function ensureTemplateHeader(shell:HTMLElement){
   let header=byId('phase1TemplateHeader');
   if(!header){
@@ -134,7 +239,9 @@ function composeTemplateWorkflow(){
   if(oldPreview){oldPreview.hidden=true;oldPreview.setAttribute('aria-hidden','true');}
 
   ensureFeedback(shell);
-  ensureManualLayoutDisclosure(pagePanel);
+  const manualDisclosure=ensureManualLayoutDisclosure(pagePanel);
+  ensurePageSubmodes19(pagePanel,shell,manualDisclosure);
+  ensurePanelDisclosures19();
   pagePanelObserver?.takeRecords();
 }
 

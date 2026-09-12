@@ -547,3 +547,21 @@ The product contract is:
 - Quiet/intimate templates may deliberately keep stable rectangular layouts.
 - Legacy `diagonal3` / `diagonal4` IDs stay load-compatible and resolve to the corrected shared-seam geometry.
 - Template search keeps the existing `斜めコマ` discovery path for the new diagonal families.
+
+## Inset panels and progressive editor disclosure — Prototype 0.19.0
+
+The editor supports a real **panel-in-panel / 差し込みコマ** distinct from the legacy `border=inset` visual style. The legacy value remains compatible and is presented as **小窓風枠 / Inset-style border**.
+
+P0 behavior contract:
+
+- a root panel may own at most one inset panel; nested inset panels are not created;
+- the inset is an ordinary editable Panel with camera, cast, background, lettering, effects, border, and geometry;
+- `Panel.inset` records `kind=panel-in-panel`, stable `parentPanelId`, semantic anchor, and size class while `Panel.rect` remains authoritative spatial placement;
+- the root page reading order is resolved normally, then each inset is ordered immediately after its parent;
+- deleting an inset deletes only the inset; deleting its parent requires confirmation and removes the child; the final root panel remains protected;
+- splitting a panel participating in an inset relation is blocked in P0 instead of silently breaking parentage;
+- duplicate/new-work identity regeneration remaps inset parent references; invalid or nested references normalize away;
+- clean output masks the inset area white before drawing the child, so the overlap is authored panel structure rather than transparent decoration;
+- Render Brief and manifest explicitly carry panel hierarchy and require downstream renderers to preserve the overlay.
+
+Editor information architecture uses one nested navigation level only. **Page** exposes `テンプレート / 原稿設定 / 手動コマ割り` as mutually exclusive submodes. **Panel** keeps the current-panel summary visible and groups simultaneous settings into native disclosure sections: `内容・役割 / カメラ / 枠・形状`. Do not add deeper tab-within-tab navigation for these controls.

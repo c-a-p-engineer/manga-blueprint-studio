@@ -46,6 +46,8 @@ jobs:
           node --check scripts/validate-producer-provenance.mjs
           node --check scripts/validate-panel-geometry.mjs
           node --check scripts/validate-panel-layout-grammar.mjs
+          node --check scripts/validate-inset-panels.mjs
+          node --check scripts/validate-editor-disclosure.mjs
           node --check scripts/validate-story-template-presentation.mjs
           node --check scripts/validate-template-discovery-presentation.mjs
           node --check scripts/validate-template-character-cast.mjs
@@ -132,6 +134,12 @@ jobs:
 
       - name: Validate panel layout grammar
         run: node scripts/validate-panel-layout-grammar.mjs
+
+      - name: Validate inset panel contract
+        run: node scripts/validate-inset-panels.mjs
+
+      - name: Validate editor disclosure UX contract
+        run: node scripts/validate-editor-disclosure.mjs
 
       - name: Validate Story Template presentation contract
         run: node scripts/validate-story-template-presentation.mjs

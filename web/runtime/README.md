@@ -103,3 +103,7 @@ Prototype 0.17.0 keeps this directory as the compatibility/reference runtime whi
 ### `templates/panel-layout-grammar.js`
 
 Owns the Prototype 0.18.0 page-layout grammar layered on top of quadrilateral panel geometry: shared diagonal seams with compact gutters, asymmetric visual-weight families, Story Template layout-family assignment, compatibility handling for `diagonal3` / `diagonal4`, and diagonal discovery integration. Base polygon validation/editing remains in `authoring/panel-geometry.js`; apply-time shape transfer remains in `templates/presentation-contract.js`.
+
+### `authoring/inset-panels.js`
+
+Owns Prototype 0.19.0 one-level panel-in-panel compatibility behavior: optional parent relation normalization, ID-remap on duplication, semantic order insertion, white overlap mask, deletion/split safety, editor control injection, and Render Brief / manifest hierarchy. It deliberately reuses the ordinary Panel model and existing inspectors instead of creating a second inset-only content model.

@@ -91,3 +91,5 @@ Do not introduce “Scene Template” as another product feature name.
 The current runtime supports multiple works, optional hierarchy, and multiple pages, but AI generation/review export is still **selected-page scoped**. Backup/restore and multi-page/range/container/work-wide export are later roadmap phases.
 
 That distinction should remain explicit in current docs until the corresponding phase ships.
+
+- `PROTOTYPE-0.19.0.md` — panel-in-panel P0 and progressive editor disclosure release note.
