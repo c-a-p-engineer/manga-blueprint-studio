@@ -16,12 +16,14 @@ jobs:
         with:
           ref: feat/inset-panel-p0-ui
           fetch-depth: 0
+      - name: Keep workflow mutation outside Actions token
+        run: node scripts/p0-disable-workflow-patch.mjs
       - name: Apply P0 inset and UI synchronization
         run: node scripts/p0-inset-ui-sync.mjs
-      - name: Remove one-shot sync machinery
+      - name: Remove one-shot helper scripts
         run: |
+          rm scripts/p0-disable-workflow-patch.mjs
           rm scripts/p0-inset-ui-sync.mjs
-          rm .github/workflows/p0-inset-ui-sync.yml
       - name: Commit synchronized P0 implementation
         run: |
           git config user.name "github-actions[bot]"
