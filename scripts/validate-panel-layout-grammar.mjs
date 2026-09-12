@@ -1,8 +1,8 @@
-import fs from 'node:fs';
 import vm from 'node:vm';
+import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const source=fs.readFileSync('web/runtime/templates/panel-layout-grammar.js','utf8');
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
+const source=readRuntime('panelLayoutGrammar');
+if(runtimePaths.panelLayoutGrammar!=='web/runtime/templates/panel-layout-grammar.js')throw new Error('Panel layout grammar runtime owner is not registered');
 
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const layoutMetrics=(w,h)=>{const m=Math.round(clamp(Math.min(w,h)*.035,16,50));const g=Math.round(clamp(Math.min(w,h)*.018,12,30));return{m,g,innerW:w-m*2,innerH:h-m*2};};
@@ -38,7 +38,6 @@ vm.runInContext(source,context,{filename:'panel-layout-grammar.js'});
 
 const grammar=context.panelLayoutGrammar37;
 if(!grammar)throw new Error('panelLayoutGrammar37 export missing');
-if(!bootstrap.includes("['templates/panel-layout-grammar','runtime/templates/panel-layout-grammar.js']"))throw new Error('TypeScript bootstrap must load panel layout grammar');
 const expectedCounts={opposed3:3,zigzag4:4,stair4:4,build4:4,detail5:5,duel2:2,diagonal3:3,diagonal4:4};
 const W=800,H=1130;
 
@@ -63,23 +62,18 @@ for(const [id,count] of Object.entries(expectedCounts)){
   specs.forEach(spec=>assertWithin(spec,id));
 }
 
-// The corrected diagonal layouts must not turn the page center into a wide white wedge/cross.
-// Measure unused area inside the common outer working rectangle; gutters should remain compact.
-const {m,innerW,innerH}=grammar.metrics(W,H),workingArea=innerW*innerH;
+const {innerW,innerH}=grammar.metrics(W,H),workingArea=innerW*innerH;
 for(const id of ['opposed3','zigzag4','diagonal3','diagonal4']){
   const used=grammar.specs(id,W,H).reduce((sum,spec)=>sum+specArea(spec),0);
   const unusedRatio=(workingArea-used)/workingArea;
   if(unusedRatio>.055)throw new Error(`${id} wastes ${(unusedRatio*100).toFixed(1)}% of working area; expected <= 5.5%`);
 }
 
-// Visual-weight contrast: hero layouts must have a clearly dominant payoff rather than equal boxes.
 for(const id of ['opposed3','build4','detail5']){
   const areas=grammar.specs(id,W,H).map(specArea),largest=Math.max(...areas),smallest=Math.min(...areas);
   if(largest/smallest<1.65)throw new Error(`${id} lacks meaningful panel-area contrast: ${(largest/smallest).toFixed(2)}x`);
 }
 
-// Template catalog organization should reserve dynamic diagonal seams for pressure/impact while
-// stable emotional/intimate templates can remain rectangular.
 const expectedLayout={angerBurst:'opposed3',decisiveBlow:'opposed3',counterattack:'zigzag4',classroomTalk:'stair4',confession:'build4'};
 for(const [id,layout] of Object.entries(expectedLayout))if(context.storyTemplates11[id]?.layout!==layout)throw new Error(`${id} expected ${layout}, got ${context.storyTemplates11[id]?.layout}`);
 for(const id of ['beforeAfter37','turningPoint37','detailReveal37'])if(!context.storyTemplates11[id])throw new Error(`new Story Template missing: ${id}`);
