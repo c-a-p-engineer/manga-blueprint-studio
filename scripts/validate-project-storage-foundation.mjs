@@ -1,20 +1,20 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
-import { runtimeLoadOrder, runtimePaths } from './runtime-paths.mjs';
+import { runtimeManifest, runtimeLoadOrder, runtimePaths } from './runtime-paths.mjs';
 
 const read = path => fs.readFileSync(path,'utf8');
 const foundation=read(runtimePaths.foundation);
 const storage=read(runtimePaths.projectStorage);
 const editor=read(runtimePaths.editorState);
 const events=read(runtimePaths.eventBindings);
-const bootstrap=read('web/src/legacy-runtime.ts');
 const main=read('web/src/main.ts');
 
 assert.equal(runtimeLoadOrder[0],'foundation');
 assert.equal(runtimeLoadOrder[1],'projectStorage');
 assert.equal(runtimeLoadOrder[2],'editorState');
-assert.ok(bootstrap.includes("['core/project-storage','runtime/core/project-storage.js']"));
+assert.equal(runtimeManifest[1]?.id,'core/project-storage');
+assert.equal(runtimeManifest[1]?.path,'runtime/core/project-storage.js');
 assert.ok(main.includes('await runtime.initializeEditorState()'));
 
 assert.ok(!editor.includes('function loadAutosave()'),'project autosave must not bootstrap from localStorage');
