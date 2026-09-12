@@ -1,6 +1,8 @@
 # Runtime chunks
 
-Manga Blueprint Studio is a zero-build GitHub Pages application. `web/app.js` loads named classic-script chunks in an explicit order so the existing global-state extension model remains deterministic without a bundler.
+Manga Blueprint Studio is a Vite-built static GitHub Pages application. `web/app.js` delegates to the TypeScript entrypoint, and `web/src/legacy-runtime.ts` then loads the remaining named classic-script chunks in explicit order so the existing global-state extension model remains deterministic during migration.
+
+`web/runtime/manifest.json` is the **single canonical registry and load-order source** for that compatibility runtime. The browser loader consumes it directly; Node validators derive their legacy key/path views from the same file through `scripts/runtime-paths.mjs`. Do not maintain a second inline copy of the ordered chunk list.
 
 ## Ownership
 
@@ -17,6 +19,20 @@ Runtime files are named by responsibility, not prototype chronology.
 - `integration/` — cross-feature integration with intentional load dependencies.
 - `handoff/` — prompt/manifest/render contracts and producer provenance for downstream image-generation assistants.
 - `ui/` — presentation-only responsive layout, authoring clarity, and the manga-first editor shell.
+
+## Canonical runtime manifest
+
+Each entry in `manifest.json` has three responsibilities:
+
+```json
+{ "key": "panelGeometry", "id": "authoring/panel-geometry", "path": "runtime/authoring/panel-geometry.js" }
+```
+
+- `key` is the stable validator/read helper key used by `scripts/runtime-paths.mjs` consumers;
+- `id` is the semantic browser chunk identity written to `data-runtime-chunk`;
+- `path` is the browser-relative production path and determines `id` (`runtime/<id>.js`).
+
+The array order is the load order. Keys, IDs, and paths must all be unique. Every `web/runtime/**/*.js` file must be registered exactly once, and the TypeScript bootstrap must not duplicate the ordered paths inline.
 
 ## Important current owners
 
@@ -60,6 +76,14 @@ Owns the cross-feature boundary between Story Template selection and reusable-ch
 
 Template browsing remains non-mutating; character-library mutation happens only during new-work creation or explicit starter-add actions.
 
+### `templates/panel-layout-grammar.js`
+
+Owns the Prototype 0.18.0 page-layout grammar layered on top of quadrilateral panel geometry: shared diagonal seams with compact gutters, asymmetric visual-weight families, Story Template layout-family assignment, compatibility handling for `diagonal3` / `diagonal4`, and diagonal discovery integration. Base polygon validation/editing remains in `authoring/panel-geometry.js`; apply-time shape transfer remains in `templates/presentation-contract.js`.
+
+### `authoring/inset-panels.js`
+
+Owns Prototype 0.19.0 one-level panel-in-panel compatibility behavior: optional parent relation normalization, ID-remap on duplication, semantic order insertion, white overlap mask, deletion/split safety, editor control injection, and Render Brief / manifest hierarchy. It deliberately reuses the ordinary Panel model and existing inspectors instead of creating a second inset-only content model.
+
 ## Public guide
 
 The full user guide is a static public page:
@@ -80,12 +104,12 @@ docs/README.md
 
 ## Rules
 
-1. Preserve the explicit load order in `web/app.js`; later chunks intentionally extend globals from earlier owners.
+1. Preserve the explicit array order in `web/runtime/manifest.json`; later chunks intentionally extend globals from earlier owners.
 2. Modify an existing semantic owner when one already owns the behavior instead of creating `app-N.js` or another chronology-named patch file.
-3. Add a new named runtime chunk only when it has a distinct responsibility that does not fit an existing owner.
+3. Add a new named runtime chunk only when it has a distinct responsibility that does not fit an existing owner, and register it once in the canonical manifest.
 4. UI-only organization must reuse existing domain/project state rather than introduce a second work/page/hierarchy model.
 5. Browser-visible behavior, project JSON, prompt, manifest, export package boundaries, RTL/LTR, writing direction, and legacy portable-file normalization are external contracts during refactors.
-6. `scripts/runtime-paths.mjs` and `scripts/validate-runtime-layout.mjs` keep semantic runtime registration/load order explicit.
+6. `scripts/runtime-paths.mjs` derives validator-facing paths/order from the canonical manifest; `scripts/validate-runtime-layout.mjs` enforces registration, uniqueness, source existence, and the no-inline-duplicate rule.
 7. User-visible/runtime contract changes must also update the documentation owners defined in `docs/README.md` and `AGENTS.md`.
 8. CI evidence and visual/interaction evidence are separate; static validation cannot by itself prove a public layout is visually correct.
 
@@ -97,13 +121,4 @@ A future module/bundler/runtime migration must be handled as a separate refactor
 
 ## Phase 1 TypeScript/Vite bridge
 
-Prototype 0.17.0 keeps this directory as the compatibility/reference runtime while the production entry moves to Vite + TypeScript. `web/src/legacy-runtime.ts` owns ordered loading and commit-aware cache busting. New top-level UI composition belongs in typed source under `web/src/`; do not add another chronology-named runtime patch file for Phase 1 presentation fixes.
-
-
-### `templates/panel-layout-grammar.js`
-
-Owns the Prototype 0.18.0 page-layout grammar layered on top of quadrilateral panel geometry: shared diagonal seams with compact gutters, asymmetric visual-weight families, Story Template layout-family assignment, compatibility handling for `diagonal3` / `diagonal4`, and diagonal discovery integration. Base polygon validation/editing remains in `authoring/panel-geometry.js`; apply-time shape transfer remains in `templates/presentation-contract.js`.
-
-### `authoring/inset-panels.js`
-
-Owns Prototype 0.19.0 one-level panel-in-panel compatibility behavior: optional parent relation normalization, ID-remap on duplication, semantic order insertion, white overlap mask, deletion/split safety, editor control injection, and Render Brief / manifest hierarchy. It deliberately reuses the ordinary Panel model and existing inspectors instead of creating a second inset-only content model.
+Prototype 0.17.0 keeps this directory as the compatibility/reference runtime while the production entry uses Vite + TypeScript. `web/src/legacy-runtime.ts` owns ordered loading and commit-aware cache busting, but the ordered registry itself is owned by `web/runtime/manifest.json`. New top-level UI composition belongs in typed source under `web/src/`; do not add another chronology-named runtime patch file for Phase 1 presentation fixes.
