@@ -525,3 +525,13 @@ Responsibilities:
 - register the small set of Story Templates whose purpose is specifically to demonstrate missing layout-grammar coverage.
 
 It does **not** own base panel-shape validation, user-authored quadrilateral editing, story/cast semantics, or final template application. Those remain with `authoring/panel-geometry.js`, Story Template semantic modules, and `templates/presentation-contract.js`.
+
+## Inset panel ownership — Prototype 0.19.0
+
+`web/runtime/authoring/inset-panels.js` owns the compatibility-runtime behavior for one-level panel-in-panel composition. It loads after quadrilateral geometry and before template presentation so it can reuse final panel geometry while extending Render Brief / manifest semantics before producer provenance is attached.
+
+Serialized ownership remains flat: `Page.panels[]` contains both roots and inset children. An optional `Panel.inset` relation stores `parentPanelId`; the child `rect` remains the spatial authority. This avoids introducing a second nested Panel schema while keeping stable Panel IDs and all existing panel editors reusable. Normalization rejects orphan/self/nested parent relations. Page/work duplication remaps the relation whenever Panel IDs are regenerated.
+
+Reading-order ownership remains in the existing geometry-aware function, wrapped only to insert each child immediately after its already-ordered root parent. P0 intentionally blocks splitting related panels rather than guessing how to migrate the relation.
+
+Top-level progressive-disclosure composition belongs to `web/src/phase-one-ui.ts`: Page gets one ARIA tablist submode layer; Panel uses native `details/summary` groups. This UI state is presentation state and is not serialized into the manga project.

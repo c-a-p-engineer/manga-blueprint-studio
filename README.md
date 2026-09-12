@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.18.0
+## Current prototype: 0.19.0
 
-Prototype **0.18.0** rebuilds panel-layout grammar for Story Templates: neighboring diagonal panels now share a narrow constant seam instead of opening into large white wedges/crosses, panel sizes use stronger visual-weight contrast, and shipped templates are reorganized onto purpose-specific layout families. New `duel2`, `opposed3`, `zigzag4`, `stair4`, `build4`, and `detail5` layouts are available while legacy `diagonal3` / `diagonal4` remain load-compatible.
+Prototype **0.19.0** adds one-level editable panel-in-panel composition and task-first progressive disclosure. Page settings now switch between Template / Manuscript / Manual layout modes; Panel settings keep the current summary visible while Content, Camera, and Frame/Shape sections can be expanded as needed. The legacy inset-style border remains compatible but is distinct from a real inset panel.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -32,6 +32,7 @@ The current release supports:
 - manuscript/canvas presets, Japanese RTL or LTR reading, and geometry-based panel order synchronization;
 - rectangle and convex-quadrilateral panel boundaries with direct four-corner editing and irregular layout presets;
 - manga-aware panel-layout grammar with tight shared diagonal seams, asymmetric staggered layouts, buildup/detail-to-hero layouts, and automated whitespace/area-contrast checks;
+- one-level editable inset panels with explicit parentage, clean-PNG overlap structure, and AI handoff preservation;
 - annotated panel-number badges that follow the edited quadrilateral corner instead of the compatibility bounding box;
 - vertical Japanese lettering by default with horizontal/per-balloon/per-SFX overrides;
 - Story Template Studio with card-first selection, compound quick filters, explicit pre-apply character selection, a single apply surface, presentation chips, diagonal thumbnails, and bounded Smart Manga proposals;

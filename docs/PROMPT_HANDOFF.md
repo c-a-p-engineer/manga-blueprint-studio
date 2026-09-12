@@ -524,3 +524,16 @@ Character Sheet が必要と書かれているキャラクターは、別途添�
 ```
 
 For a page whose used characters are all `description` / `free`, no Character Sheet needs to be attached.
+
+## Inset panel handoff — Prototype 0.19.0
+
+A true **差し込みコマ / inset panel** is authored spatial structure, not decoration. The clean PNG contains its opaque mask and frame over the parent panel. The current-page Render Brief and export manifest also include one-level parentage.
+
+Downstream generation must preserve:
+
+- the child panel physically overlaid inside its parent;
+- the child boundary and relative placement shown in `*_clean.png`;
+- the semantic parent/child relation in `panelHierarchy` / `insetPanels`;
+- the child as a real editable manga panel with its own beat/camera/cast/text, not as a speech balloon, UI card, or background prop.
+
+The legacy `border=inset` value means only an **Inset-style border / 小窓風枠** and does not establish panel parentage.

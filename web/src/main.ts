@@ -3,7 +3,7 @@ import {installPhaseOneUi} from './phase-one-ui';
 
 const fallbackBuildInfo:BuildInfo={
   schema:'manga-blueprint-build-info/1',
-  appVersion:'0.18.0',
+  appVersion:'0.19.0',
   gitCommit:null,
   buildSource:'vite-fallback',
   deployedAt:null
