@@ -32,6 +32,7 @@
   { "key": "panelCastFlow", "id": "templates/panel-cast-flow", "path": "runtime/templates/panel-cast-flow.js" },
   { "key": "interactionGenerationContract", "id": "handoff/interaction-generation-contract", "path": "runtime/handoff/interaction-generation-contract.js" },
   { "key": "renderBrief", "id": "handoff/render-brief", "path": "runtime/handoff/render-brief.js" },
+  { "key": "workBrief", "id": "integration/work-brief", "path": "runtime/integration/work-brief.js" },
   { "key": "panelGeometry", "id": "authoring/panel-geometry", "path": "runtime/authoring/panel-geometry.js" },
   { "key": "insetPanels", "id": "authoring/inset-panels", "path": "runtime/authoring/inset-panels.js" },
   { "key": "templatePresentationContract", "id": "templates/presentation-contract", "path": "runtime/templates/presentation-contract.js" },
