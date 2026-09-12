@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+const path='scripts/p0-inset-ui-sync.mjs';
+let text=fs.readFileSync(path,'utf8');
+const start='// CI: syntax plus executable P0 behavior/UX contracts.';
+const end='// Version synchronization.';
+const i=text.indexOf(start),j=text.indexOf(end);
+if(i<0||j<0||j<=i)throw new Error('Unable to isolate workflow patch block');
+text=text.slice(0,i)+text.slice(j);
+fs.writeFileSync(path,text);
+console.log('Removed validate.yml mutation from one-shot sync; connector will update workflow separately.');
