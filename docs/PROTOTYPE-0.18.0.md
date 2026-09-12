@@ -11,10 +11,14 @@ Prototype 0.18.0 refreshes Story Template panel composition around manga-specifi
 - Added deterministic checks for panel count, canvas bounds, inner whitespace, hero-panel area contrast, template mapping, and diagonal discovery integration.
 - Added research rationale in `docs/PANEL-LAYOUT-GRAMMAR-2026-09-12.md`.
 
+## Compatibility
+
+- Project format remains `manga-blueprint/0.2`; no serialized project migration is required.
+- Existing projects that record legacy `diagonal3` / `diagonal4` layout IDs remain readable. Those IDs now resolve to the tighter shared-seam geometry when the layout is reapplied/rendered by the current editor.
+- Individual user-edited panel quadrilaterals remain authoritative and are not silently rewritten by the catalog refresh.
+
 ## Documentation
 
 - Canonical behavior: `docs/PRODUCT.md`
 - User workflow: `docs/USER-GUIDE.md`
 - Public guide: `/guide.html`
-
-Project format remains `manga-blueprint/0.2`; this release does not migrate serialized project schema.
