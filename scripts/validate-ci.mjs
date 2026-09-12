@@ -65,6 +65,7 @@ const validators=[
   'scripts/validate-panel-cast-flow.mjs',
   'scripts/validate-generation-contract.mjs',
   'scripts/validate-render-brief.mjs',
+  'scripts/validate-work-brief.mjs',
   'scripts/validate-panel-geometry.mjs',
   'scripts/validate-panel-layout-grammar.mjs',
   'scripts/validate-inset-panels.mjs',
