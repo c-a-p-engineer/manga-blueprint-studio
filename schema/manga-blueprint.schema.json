@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json",
   "title": "Manga Blueprint",
-  "description": "Provider-independent semantic blueprint for manga layout, reusable character identity, stable work/page/container identity, optional text-based appearance guidance, global art direction, story action intent, pose/support/depth semantics, scene continuity, background, balloon/SFX writing direction, text, manga effects, bounded-assistance provenance, and optional convex-quadrilateral panel geometry.",
+  "description": "Provider-independent semantic blueprint for manga layout, reusable character identity, stable work/page/container identity, optional text-based appearance guidance, optional work-level creation brief, global art direction, story action intent, pose/support/depth semantics, scene continuity, background, balloon/SFX writing direction, text, manga effects, bounded-assistance provenance, and optional convex-quadrilateral panel geometry.",
   "type": "object",
   "required": ["format", "meta", "pages"],
   "properties": {
@@ -24,6 +24,7 @@
         "randomSeed": { "type": "string" },
         "randomVariant": { "enum": ["balanced", "dynamic", "emotion"] },
         "randomIntensity": { "enum": ["stable", "standard", "bold"] },
+        "workBrief": { "$ref": "#/$defs/workBrief" },
         "artDirection": { "$ref": "#/$defs/artDirection" }
       },
       "additionalProperties": true
@@ -47,6 +48,17 @@
         "title": { "type": "string" },
         "order": { "type": "integer", "minimum": 1 },
         "parentId": { "type": ["string","null"] }
+      },
+      "additionalProperties": true
+    },
+    "workBrief": {
+      "type": "object",
+      "properties": {
+        "purpose": { "type": "string" },
+        "targetAudience": { "type": "string" },
+        "outputMedium": { "type": "string" },
+        "keyMessage": { "type": "string" },
+        "sourceNotes": { "type": "string" }
       },
       "additionalProperties": true
     },
