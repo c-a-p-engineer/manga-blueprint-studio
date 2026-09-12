@@ -2,10 +2,10 @@
 
 `docs/ROADMAP.md` is the **only current status authority** for delivery phases. Detailed design notes may explain future contracts, but they must not maintain a competing phase-status truth.
 
-## Shipped
+## Shipped through Prototype 0.18.0
 
 - Prototype 0.18.0: manga-aware panel-layout grammar with tight shared diagonal seams, stronger panel-area contrast, Story Template remapping, and three new layout-coverage templates.
- through Prototype 0.18.0
+
 
 ### Foundation / persistence
 
