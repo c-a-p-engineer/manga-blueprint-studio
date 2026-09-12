@@ -1,0 +1,35 @@
+name: P0 inset UI sync
+
+on:
+  push:
+    branches:
+      - feat/inset-panel-p0-ui
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/inset-panel-p0-ui
+          fetch-depth: 0
+      - name: Apply P0 inset and UI synchronization
+        run: node scripts/p0-inset-ui-sync.mjs
+      - name: Remove one-shot sync machinery
+        run: |
+          rm scripts/p0-inset-ui-sync.mjs
+          rm .github/workflows/p0-inset-ui-sync.yml
+      - name: Commit synchronized P0 implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No synchronization changes"
+            exit 0
+          fi
+          git commit -m "Ship P0 inset panels and progressive editor disclosure"
+          git push origin HEAD:feat/inset-panel-p0-ui
