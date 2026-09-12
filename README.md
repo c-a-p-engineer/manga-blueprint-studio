@@ -61,7 +61,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.s
 
 1. Open/create a **作品**.
 2. Choose `P001` or another page above the canvas, or open **作品エクスプローラー** to navigate the explorer tree.
-3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. Story Template cards can be narrowed by 2人表示・恋愛などの条件と、斜めコマ・衝撃枠・集中線などの演出条件を組み合わせて探せます。カードを選んだ後は、使用するキャラクターを明示してから適用します。Dynamic Story Templates use tight shared-seam layouts such as `対向3コマ（斜め）` and `ジグザグ4コマ`; manual layout also includes `段違い4コマ`, `溜め→大ゴマ 4コマ`, `ディテール→大ゴマ 5コマ`, and `対比2コマ（斜め）`. Legacy `斜め3コマ` / `斜め4コマ 2×2` open with the corrected tight-seam geometry.
+3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. Story Template cards can be narrowed by 2人表示・恋愛などの条件と、斜めコマ・衝撃枠・集中線などの演出条件を組み合わせて探せます。カードを選んだ後は、使用するキャラクターを明示してから適用します。 Dynamic Story Templates use tight shared-seam layouts such as `対向3コマ（斜め）` and `ジグザグ4コマ`; manual layout also includes `段違い4コマ`, `溜め→大ゴマ 4コマ`, `ディテール→大ゴマ 5コマ`, and `対比2コマ（斜め）`. Legacy `斜め3コマ` / `斜め4コマ 2×2` open with the corrected tight-seam geometry.
 4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. The annotated panel number follows the edited top-right corner. Then refine character, background, dialogue, and effects.
 5. In **出力**, download the **AI生成ZIP** for the current page and copy the short manifest-first handoff message.
 6. Attach Character Sheets only for characters whose manifest says they are required.
@@ -175,19 +175,21 @@ See [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) for the detailed contract
 
 ## Local use
 
-No package installation or application build is required.
+The production site is built with Vite + TypeScript. The existing classic runtime remains a validated compatibility/reference layer during the migration.
 
 ```bash
-python3 -m http.server 4173
+npm install
+npm run dev
 ```
 
-Open:
+For a production artifact:
 
-```text
-http://localhost:4173/web/
+```bash
+npm run typecheck
+npm run build
 ```
 
-The app is a zero-build static runtime. `web/build-info.json` is the local/repository provenance fallback; GitHub Pages stamps the deployed commit and timestamp into the published copy. Runtime chunk URLs include the application version so a newly deployed release does not silently reuse older cached feature chunks.
+`web/build-info.json` is the local/repository provenance fallback; GitHub Pages stamps the deployed commit and timestamp into the published copy. Runtime chunk URLs include both application version and deployed commit so newly deployed source does not silently reuse older cached feature chunks.
 
 ## Documentation
 
@@ -200,14 +202,14 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.16.4.md`](docs/PROTOTYPE-0.16.4.md) — current release note.
+- [`docs/PROTOTYPE-0.18.0.md`](docs/PROTOTYPE-0.18.0.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.16.4**.
+Current application baseline: **Prototype 0.18.0**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;
