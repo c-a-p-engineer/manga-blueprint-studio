@@ -4,9 +4,9 @@ Visual manga storyboard editor for organizing a work into pages, designing panel
 
 **The human remains the director.** Story Templates, Smart Manga, diagnostics, and downstream image models propose or render; the user chooses and edits.
 
-## Current prototype: 0.17.1
+## Current prototype: 0.18.0
 
-Prototype **0.17.0** starts the TypeScript + Vite cutover and makes the template workflow the primary Page-settings task. Story Template selection, sample dialogue/SFX choice, cast selection, and the apply CTA now live in one task-first surface; manual panel layout is secondary. The legacy volume/chapter/folder editor is removed from the primary Page UI while existing hierarchy data remains readable in Work Explorer.
+Prototype **0.18.0** rebuilds panel-layout grammar for Story Templates: neighboring diagonal panels now share a narrow constant seam instead of opening into large white wedges/crosses, panel sizes use stronger visual-weight contrast, and shipped templates are reorganized onto purpose-specific layout families. New `duel2`, `opposed3`, `zigzag4`, `stair4`, `build4`, and `detail5` layouts are available while legacy `diagonal3` / `diagonal4` remain load-compatible.
 
 Current project format remains `manga-blueprint/0.2`; export manifest remains `manga-blueprint-export-manifest/3`.
 
@@ -31,6 +31,7 @@ The current release supports:
 - optional nested `volume | chapter | folder` organization with non-destructive container deletion;
 - manuscript/canvas presets, Japanese RTL or LTR reading, and geometry-based panel order synchronization;
 - rectangle and convex-quadrilateral panel boundaries with direct four-corner editing and irregular layout presets;
+- manga-aware panel-layout grammar with tight shared diagonal seams, asymmetric staggered layouts, buildup/detail-to-hero layouts, and automated whitespace/area-contrast checks;
 - annotated panel-number badges that follow the edited quadrilateral corner instead of the compatibility bounding box;
 - vertical Japanese lettering by default with horizontal/per-balloon/per-SFX overrides;
 - Story Template Studio with card-first selection, compound quick filters, explicit pre-apply character selection, a single apply surface, presentation chips, diagonal thumbnails, and bounded Smart Manga proposals;
@@ -60,7 +61,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.s
 
 1. Open/create a **作品**.
 2. Choose `P001` or another page above the canvas, or open **作品エクスプローラー** to navigate the explorer tree.
-3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. Story Template cards can be narrowed by 2人表示・恋愛などの条件と、斜めコマ・衝撃枠・集中線などの演出条件を組み合わせて探せます。カードを選んだ後は、使用するキャラクターを明示してから適用します。`斜め3コマ` and `斜め4コマ 2×2` start with irregular panel boundaries.
+3. In **ページ設定**, choose manuscript size, reading direction, art direction, and a layout/Story Template/Smart Manga as needed. Story Template cards can be narrowed by 2人表示・恋愛などの条件と、斜めコマ・衝撃枠・集中線などの演出条件を組み合わせて探せます。カードを選んだ後は、使用するキャラクターを明示してから適用します。 Dynamic Story Templates use tight shared-seam layouts such as `対向3コマ（斜め）` and `ジグザグ4コマ`; manual layout also includes `段違い4コマ`, `溜め→大ゴマ 4コマ`, `ディテール→大ゴマ 5コマ`, and `対比2コマ（斜め）`. Legacy `斜め3コマ` / `斜め4コマ 2×2` open with the corrected tight-seam geometry.
 4. Tap a panel and refine its **コマ形状**. Choose a shape preset or enable **四隅を直接編集** and drag the blue corner handles. The annotated panel number follows the edited top-right corner. Then refine character, background, dialogue, and effects.
 5. In **出力**, download the **AI生成ZIP** for the current page and copy the short manifest-first handoff message.
 6. Attach Character Sheets only for characters whose manifest says they are required.
@@ -109,7 +110,7 @@ Rectangle-only projects remain valid. A panel may additionally store:
 
 **Story Template / ストーリーテンプレート is the single canonical template feature name.** “Scene Template” is not another product feature or alias.
 
-Story Template Studio provides recognizable editable beat patterns. Selection is card-first; the old duplicate Story Template dropdown is hidden. Quick filters can be combined across cast/relationship/dialogue/art and presentation features such as diagonal panels, impact/borderless/inset frames, focus/speed/impact/tension/silence effects, breakout, and 演出あり / 演出なし. Cards expose presentation chips so a sample can be found without opening every template. The old middle preview is removed: after selecting a card, the apply card asks which reusable character(s) to use and the primary action applies that exact cast. Smart Manga remains a separate bounded proposal system. Both remain non-mutating until explicit apply.
+Story Template Studio provides recognizable editable beat patterns. Selection is card-first; the old duplicate Story Template dropdown is hidden. Story Templates now choose a panel-layout family by visual purpose: dynamic pressure/impact uses shared diagonal seams, dialogue/reaction uses staggered rectangles, and emotional buildup/reveal uses deliberate small-to-large area contrast. Quick filters can be combined across cast/relationship/dialogue/art and presentation features such as diagonal panels, impact/borderless/inset frames, focus/speed/impact/tension/silence effects, breakout, and 演出あり / 演出なし. Cards expose presentation chips so a sample can be found without opening every template. The old middle preview is removed: after selecting a card, the apply card asks which reusable character(s) to use and the primary action applies that exact cast. Smart Manga remains a separate bounded proposal system. Both remain non-mutating until explicit apply.
 
 ## Character Sheet is optional
 
@@ -174,19 +175,21 @@ See [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) for the detailed contract
 
 ## Local use
 
-No package installation or application build is required.
+The production site is built with Vite + TypeScript. The existing classic runtime remains a validated compatibility/reference layer during the migration.
 
 ```bash
-python3 -m http.server 4173
+npm install
+npm run dev
 ```
 
-Open:
+For a production artifact:
 
-```text
-http://localhost:4173/web/
+```bash
+npm run typecheck
+npm run build
 ```
 
-The app is a zero-build static runtime. `web/build-info.json` is the local/repository provenance fallback; GitHub Pages stamps the deployed commit and timestamp into the published copy. Runtime chunk URLs include the application version so a newly deployed release does not silently reuse older cached feature chunks.
+`web/build-info.json` is the local/repository provenance fallback; GitHub Pages stamps the deployed commit and timestamp into the published copy. Runtime chunk URLs include both application version and deployed commit so newly deployed source does not silently reuse older cached feature chunks.
 
 ## Documentation
 
@@ -199,14 +202,14 @@ Start with the documentation map:
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI generation/review handoff contract.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — the only current roadmap status authority.
 - [`docs/PROJECT-MULTI-PAGE-ROADMAP.md`](docs/PROJECT-MULTI-PAGE-ROADMAP.md) — supplemental multi-page/portability design decisions.
-- [`docs/PROTOTYPE-0.16.4.md`](docs/PROTOTYPE-0.16.4.md) — current release note.
+- [`docs/PROTOTYPE-0.18.0.md`](docs/PROTOTYPE-0.18.0.md) — current release note.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized project schema.
 
 Older `PROTOTYPE-*`, dated research, and baseline documents are historical evidence. They should not be read as current UI authority unless a current contract explicitly points to them.
 
 ## Data contract
 
-Current application baseline: **Prototype 0.16.4**.
+Current application baseline: **Prototype 0.18.0**.
 
 - project format: `manga-blueprint/0.2`;
 - export manifest: `manga-blueprint-export-manifest/3`;

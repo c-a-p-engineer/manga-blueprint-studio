@@ -98,3 +98,8 @@ A future module/bundler/runtime migration must be handled as a separate refactor
 ## Phase 1 TypeScript/Vite bridge
 
 Prototype 0.17.0 keeps this directory as the compatibility/reference runtime while the production entry moves to Vite + TypeScript. `web/src/legacy-runtime.ts` owns ordered loading and commit-aware cache busting. New top-level UI composition belongs in typed source under `web/src/`; do not add another chronology-named runtime patch file for Phase 1 presentation fixes.
+
+
+### `templates/panel-layout-grammar.js`
+
+Owns the Prototype 0.18.0 page-layout grammar layered on top of quadrilateral panel geometry: shared diagonal seams with compact gutters, asymmetric visual-weight families, Story Template layout-family assignment, compatibility handling for `diagonal3` / `diagonal4`, and diagonal discovery integration. Base polygon validation/editing remains in `authoring/panel-geometry.js`; apply-time shape transfer remains in `templates/presentation-contract.js`.

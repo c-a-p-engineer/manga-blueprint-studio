@@ -510,3 +510,18 @@ Visual/interaction quality remains separate evidence. A passing CI job does not 
 `web/src/phase-one-ui.ts` owns the new primary Page-settings composition boundary. It keeps the Story Template task together (template → sample dialogue/SFX choice → cast → apply), demotes manual panel layout behind progressive disclosure, and removes the legacy hierarchy editor from the primary Page surface without deleting compatible serialized hierarchy data. It deliberately calls existing canonical template-application functions rather than introducing a second template state model.
 
 The migration boundary is intentionally asymmetric: new composition code must be TypeScript/ESM; existing runtime owners remain classic scripts until migrated with characterization/equivalence coverage. This makes the old runtime a reference implementation instead of pretending a flag-day rewrite is complete.
+
+
+## Panel layout grammar runtime — Prototype 0.18.0
+
+`web/runtime/templates/panel-layout-grammar.js` is the semantic owner for reusable manga page-layout families introduced after the base quadrilateral geometry layer. It loads after `templates/discovery-presentation.js` and before cast/apply integration.
+
+Responsibilities:
+
+- define tight shared-seam layout geometry (`duel2`, `opposed3`, `zigzag4`) and asymmetric rectangular grammar (`stair4`, `build4`, `detail5`);
+- keep legacy `diagonal3` / `diagonal4` IDs compatible while resolving them through corrected shared-seam geometry;
+- assign shipped Story Templates to layout families by visual purpose;
+- add layout-family search tags and keep new diagonal families visible to presentation discovery;
+- register the small set of Story Templates whose purpose is specifically to demonstrate missing layout-grammar coverage.
+
+It does **not** own base panel-shape validation, user-authored quadrilateral editing, story/cast semantics, or final template application. Those remain with `authoring/panel-geometry.js`, Story Template semantic modules, and `templates/presentation-contract.js`.

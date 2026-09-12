@@ -28,6 +28,7 @@
       <a href="#structure">作品エクスプローラー</a>
       <a href="#page-settings">ページ設定</a>
       <a href="#panel-shape">斜めコマ・四隅編集</a>
+      <a href="#panel-layout-grammar">コマ割り文法</a>
       <a href="#story-tools">Story Template / Smart Manga</a>
       <a href="#character">キャラクター</a>
       <a href="#direction">読み方向・文字方向</a>
@@ -113,6 +114,19 @@
         </ol>
         <div class="callout"><strong>安全策：</strong> 自己交差、ほぼゼロ面積、極端に短い辺になる移動は拒否されます。変形コマでは現在「断ち切り」を無効化しています。</div>
         <p>古い長方形だけの作品はそのまま使えます。変形コマの境界は、画面の枠・タップ判定・クリップ・クリーンPNG・AI向けRender Briefで同じ4点を使います。</p>
+      </section>
+
+
+      <section id="panel-layout-grammar">
+        <h2>コマ割り文法：斜めでも余白を広げない</h2>
+        <p>Prototype 0.18.0 では、隣り合う斜めコマを別々に傾けず、<strong>細い共有斜線</strong>で分けます。大きな白いV字や中央の十字余白を作りにくくし、絵そのものへ視線を戻します。</p>
+        <div class="card-grid">
+          <article class="card"><h3>対向3コマ（斜め）</h3><p>上段2コマを共有斜線でつなぎ、下の大ゴマへ落とします。怒り・決定打・発見向け。</p></article>
+          <article class="card"><h3>ジグザグ4コマ</h3><p>上下で斜線を反転し、高速な攻防や反撃を右→左→下へ送ります。</p></article>
+          <article class="card"><h3>段違い4コマ</h3><p>左右の幅を上下で入れ替え、均等2×2より会話・リアクションへ大小をつけます。</p></article>
+          <article class="card"><h3>溜め / ディテール → 大ゴマ</h3><p>小さい情報を積み、決断・発見・見せ場へ大きな面積を渡します。</p></article>
+        </div>
+        <div class="callout"><strong>斜め枠は演出です。</strong> 静かな余韻や親密な場面では、読みやすい長方形をあえて使うテンプレートも残しています。</div>
       </section>
 
       <section id="tabs">

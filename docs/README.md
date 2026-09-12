@@ -52,6 +52,7 @@ The following filename families are evidence or dated planning input rather than
 - `COMPETITOR-NOTES-YYYY-MM-DD.md`
 - `RESEARCH-SOURCES-YYYY-MM-DD.md`
 - `TASKS-RESEARCH-YYYY-MM-DD.md`
+- `PANEL-LAYOUT-GRAMMAR-YYYY-MM-DD.md`
 
 When current product decisions differ from old research, update the current contract/roadmap rather than rewriting the original research as if it had always reached the new conclusion.
 
