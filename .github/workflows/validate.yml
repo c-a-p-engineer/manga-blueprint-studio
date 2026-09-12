@@ -45,6 +45,7 @@ jobs:
           node --check scripts/validate-render-brief.mjs
           node --check scripts/validate-producer-provenance.mjs
           node --check scripts/validate-panel-geometry.mjs
+          node --check scripts/validate-panel-layout-grammar.mjs
           node --check scripts/validate-story-template-presentation.mjs
           node --check scripts/validate-template-discovery-presentation.mjs
           node --check scripts/validate-template-character-cast.mjs
@@ -128,6 +129,9 @@ jobs:
 
       - name: Validate quadrilateral panel geometry
         run: node scripts/validate-panel-geometry.mjs
+
+      - name: Validate panel layout grammar
+        run: node scripts/validate-panel-layout-grammar.mjs
 
       - name: Validate Story Template presentation contract
         run: node scripts/validate-story-template-presentation.mjs
