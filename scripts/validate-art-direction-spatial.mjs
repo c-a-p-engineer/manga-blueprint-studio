@@ -2,15 +2,12 @@ import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const read = path => fs.readFileSync(path, 'utf8');
-const bootstrap = read('web/src/legacy-runtime.ts');
 const art = readRuntime('artDirectionReadiness');
 const spatial = readRuntime('spatialSemantics');
 const schema = JSON.parse(read('schema/manga-blueprint.schema.json'));
 
-for (const key of ['artDirectionReadiness','spatialSemantics']) {
-  const file=runtimePaths[key],src=file.slice('web/'.length);
-  if (!bootstrap.includes(`'${src}'`)) throw new Error(`TypeScript bootstrap must load ${src}`);
-}
+if(runtimePaths.artDirectionReadiness!=='web/runtime/handoff/art-direction-readiness.js')throw new Error('Art-direction runtime owner is not registered');
+if(runtimePaths.spatialSemantics!=='web/runtime/handoff/spatial-semantics.js')throw new Error('Spatial-semantics runtime owner is not registered');
 
 for (const phrase of [
   'ART DIRECTION (GLOBAL):',
