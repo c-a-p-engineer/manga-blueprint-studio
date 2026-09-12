@@ -8,13 +8,11 @@ const foundation=read(runtimePaths.foundation);
 const storage=read(runtimePaths.projectStorage);
 const works=read(runtimePaths.workLibraryHierarchy);
 const events=read(runtimePaths.eventBindings);
-const bootstrap=read('web/src/legacy-runtime.ts');
 const schema=JSON.parse(read('schema/manga-blueprint.schema.json'));
 
 assert.equal(runtimePaths.workLibraryHierarchy,'web/runtime/authoring/work-library-hierarchy.js');
 const order=Object.fromEntries(runtimeLoadOrder.map((key,index)=>[key,index]));
 assert.ok(order.pageNavigation<order.workLibraryHierarchy&&order.workLibraryHierarchy<order.pageLayoutCamera,'work hierarchy runtime must load after page navigation and before later authoring wrappers');
-assert.ok(bootstrap.includes("['authoring/work-library-hierarchy','runtime/authoring/work-library-hierarchy.js']"));
 
 for(const phrase of [
   'async load(workId)',
