@@ -1,7 +1,5 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const source=readRuntime('templateDiscoveryPresentation');
 const studio=readRuntime('templateStudio');
 
@@ -81,8 +79,6 @@ const breakoutCount=occurrences(`${studio}\n${source}`,"breakout:'");
 if(breakoutCount<3)throw new Error(`breakout examples must have at least 3 samples; got ${breakoutCount}`);
 if(!studio.includes('classroomTalk:{'))throw new Error('plain Story Template baseline must remain available for effect/no-effect comparison');
 
-const runtimePath=runtimePaths.templateDiscoveryPresentation;
-if(runtimePath!=='web/runtime/templates/discovery-presentation.js')throw new Error('template discovery runtime path is not canonical');
-if(!bootstrap.includes("['templates/discovery-presentation','runtime/templates/discovery-presentation.js']"))throw new Error('TypeScript bootstrap must load template discovery after presentation support');
+if(runtimePaths.templateDiscoveryPresentation!=='web/runtime/templates/discovery-presentation.js')throw new Error('template discovery runtime path is not canonical');
 
 console.log('Story Template P1 catalog, presentation filters, sample coverage, combined-filter hooks, and duplicate-selector removal validation passed.');

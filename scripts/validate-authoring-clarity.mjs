@@ -1,11 +1,7 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app=readRuntime('authoringClarity');
-const src=runtimePaths.authoringClarity.slice('web/'.length);
-
-if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap must load ${src}`);
+if(runtimePaths.authoringClarity!=='web/runtime/ui/authoring-clarity.js')throw new Error('Authoring clarity runtime owner is not registered');
 
 for(const phrase of [
   'container-type:inline-size',

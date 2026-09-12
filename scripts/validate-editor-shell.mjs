@@ -6,7 +6,6 @@ if(shellPath!=='web/runtime/ui/editor-shell.js')throw new Error(`Unexpected edit
 if(runtimeLoadOrder.at(-1)!=='editorShell')throw new Error('Editor shell must run last so it can organize the fully-constructed authoring UI.');
 
 const shell=fs.readFileSync(shellPath,'utf8');
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const phaseOneUi=fs.readFileSync('web/src/phase-one-ui.ts','utf8');
 const phaseOneCss=fs.readFileSync('web/src/phase-one-ui.css','utf8');
 for(const phrase of [
@@ -26,7 +25,6 @@ for(const phrase of [
   if(!shell.includes(phrase))throw new Error(`Editor shell contract missing ${JSON.stringify(phrase)}`);
 }
 if(shell.includes('structureEditSummary17')||shell.includes('containerManagerSlot17'))throw new Error('Dedicated volume/chapter/folder editor must not remain in the primary work explorer.');
-if(!bootstrap.includes("['ui/editor-shell','runtime/ui/editor-shell.js']"))throw new Error('TypeScript bootstrap does not load editor shell runtime.');
 
 for(const phrase of [
   "byId('containerManager16')?.remove()",

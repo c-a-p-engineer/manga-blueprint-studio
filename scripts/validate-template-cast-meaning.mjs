@@ -1,11 +1,7 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app=readRuntime('castSemantics');
-const src=runtimePaths.castSemantics.slice('web/'.length);
-
-if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap must load ${src}`);
+if(runtimePaths.castSemantics!=='web/runtime/templates/cast-semantics.js')throw new Error('Cast-semantics runtime owner is not registered');
 
 for(const phrase of [
   "templateExpectedCast26:'想定登場'",

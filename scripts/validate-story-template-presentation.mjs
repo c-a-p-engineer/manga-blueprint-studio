@@ -1,10 +1,9 @@
-import fs from 'node:fs';
 import vm from 'node:vm';
+import {runtimeLoadOrder,runtimePaths,readRuntime} from './runtime-paths.mjs';
 
-const presentationPath='web/runtime/templates/presentation-contract.js';
-const source=fs.readFileSync(presentationPath,'utf8');
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
-const runtimePaths=fs.readFileSync('scripts/runtime-paths.mjs','utf8');
+const presentationPath=runtimePaths.templatePresentationContract;
+if(presentationPath!=='web/runtime/templates/presentation-contract.js')throw new Error('Template presentation runtime owner is not registered');
+const source=readRuntime('templatePresentationContract');
 
 for(const token of [
   'normalizedPanels',
@@ -19,11 +18,9 @@ for(const token of [
 ])if(!source.includes(token))throw new Error(`Story Template presentation contract missing: ${token}`);
 if(source.includes('makePanel=function'))throw new Error('Story Template presentation must not monkey-patch const makePanel at runtime.');
 
-const geometryPath='runtime/authoring/panel-geometry.js';
-const presentationRuntimePath='runtime/templates/presentation-contract.js';
-if(!bootstrap.includes(`'${presentationRuntimePath}'`))throw new Error('presentation-contract runtime chunk is not loaded');
-if(bootstrap.indexOf(`'${geometryPath}'`)>bootstrap.indexOf(`'${presentationRuntimePath}'`))throw new Error('presentation-contract must load after panel-geometry');
-if(!runtimePaths.includes("templatePresentationContract: 'web/runtime/templates/presentation-contract.js'"))throw new Error('runtime path registry is missing template presentation contract');
+const geometryIndex=runtimeLoadOrder.indexOf('panelGeometry');
+const presentationIndex=runtimeLoadOrder.indexOf('templatePresentationContract');
+if(geometryIndex<0||presentationIndex<0||presentationIndex<geometryIndex)throw new Error('presentation-contract must load after panel-geometry');
 
 const page={panels:[]};
 const tpl={layout:'diagonal3',beats:[{border:'normal'},{border:'impact'},{border:'borderless'}]};

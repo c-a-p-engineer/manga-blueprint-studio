@@ -1,70 +1,44 @@
 import fs from 'node:fs';
 
-export const runtimePaths = Object.freeze({
-  foundation: 'web/runtime/core/foundation.js',
-  projectStorage: 'web/runtime/core/project-storage.js',
-  editorState: 'web/runtime/core/editor-state.js',
-  exportInput: 'web/runtime/core/export-input.js',
-  eventBindings: 'web/runtime/core/event-bindings.js',
-  pageNavigation: 'web/runtime/authoring/page-navigation.js',
-  workLibraryHierarchy: 'web/runtime/authoring/work-library-hierarchy.js',
-  pageLayoutCamera: 'web/runtime/authoring/page-layout-camera.js',
-  characterLibraryExport: 'web/runtime/authoring/character-library-export.js',
-  localizationExportHardening: 'web/runtime/authoring/localization-export-hardening.js',
-  smartManga: 'web/runtime/assist/smart-manga.js',
-  characterGuidance: 'web/runtime/identity/character-guidance.js',
-  identityLocalizationHardening: 'web/runtime/identity/localization-hardening.js',
-  storyReadability: 'web/runtime/story/story-readability.js',
-  smartIntentHardening: 'web/runtime/story/smart-intent-hardening.js',
-  templateStudio: 'web/runtime/templates/studio.js',
-  templateStudioFeedback: 'web/runtime/templates/studio-feedback.js',
-  writingDirection: 'web/runtime/lettering/writing-direction.js',
-  readingOrder: 'web/runtime/ordering/reading-order.js',
-  templateLetteringOrder: 'web/runtime/integration/template-lettering-order.js',
-  artDirectionReadiness: 'web/runtime/handoff/art-direction-readiness.js',
-  spatialSemantics: 'web/runtime/handoff/spatial-semantics.js',
-  crossModel: 'web/runtime/handoff/cross-model.js',
-  templateQuality: 'web/runtime/templates/quality.js',
-  sceneContract: 'web/runtime/templates/scene-contract.js',
-  castFallback: 'web/runtime/templates/cast-fallback.js',
-  desktopLayout: 'web/runtime/ui/desktop-layout.js',
-  authoringClarity: 'web/runtime/ui/authoring-clarity.js',
-  castSemantics: 'web/runtime/templates/cast-semantics.js',
-  twoVisible: 'web/runtime/templates/two-visible.js',
-  panelCastFlow: 'web/runtime/templates/panel-cast-flow.js',
-  interactionGenerationContract: 'web/runtime/handoff/interaction-generation-contract.js',
-  renderBrief: 'web/runtime/handoff/render-brief.js',
-  panelGeometry: 'web/runtime/authoring/panel-geometry.js',
-  insetPanels: 'web/runtime/authoring/inset-panels.js',
-  templatePresentationContract: 'web/runtime/templates/presentation-contract.js',
-  templateDiscoveryPresentation: 'web/runtime/templates/discovery-presentation.js',
-  panelLayoutGrammar: 'web/runtime/templates/panel-layout-grammar.js',
-  templateCharacterCast: 'web/runtime/integration/template-character-cast.js',
-  producerProvenance: 'web/runtime/handoff/producer-provenance.js',
-  mobileHeader: 'web/runtime/ui/mobile-header.js',
-  editorShell: 'web/runtime/ui/editor-shell.js'
-});
+const manifestUrl=new URL('../web/runtime/manifest.json',import.meta.url);
+const rawManifest=JSON.parse(fs.readFileSync(manifestUrl,'utf8'));
 
-export const runtimeLoadOrder = Object.freeze([
-  'foundation','projectStorage','editorState','exportInput','eventBindings','pageNavigation','workLibraryHierarchy',
-  'pageLayoutCamera','characterLibraryExport','localizationExportHardening',
-  'smartManga','characterGuidance','identityLocalizationHardening',
-  'storyReadability','smartIntentHardening',
-  'templateStudio','templateStudioFeedback',
-  'writingDirection','readingOrder','templateLetteringOrder',
-  'artDirectionReadiness','spatialSemantics','crossModel',
-  'templateQuality','sceneContract','castFallback',
-  'desktopLayout','authoringClarity',
-  'castSemantics','twoVisible','panelCastFlow',
-  'interactionGenerationContract','renderBrief','panelGeometry','insetPanels','templatePresentationContract','templateDiscoveryPresentation','panelLayoutGrammar','templateCharacterCast','producerProvenance','mobileHeader','editorShell'
-]);
-
-export function readRuntime(key) {
-  const path = runtimePaths[key];
-  if (!path) throw new Error(`Unknown runtime source key: ${key}`);
-  return fs.readFileSync(path, 'utf8');
+if(!Array.isArray(rawManifest)||rawManifest.length===0){
+  throw new Error('Legacy runtime manifest must be a non-empty array.');
 }
 
-export function readRuntimeSet(keys = runtimeLoadOrder) {
-  return Object.fromEntries(keys.map(key => [key, readRuntime(key)]));
+const seenKeys=new Set();
+const seenIds=new Set();
+const seenPaths=new Set();
+for(const [index,entry] of rawManifest.entries()){
+  if(!entry||typeof entry!=='object')throw new Error(`Invalid runtime manifest entry at index ${index}.`);
+  const {key,id,path}=entry;
+  if(typeof key!=='string'||!key)throw new Error(`Runtime manifest entry ${index} is missing key.`);
+  if(typeof id!=='string'||!id)throw new Error(`Runtime manifest entry ${index} is missing id.`);
+  if(typeof path!=='string'||!path)throw new Error(`Runtime manifest entry ${index} is missing path.`);
+  if(seenKeys.has(key))throw new Error(`Duplicate runtime manifest key: ${key}`);
+  if(seenIds.has(id))throw new Error(`Duplicate runtime manifest id: ${id}`);
+  if(seenPaths.has(path))throw new Error(`Duplicate runtime manifest path: ${path}`);
+  if(!path.startsWith('runtime/')||!path.endsWith('.js')||path.includes('..')){
+    throw new Error(`Invalid runtime manifest path for ${key}: ${path}`);
+  }
+  const expectedId=path.slice('runtime/'.length,-'.js'.length);
+  if(id!==expectedId)throw new Error(`Runtime manifest id/path mismatch for ${key}: ${id} != ${expectedId}`);
+  seenKeys.add(key);
+  seenIds.add(id);
+  seenPaths.add(path);
+}
+
+export const runtimeManifest=Object.freeze(rawManifest.map(({key,id,path})=>Object.freeze({key,id,path})));
+export const runtimePaths=Object.freeze(Object.fromEntries(runtimeManifest.map(({key,path})=>[key,`web/${path}`])));
+export const runtimeLoadOrder=Object.freeze(runtimeManifest.map(({key})=>key));
+
+export function readRuntime(key){
+  const path=runtimePaths[key];
+  if(!path)throw new Error(`Unknown runtime source key: ${key}`);
+  return fs.readFileSync(path,'utf8');
+}
+
+export function readRuntimeSet(keys=runtimeLoadOrder){
+  return Object.fromEntries(keys.map(key=>[key,readRuntime(key)]));
 }

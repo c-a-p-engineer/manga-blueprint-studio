@@ -1,12 +1,9 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const app=readRuntime('desktopLayout');
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
-const src=runtimePaths.desktopLayout.slice('web/'.length);
+if(runtimePaths.desktopLayout!=='web/runtime/ui/desktop-layout.js')throw new Error('Desktop layout runtime owner is not registered');
 
 const required=[
-  src,
   '--desktop-sticky-top24',
   '.top-actions select{width:auto',
   '.control-shell{position:sticky',
@@ -18,9 +15,7 @@ const required=[
 ];
 
 for(const needle of required){
-  const source=needle===src?bootstrap:app;
-  const expected=needle===src?`'${needle}'`:needle;
-  if(!source.includes(expected))throw new Error(`Desktop layout contract missing: ${needle}`);
+  if(!app.includes(needle))throw new Error(`Desktop layout contract missing: ${needle}`);
 }
 
 if(!app.includes("topbar?.getBoundingClientRect?.().height||68")){

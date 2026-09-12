@@ -1,14 +1,12 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
 const app=readRuntime('sceneContract');
 const fallback=readRuntime('castFallback');
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 
-const sceneSrc=runtimePaths.sceneContract.slice('web/'.length);
-const fallbackSrc=runtimePaths.castFallback.slice('web/'.length);
+if(runtimePaths.sceneContract!=='web/runtime/templates/scene-contract.js')throw new Error('Scene-contract runtime owner is not registered');
+if(runtimePaths.castFallback!=='web/runtime/templates/cast-fallback.js')throw new Error('Cast-fallback runtime owner is not registered');
+
 const required = [
-  sceneSrc,
   "quickStatus22",
   "sceneTemplateContract",
   "outputConstraints",
@@ -33,13 +31,10 @@ const required = [
 ];
 
 for (const needle of required) {
-  const source = needle === sceneSrc ? bootstrap : app;
-  const expected=needle===sceneSrc?`'${needle}'`:needle;
-  if (!source.includes(expected)) throw new Error(`Prototype 0.12 contract missing: ${needle}`);
+  if (!app.includes(needle)) throw new Error(`Prototype 0.12 contract missing: ${needle}`);
 }
 
 const fallbackRequired = [
-  fallbackSrc,
   'sceneInfoBase23',
   '(scene.cast?.recommended||1)>1',
   "presentation:'one-visible-offscreen'",
@@ -47,9 +42,7 @@ const fallbackRequired = [
   'guideCastFallback'
 ];
 for (const needle of fallbackRequired) {
-  const source = needle === fallbackSrc ? bootstrap : fallback;
-  const expected=needle===fallbackSrc?`'${needle}'`:needle;
-  if (!source.includes(expected)) throw new Error(`Prototype 0.12.1 cast fallback missing: ${needle}`);
+  if (!fallback.includes(needle)) throw new Error(`Prototype 0.12.1 cast fallback missing: ${needle}`);
 }
 
 const affectionateTemplates = ['affectionDaily','teaseBlush','faceClose','afterSchoolTwo','pamper','foreheadTouch','surpriseHug','shoulderLean'];

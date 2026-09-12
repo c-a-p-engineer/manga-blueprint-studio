@@ -1,11 +1,7 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app=readRuntime('twoVisible');
-const src=runtimePaths.twoVisible.slice('web/'.length);
-
-if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap must load ${src}`);
+if(runtimePaths.twoVisible!=='web/runtime/templates/two-visible.js')throw new Error('Two-visible runtime owner is not registered');
 
 for(const id of ['twoVisibleChat27','twoVisibleAffection27','twoVisibleGaze27','twoVisibleHug27','twoVisibleStandoff27']){
   if(!app.includes(id))throw new Error(`Missing two-visible template: ${id}`);

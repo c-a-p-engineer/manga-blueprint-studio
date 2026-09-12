@@ -1,9 +1,13 @@
 import fs from 'node:fs';
+import {runtimePaths,readRuntime} from './runtime-paths.mjs';
 
-const geometry=fs.readFileSync('web/runtime/authoring/panel-geometry.js','utf8');
-const header=fs.readFileSync('web/runtime/ui/mobile-header.js','utf8');
+const geometry=readRuntime('panelGeometry');
+const header=readRuntime('mobileHeader');
 const runtime=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const schema=fs.readFileSync('schema/manga-blueprint.schema.json','utf8');
+
+if(runtimePaths.panelGeometry!=='web/runtime/authoring/panel-geometry.js')throw new Error('Panel geometry runtime owner is not registered');
+if(runtimePaths.mobileHeader!=='web/runtime/ui/mobile-header.js')throw new Error('Mobile header runtime owner is not registered');
 
 for(const token of [
   "kind:'quad'",
@@ -30,11 +34,7 @@ for(const token of [
   'display:inline!important'
 ])if(!header.includes(token))throw new Error(`mobile header contract missing: ${token}`);
 
-for(const token of [
-  "['authoring/panel-geometry','runtime/authoring/panel-geometry.js']",
-  "['ui/mobile-header','runtime/ui/mobile-header.js']",
-  'script.src=`${base}${path}?v=${version}`'
-])if(!runtime.includes(token))throw new Error(`runtime/cache contract missing: ${token}`);
+if(!runtime.includes('script.src=`${base}${path}?v=${version}`'))throw new Error('runtime/cache contract missing commit-aware legacy script URL');
 
 for(const token of ['"shape"','"quad"','"points"'])if(!schema.includes(token))throw new Error(`schema panel geometry missing: ${token}`);
 

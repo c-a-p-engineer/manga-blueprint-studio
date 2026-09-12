@@ -1,14 +1,9 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app13=readRuntime('templateStudio');
 const app14=readRuntime('templateStudioFeedback');
-for(const key of ['templateStudio','templateStudioFeedback']){
-  const file=runtimePaths[key];
-  const src=file.slice('web/'.length);
-  if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap must load ${src}`);
-}
+if(runtimePaths.templateStudio!=='web/runtime/templates/studio.js')throw new Error('Template Studio runtime owner is not registered');
+if(runtimePaths.templateStudioFeedback!=='web/runtime/templates/studio-feedback.js')throw new Error('Template Studio feedback runtime owner is not registered');
 
 for(const phrase of [
   'CUSTOM_TEMPLATE_KEY_13',

@@ -1,11 +1,7 @@
-import fs from 'node:fs';
 import {runtimePaths, readRuntime} from './runtime-paths.mjs';
 
-const bootstrap=fs.readFileSync('web/src/legacy-runtime.ts','utf8');
 const app=readRuntime('panelCastFlow');
-const src=runtimePaths.panelCastFlow.slice('web/'.length);
-
-if(!bootstrap.includes(`'${src}'`))throw new Error(`TypeScript bootstrap must load ${src}`);
+if(runtimePaths.panelCastFlow!=='web/runtime/templates/panel-cast-flow.js')throw new Error('Panel-cast-flow runtime owner is not registered');
 
 for(const phrase of [
   "templatePanelCastFlow28:'コマごとの登場'",
