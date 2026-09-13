@@ -6,7 +6,9 @@ if(shellPath!=='web/runtime/ui/editor-shell.js')throw new Error(`Unexpected edit
 if(runtimeLoadOrder.at(-1)!=='editorShell')throw new Error('Editor shell must run last so it can organize the fully-constructed authoring UI.');
 
 const shell=fs.readFileSync(shellPath,'utf8');
-const phaseOneUi=fs.readFileSync('web/src/phase-one-ui.ts','utf8');
+const workflow=fs.readFileSync('web/src/ui/template-workflow.ts','utf8');
+const pageModes=fs.readFileSync('web/src/ui/page-modes.ts','utf8');
+const runtimeApi=fs.readFileSync('web/src/runtime/legacy-api.ts','utf8');
 const phaseOneCss=fs.readFileSync('web/src/phase-one-ui.css','utf8');
 for(const phrase of [
   "padStart(3,'0')",
@@ -28,12 +30,12 @@ if(shell.includes('structureEditSummary17')||shell.includes('containerManagerSlo
 
 for(const phrase of [
   "byId('containerManager16')?.remove()",
-  'runtime.renderHierarchy16=removeLegacy',
-  "copy('テンプレートからページを作る'",
-  'ensureManualLayoutDisclosure'
+  "copy('テンプレートからページを作る'"
 ]){
-  if(!phaseOneUi.includes(phrase))throw new Error(`Phase 1 primary UI contract missing ${JSON.stringify(phrase)}`);
+  if(!workflow.includes(phrase))throw new Error(`Template workflow contract missing ${JSON.stringify(phrase)}`);
 }
+if(!runtimeApi.includes('runtime.renderHierarchy16=removeLegacy'))throw new Error('Legacy hierarchy suppression must stay behind the runtime bridge.');
+if(!pageModes.includes('ensureManualLayoutDisclosure'))throw new Error('Manual layout disclosure owner missing.');
 if(!phaseOneCss.includes('#containerManager16{display:none!important}'))throw new Error('Legacy hierarchy editor must have a CSS fail-safe in Phase 1 UI.');
 
 const workHierarchy=fs.readFileSync('web/runtime/authoring/work-library-hierarchy.js','utf8');
@@ -41,4 +43,4 @@ const pageNavigation=fs.readFileSync('web/runtime/authoring/page-navigation.js',
 if(!workHierarchy.includes("volume:'巻'")||!workHierarchy.includes("chapter:'章'")||!workHierarchy.includes("folder:'フォルダ'"))throw new Error('Existing hierarchy data semantics were unexpectedly removed.');
 if(!pageNavigation.includes('pageNumber'))throw new Error('Stable page-number source is missing.');
 
-console.log('Manga-first editor shell / explorer / Phase 1 primary-UI contract passed.');
+console.log('Manga-first editor shell / explorer / modular Phase 1 primary-UI contract passed.');
