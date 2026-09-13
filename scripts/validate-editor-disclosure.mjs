@@ -3,7 +3,7 @@ import fs from 'node:fs';
 const pageModes=fs.readFileSync('web/src/ui/page-modes.ts','utf8');
 const panelDisclosures=fs.readFileSync('web/src/ui/panel-disclosures.ts','utf8');
 const css=fs.readFileSync('web/src/phase-one-ui.css','utf8');
-const html=fs.readFileSync('web/index.html','utf8');
+const html=fs.readFileSync('web/editor.html','utf8');
 
 for(const token of [
   'phase1PageModes','phase1-page-subtabs','role','tablist','aria-selected','data-page-mode',

@@ -8,7 +8,7 @@ const runtimeKeys=[
   'storyReadability','smartIntentHardening'
 ];
 const runtimeFiles=runtimeKeys.map(key=>runtimePaths[key]);
-const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/styles.css','web/app.js','web/src/main.ts','web/src/legacy-runtime.ts','web/runtime/manifest.json','web/runtime/README.md',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
+const requiredFiles=['AGENTS.md','README.md','LICENSE','docs/PRODUCT.md','docs/ARCHITECTURE.md','docs/PROMPT_HANDOFF.md','docs/ROADMAP.md','schema/manga-blueprint.schema.json','examples/directed-closeup.manga.json','web/index.html','web/editor.html','web/landing.css','web/styles.css','web/app.js','web/src/main.ts','web/src/legacy-runtime.ts','web/runtime/manifest.json','web/runtime/README.md',...runtimeFiles,'.github/workflows/pages.yml','.github/workflows/validate.yml'];
 for(const file of requiredFiles)if(!fs.existsSync(file))throw new Error(`Missing required file: ${file}`);
 
 const schema=JSON.parse(fs.readFileSync('schema/manga-blueprint.schema.json','utf8'));
@@ -31,7 +31,7 @@ const identityModes=schema.$defs?.baseCharacter?.properties?.identityMode?.enum|
 for(const value of ['sheet','description','free'])if(!identityModes.includes(value))throw new Error(`Schema missing character identityMode ${value}`);
 for(const field of ['summary','hair','eyes','outfit','features'])if(schema.$defs?.appearance?.properties?.[field]?.type!=='string')throw new Error(`Schema missing appearance.${field}`);
 
-const html=fs.readFileSync('web/index.html','utf8');
+const html=fs.readFileSync('web/editor.html','utf8');
 const sources=readRuntimeSet(runtimeKeys);
 const js=Object.values(sources).join('\n');
 const app8=sources.smartManga;

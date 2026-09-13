@@ -2,9 +2,13 @@
 
 This guide describes the current shipped UI. It follows the manga-production flow rather than internal implementation names.
 
-Public version: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
+Product page: https://c-a-p-engineer.github.io/manga-blueprint-studio/
 
-Editor: https://c-a-p-engineer.github.io/manga-blueprint-studio/
+Public guide: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
+
+Editor: https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
+
+The public root explains what Manga Blueprint Studio does. Actual manga authoring starts from the dedicated Editor entry above.
 
 ## The basic idea
 
@@ -307,7 +311,7 @@ Prototype 0.16.0 uses a two-row mobile header. If an old one-row layout remains 
 
 ### I cannot find another page
 
-Use the page strip above the canvas or open **作品構成**.
+Use the page strip above the canvas or open **作品エクスプローラー**.
 
 ### I do not need volumes or chapters
 
@@ -336,7 +340,6 @@ Use the **AI generation ZIP / clean PNG**, not the annotated review PNG.
 4. **このテンプレートを使う** を押す。
 
 これでコマ割り・演出・必要なサンプル台詞を現在ページへまとめて適用できます。直接コマ割りを編集したい場合だけ **手動でコマ割りを調整** を開きます。旧「巻・章・フォルダ」編集欄はページ設定には表示せず、作品名から開く **作品エクスプローラー** をページ移動・作品切替の主経路にします。
-
 
 ## コマ割り文法：余白を増やさず、大小で見せる
 
