@@ -108,6 +108,15 @@ function transactionDone(transaction){
   });
 }
 
+function projectStorageRecord(project){
+  return {
+    workId:project.meta.workId,
+    title:project.meta.title||'',
+    updatedAt:Date.now(),
+    project:clone(project)
+  };
+}
+
 let projectDbPromise=null;
 function openProjectDb(){
   if(!projectStorageSupported()) return Promise.reject(new Error('IndexedDB is unavailable'));
@@ -180,14 +189,24 @@ const projectStorage={
     const project=ensureProjectIdentity(input);
     const db=await openProjectDb();
     const tx=db.transaction(PROJECT_WORK_STORE,'readwrite');
-    tx.objectStore(PROJECT_WORK_STORE).put({
-      workId:project.meta.workId,
-      title:project.meta.title||'',
-      updatedAt:Date.now(),
-      project:clone(project)
-    });
+    tx.objectStore(PROJECT_WORK_STORE).put(projectStorageRecord(project));
     await transactionDone(tx);
     return project.meta.workId;
+  },
+
+  // Restore/import paths may explicitly persist and activate a work in one IndexedDB transaction.
+  async saveAndActivate(input,pageId=null){
+    if(!projectStorageSupported()) throw new Error('IndexedDB is unavailable');
+    const project=ensureProjectIdentity(input);
+    const selectedPageId=pageId&&project.pages.some(page=>page.id===pageId)?pageId:project.pages[0]?.id||null;
+    const db=await openProjectDb();
+    const tx=db.transaction([PROJECT_WORK_STORE,PROJECT_META_STORE],'readwrite');
+    tx.objectStore(PROJECT_WORK_STORE).put(projectStorageRecord(project));
+    const metaStore=tx.objectStore(PROJECT_META_STORE);
+    metaStore.put({key:ACTIVE_WORK_META_KEY,value:project.meta.workId});
+    metaStore.put({key:activePageMetaKey(project.meta.workId),value:selectedPageId});
+    await transactionDone(tx);
+    return {workId:project.meta.workId,pageId:selectedPageId};
   },
 
   async has(workId){
@@ -233,6 +252,14 @@ const projectStorage={
 };
 
 let queuedProjectSaveTimer=null;
+let queuedProjectSaveInFlight=Promise.resolve();
+
+async function settleProjectSaveQueue(){
+  clearTimeout(queuedProjectSaveTimer);
+  queuedProjectSaveTimer=null;
+  await queuedProjectSaveInFlight;
+}
+
 function queueProjectSave(input,{delay=120,onSaved,onError}={}){
   if(!projectStorageSupported()){
     onError?.(new Error('IndexedDB is unavailable'));
@@ -241,7 +268,8 @@ function queueProjectSave(input,{delay=120,onSaved,onError}={}){
   const snapshot=ensureProjectIdentity(clone(input));
   clearTimeout(queuedProjectSaveTimer);
   queuedProjectSaveTimer=setTimeout(()=>{
-    projectStorage.save(snapshot)
+    queuedProjectSaveTimer=null;
+    queuedProjectSaveInFlight=projectStorage.save(snapshot)
       .then(workId=>onSaved?.(workId))
       .catch(error=>onError?.(error));
   },delay);

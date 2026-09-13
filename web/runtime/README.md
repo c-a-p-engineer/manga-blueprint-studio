@@ -16,7 +16,7 @@ Runtime files are named by responsibility, not release chronology.
 - `templates/` — Story Template Studio and template/cast/layout contracts.
 - `lettering/` — text writing direction.
 - `ordering/` — geometry + reading-order synchronization.
-- `integration/` — explicit cross-feature adapters.
+- `integration/` — explicit cross-feature adapters, including whole-work backup/restore orchestration.
 - `handoff/` — prompt/manifest/render contracts and producer provenance.
 - `ui/` — presentation-only compatibility layers such as `ui/editor-shell.js`.
 
@@ -50,8 +50,8 @@ This is still one ordered classic-script compatibility runtime. The split improv
 New typed migration code lives under `web/src/`:
 
 - `domain/model.ts` — compile-time representation of current Project/Page/Panel/Character/Balloon concepts; JSON Schema remains serialized-data authority.
-- `runtime/legacy-api.ts` — the single TypeScript compatibility bridge to legacy globals.
-- `ui/` — task-first Page/Panel/template presentation owners.
+- `runtime/legacy-api.ts` — the single TypeScript compatibility bridge to legacy globals, including the backup/restore service adapter.
+- `ui/` — task-first Page/Panel/template presentation owners plus `backup-restore.ts` for restore preview/conflict/destructive-confirmation interaction.
 - `phase-one-ui.ts` — small composition/bootstrap adapter.
 
 Do not spread `globalThis` access through new TypeScript modules. Keep it behind `runtime/legacy-api.ts` until each classic owner is replaced deliberately.
@@ -73,7 +73,7 @@ The array order is execution order. Keys, IDs, and paths are unique. Every `web/
 ## Important feature owners
 
 ### `core/project-storage.js`
-Owns stable identity normalization and IndexedDB persistence. Saving contents and activating a work remain separate operations.
+Owns stable identity normalization and IndexedDB persistence. Ordinary `save()` still persists contents without changing activation. Backup/restore additionally uses `saveAndActivate()` when an explicit restore must write the target work and its active-work/active-page metadata in one IndexedDB transaction, plus queued-autosave settlement before the restore boundary.
 
 ### `authoring/page-navigation.js`
 Owns page CRUD/reorder/number/title/selection and per-work active-page restoration.
@@ -90,11 +90,34 @@ Owns one-level panel-in-panel relation while reusing the ordinary Panel model.
 ### `integration/template-character-cast.js`
 Owns explicit reusable-character choice before Story Template apply and the starter-character integration.
 
+### `integration/backup-restore.js`
+Owns the Phase 3 whole-work portability boundary. It creates and inspects the dedicated `manga-blueprint-backup-manifest/1` package, verifies stored ZIP entries plus SHA-256/file-role/count/project-shape contracts before mutation, resolves explicit same-`workId` copy-vs-overwrite modes, merges explicitly included custom Story Templates, and coordinates rollback around storage changes. It is intentionally separate from selected-page AI generation/review export and does not introduce a second work model.
+
 ### `templates/panel-layout-grammar.js`
 Owns shared-seam diagonal/asymmetric/buildup panel-layout families and their Story Template mapping.
 
 ### `ui/editor-shell.js`
 Compatibility presentation/navigation owner for current work, breadcrumb, `P001`, page navigation, Work Explorer, and Page settings positioning. It must reuse existing project operations instead of creating a second state model.
+
+## Backup / restore boundary
+
+Phase 3 portability uses three owners rather than mixing storage, package parsing, and UI prompts:
+
+```text
+core/project-storage.js
+  IndexedDB transaction + autosave settlement
+        ↓
+integration/backup-restore.js
+  package build / inspect / validate / apply / rollback
+        ↓
+web/src/runtime/legacy-api.ts
+  typed compatibility adapter
+        ↓
+web/src/ui/backup-restore.ts
+  preview / copy-vs-overwrite choice / confirmation / status / file picker
+```
+
+The backup package is a whole-work recovery artifact. It is not `manga-blueprint-export-manifest/3`, and AI generation/review ZIPs must not be accepted as backups. Corrupt or contract-mismatched packages are rejected before local project mutation. See `docs/BACKUP-RESTORE.md` for the implementation/review contract.
 
 ## Public guide
 
@@ -114,7 +137,7 @@ The in-editor Help surface stays concise and links to `./guide.html`.
 3. UI organization must reuse project state rather than create another domain model.
 4. New TypeScript code reaches classic globals only through `web/src/runtime/legacy-api.ts`.
 5. Prefer explicit command/lifecycle events over DOM-observer coupling.
-6. Project JSON, AI handoff, RTL/LTR, lettering, stable identity, and import compatibility remain external contracts during refactors.
+6. Project JSON, AI handoff, RTL/LTR, lettering, stable identity, import/restore compatibility, and backup-vs-generation package separation remain external contracts during refactors.
 7. Runtime ownership changes must update `docs/ARCHITECTURE.md` and this file.
 8. CI evidence and visual/interaction evidence are separate.
 
