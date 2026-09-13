@@ -13,9 +13,12 @@ Visual manga storyboard editor for directing page layout, panel composition, cha
 
 ## Try it
 
-- **Editor:** https://c-a-p-engineer.github.io/manga-blueprint-studio/
+- **Product page:** https://c-a-p-engineer.github.io/manga-blueprint-studio/
+- **Editor:** https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
 - **Full user guide:** https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
 - **Canonical schema:** https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
+
+The public root is a concise product landing page. The editor remains a separate direct entry so first-time visitors can understand the workflow without adding another navigation layer inside the authoring UI.
 
 ## What it does
 
@@ -65,25 +68,29 @@ Authoring labels such as character names, panel numbers, camera notes, and edito
 
 ## Quick start
 
-1. Open or create a **作品 / Work**.
-2. Select `P001` or another page above the canvas, or navigate through **作品エクスプローラー / Work Explorer**.
-3. In **ページ設定 / Page settings**, choose manuscript settings and either a Story Template or manual panel layout.
-4. Select a panel and refine its frame/shape, camera, character, background, text, and effects.
-5. In **出力 / Output**, export the current page as **AI生成ZIP** or a review/archive package.
-6. Attach Character Sheets only when the manifest marks them as required.
+1. Open the **Editor** from the product page.
+2. Open or create a **作品 / Work**.
+3. Select `P001` or another page above the canvas, or navigate through **作品エクスプローラー / Work Explorer**.
+4. In **ページ設定 / Page settings**, choose manuscript settings and either a Story Template or manual panel layout.
+5. Select a panel and refine its frame/shape, camera, character, background, text, and effects.
+6. In **出力 / Output**, export the current page as **AI生成ZIP** or a review/archive package.
+7. Attach Character Sheets only when the manifest marks them as required.
 
 For detailed operation and terminology, use [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) or the public guide above.
 
 ## Architecture at a glance
 
-The public app is a static GitHub Pages application built with Vite + TypeScript.
+The public site is a static GitHub Pages application built with Vite + TypeScript. Vite emits separate landing, editor, and guide HTML entries while the editor continues to use the same application/runtime ownership.
 
 ```text
-web/src/          typed bootstrap, domain view, and new UI composition
-web/runtime/      ordered classic-script compatibility runtime during migration
-schema/           canonical serialized project schema
-docs/             product, architecture, handoff, guide, and roadmap authorities
-scripts/          build/contract/regression validation
+web/index.html      public product landing page
+web/editor.html     editor document / app.js entry
+web/guide.html      public user guide
+web/src/            typed bootstrap, domain view, and new UI composition
+web/runtime/        ordered classic-script compatibility runtime during migration
+schema/             canonical serialized project schema
+docs/               product, architecture, handoff, guide, and roadmap authorities
+scripts/            build/contract/regression validation
 ```
 
 `web/runtime/manifest.json` is the canonical ordered registry for the compatibility runtime. The ongoing TypeScript migration is incremental: external behavior and serialized contracts are preserved while semantic owners move behind typed boundaries.
