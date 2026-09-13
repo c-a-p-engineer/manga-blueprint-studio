@@ -49,7 +49,8 @@ for(const token of [
 ])requireText(runtime,token,'template cast integration');
 
 for(const token of [
-  "closest('#applyStoryTemplate11')",
+  'handleTemplatePrimaryAction',
+  "'#applyStoryTemplate11'",
   'event.stopImmediatePropagation()',
   "apply.classList.add('primary','phase1-template-apply')",
   "oldBlock.hidden=true"
