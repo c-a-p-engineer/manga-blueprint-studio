@@ -8,12 +8,17 @@ if(!/^\d+\.\d+\.\d+$/.test(version))throw new Error(`Invalid build-info appVersi
 if(!Object.hasOwn(buildInfo,'gitCommit'))throw new Error('build-info must expose gitCommit');
 
 const main=fs.readFileSync('web/src/main.ts','utf8');
+const bridge=fs.readFileSync('web/src/runtime/legacy-api.ts','utf8');
 for(const phrase of [
   'build-info.json',
   "cache:'no-store'",
-  'MANGA_BLUEPRINT_BUILD_INFO',
+  'setBuildInfo(buildInfo)',
   `appVersion:'${version}'`
 ])if(!main.includes(phrase))throw new Error(`Missing build provenance TypeScript entry contract: ${phrase}`);
+for(const phrase of [
+  'MANGA_BLUEPRINT_BUILD_INFO',
+  'runtime.MANGA_BLUEPRINT_BUILD_INFO=buildInfo'
+])if(!bridge.includes(phrase))throw new Error(`Missing build provenance runtime-bridge contract: ${phrase}`);
 if(runtimePaths.producerProvenance!=='web/runtime/handoff/producer-provenance.js')throw new Error('Producer provenance runtime owner is not registered.');
 
 const app=readRuntime('producerProvenance');
