@@ -16,7 +16,8 @@ export default defineConfig({
     target:'es2022',
     rollupOptions:{
       input:{
-        app:resolve(webRoot,'index.html'),
+        landing:resolve(webRoot,'index.html'),
+        app:resolve(webRoot,'editor.html'),
         guide:resolve(webRoot,'guide.html')
       }
     }
