@@ -20,11 +20,15 @@ function walk(root,predicate){
 }
 
 function assertArtifact(){
-  for(const file of ['dist/index.html','dist/guide.html','dist/runtime/core/foundation.js']){
+  for(const file of ['dist/index.html','dist/editor.html','dist/guide.html','dist/runtime/core/foundation.js']){
     if(!fs.existsSync(file))throw new Error(`Missing production artifact: ${file}`);
   }
   const index=fs.readFileSync('dist/index.html','utf8');
+  const editor=fs.readFileSync('dist/editor.html','utf8');
   if(!index.includes('assets/'))throw new Error('dist/index.html does not reference Vite assets');
+  if(!index.includes('./editor.html')&&!index.includes('/manga-blueprint-studio/editor.html'))throw new Error('Built landing does not link to editor.html');
+  if(index.includes('id="blueprintSvg"'))throw new Error('Built landing unexpectedly contains editor DOM');
+  if(!editor.includes('id="blueprintSvg"'))throw new Error('Built editor is missing editor DOM');
   console.log('\n==> Production artifact shape passed');
 }
 
@@ -42,6 +46,7 @@ for(const file of [...new Set(syntaxTargets)]){
 }
 
 const validators=[
+  'scripts/validate-public-entry.mjs',
   'scripts/validate-phase1-toolchain.mjs',
   'scripts/validate-runtime-layout.mjs',
   'scripts/validate-editor-architecture.mjs',
