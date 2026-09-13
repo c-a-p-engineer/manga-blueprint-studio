@@ -38,7 +38,8 @@ web/src/
    ├─ dom-helpers.ts
    ├─ page-modes.ts
    ├─ panel-disclosures.ts
-   └─ template-workflow.ts
+   ├─ template-workflow.ts
+   └─ backup-restore.ts        backup/restore preview + conflict UI
 ```
 
 `domain/model.ts` improves compile-time readability for migrated code. It does **not** replace the JSON Schema as serialized-data authority and does not introduce a second project model.
@@ -58,7 +59,7 @@ web/runtime/
 ├─ templates/     Story Template ownership
 ├─ lettering/     writing direction
 ├─ ordering/      reading-order synchronization
-├─ integration/   explicit cross-feature adapters
+├─ integration/   explicit cross-feature adapters, including backup/restore
 ├─ handoff/       prompt / manifest / render contracts
 └─ ui/            presentation-only compatibility layers
 ```
@@ -73,9 +74,11 @@ web/runtime/
 `core/project-storage.js`
 - stable work/page/container identity normalization;
 - IndexedDB storage;
-- save vs activate boundary;
+- ordinary save vs activate boundary;
 - per-work active-page metadata;
-- full-work identity regeneration/remapping.
+- full-work identity regeneration/remapping;
+- explicit `saveAndActivate()` for restore transactions that must persist a target work plus active-work/active-page metadata together;
+- queued/in-flight autosave settlement used before restore crosses the mutation boundary.
 
 `core/editor-state.js`
 - active `project` reference;
@@ -133,13 +136,26 @@ This split is intentionally lexical-compatible with the existing ordered classic
 - inset ID-remap/deletion/split safety;
 - overlap mask and AI handoff hierarchy.
 
+### Integration owners
+
+`integration/backup-restore.js`
+- whole-work backup construction using dedicated `manga-blueprint-backup-manifest/1` semantics;
+- package inspection and pre-mutation validation of file roles/counts, stored ZIP CRC, raw SHA-256 payload hashes, project shape/identity, and optional custom-template payload;
+- explicit new-work/copy/overwrite restore modes with same-`workId` conflict recheck;
+- reuse of the existing work identity-remap path for restore-as-copy;
+- optional custom Story Template merge;
+- application/rollback orchestration across IndexedDB and browser-local template storage;
+- export of one compatibility service consumed through the typed runtime bridge.
+
+This owner is intentionally separate from the selected-page AI handoff runtime. A backup is a recovery/portability artifact, not an AI generation package.
+
 ### Presentation owners
 
 `ui/editor-shell.js` remains the compatibility presentation/navigation owner for the manga-first shell. It reuses canonical page/work operations and never owns a second project-state model. It provides the active work title, breadcrumb, P001 display formatting, page navigation, Work Explorer / 作品エクスプローラー, and Page settings positioning.
 
 `ui/mobile-header.js` owns only narrow-screen header composition.
 
-New task-first UI composition lives under `web/src/ui/`; compatibility UI chunks remain until behavior-equivalent typed owners replace them.
+New task-first UI composition lives under `web/src/ui/`; compatibility UI chunks remain until behavior-equivalent typed owners replace them. `web/src/ui/backup-restore.ts` owns backup download/file-picker presentation, restore preview, explicit copy-vs-overwrite selection, destructive overwrite confirmation, and user-facing status. It does not parse packages or mutate storage directly; those operations cross `web/src/runtime/legacy-api.ts` into the integration owner.
 
 ## Serialized project model
 
@@ -183,7 +199,7 @@ selectedCharacterId
 selectedBalloonId
 ```
 
-Work/import boundaries reset command history so Undo/Redo cannot cross work identity.
+Work/import/restore boundaries reset command history so Undo/Redo cannot cross work identity.
 
 ## Persistence and activation
 
@@ -197,7 +213,7 @@ manga-blueprint-studio
    └─ activePageId:<workId>
 ```
 
-Critical invariant:
+Critical ordinary-edit invariant:
 
 ```text
 projectStorage.save(project)     // persist contents only
@@ -205,6 +221,44 @@ projectStorage.setActive(workId) // explicit activation only
 ```
 
 A delayed autosave from one work may finish after another work opens, but it cannot reactivate the old work. Historical browser project-autosave localStorage is intentionally not migrated; portable `.manga.json` import is the compatibility path.
+
+Restore is an explicit activation boundary, so it uses a stronger storage primitive only after package validation and user choice:
+
+```text
+settleProjectSaveQueue()
+projectStorage.saveAndActivate(restoredProject, activePageId)
+```
+
+`saveAndActivate()` writes the target work plus active-work/active-page metadata in one IndexedDB read-write transaction. This does not weaken the ordinary `save()` vs `setActive()` separation; it exists for an operation whose requested semantics are explicitly “restore this work and open this page.”
+
+## Backup / restore architecture
+
+Phase 3 backup/restore is whole-work portability and is deliberately separate from generation/review export.
+
+```text
+current work + optional local custom Story Templates
+        ↓
+integration/backup-restore.js
+        ↓
+*.manga-backup.zip
+  backup-manifest.json           manga-blueprint-backup-manifest/1
+  project.manga.json             whole project
+  templates/custom-templates.json  optional
+```
+
+Before mutation, inspection verifies the dedicated package type/schema, exact declared files/counts/roles, stored ZIP CRC values, raw payload SHA-256 hashes, supported project format, stable identity/basic project shape, manifest/project identity agreement, and optional template payload shape. Generation/review packages use `manga-blueprint-export-manifest/3` and are rejected as backups rather than heuristically interpreted.
+
+Same-`workId` restore never silently overwrites. The typed UI must require one of:
+
+- restore as a new work, using existing identity regeneration/remapping;
+- overwrite the existing work, with an additional destructive confirmation;
+- cancel.
+
+The integration owner rechecks target existence immediately before mutation so a stale preview cannot change conflict semantics.
+
+Custom Story Templates are browser-local rather than work-owned. When explicitly included, restore merges them by ID while preserving unrelated local templates. Because template storage and IndexedDB do not share one transaction, the restore coordinator uses compensating rollback: restore prior templates, target work, prior active work/page, and in-memory editor state when application fails after mutation starts. Rollback failure is surfaced/logged rather than treated as success.
+
+The implementation/review contract is documented in `docs/BACKUP-RESTORE.md`. `docs/ROADMAP.md` remains the only authority for whether Phase 3 is still Next or has shipped.
 
 ## Navigation and ordering
 
@@ -244,6 +298,8 @@ Current generation/review is **selected-page scoped**.
 
 `handoff/render-brief.js` owns the current-page semantic render contract. `authoring/panel-geometry.js` and `authoring/inset-panels.js` enrich it with their geometry relations instead of creating competing handoff implementations.
 
+Backup/restore must not reuse the AI export manifest or selected-page handoff package as a work recovery format.
+
 ## Public/user documentation
 
 The complete user guide is maintained in `docs/USER-GUIDE.md` and the public `web/guide.html`. The editor Help surface stays concise and links to the full guide.
@@ -253,6 +309,7 @@ Current contract owners:
 - `schema/manga-blueprint.schema.json` — project schema;
 - `docs/PROMPT_HANDOFF.md` — AI package contract;
 - `docs/ROADMAP.md` — only delivery/status authority;
+- `docs/BACKUP-RESTORE.md` — Phase 3 implementation/review contract while the feature is being delivered;
 - this document — runtime/state/storage boundaries.
 
 ## Refactor rules
@@ -279,6 +336,9 @@ Repository validation covers:
 - reading/writing direction;
 - panel geometry/layout/inset behavior;
 - AI generation/render-brief/text-safety contracts;
+- backup/restore package integrity, identity/conflict semantics, autosave settlement, rollback behavior, and typed UI boundary;
 - documentation/version synchronization.
+
+Static CI does not prove restore usability. Phase 3 release evidence also requires browser interaction checks for backup creation, clean-profile restore, same-work copy/overwrite/cancel, corrupt-package rejection, and post-restore editing/export behavior.
 
 A future full ES-module/runtime cutover remains a separate refactor requiring semantic-equivalence evidence and rollback planning.
