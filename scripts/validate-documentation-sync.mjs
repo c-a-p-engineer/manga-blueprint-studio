@@ -11,6 +11,9 @@ const required = [
   'docs/PROMPT_HANDOFF.md',
   'docs/ROADMAP.md',
   'docs/PROJECT-MULTI-PAGE-ROADMAP.md',
+  'web/index.html',
+  'web/editor.html',
+  'web/landing.css',
   'web/guide.html',
   'web/guide.css',
   'web/runtime/README.md',
@@ -34,6 +37,8 @@ function rejectPhrase(path,phrase){
 }
 
 requirePhrase('README.md',`Current prototype: ${version}`);
+requirePhrase('README.md','https://c-a-p-engineer.github.io/manga-blueprint-studio/');
+requirePhrase('README.md','https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html');
 requirePhrase('README.md','https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html');
 requirePhrase('README.md','docs/USER-GUIDE.md');
 requirePhrase('README.md','convex-quadrilateral');
@@ -46,6 +51,8 @@ requirePhrase('docs/README.md','Only status authority');
 requirePhrase('docs/README.md','USER-GUIDE.md');
 requirePhrase('docs/README.md','web/guide.html');
 
+requirePhrase('docs/USER-GUIDE.md','Product page: https://c-a-p-engineer.github.io/manga-blueprint-studio/');
+requirePhrase('docs/USER-GUIDE.md','Editor: https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html');
 for(const phrase of ['P001','作品エクスプローラー','ページ設定','AI生成ZIP','Story Template','Smart Manga','斜め3コマ','四隅を直接編集','衝撃枠','集中線','演出なし']){
   requirePhrase('docs/USER-GUIDE.md',phrase);
   requirePhrase('web/guide.html',phrase);
@@ -56,6 +63,14 @@ requirePhrase('docs/USER-GUIDE.md','Current export is **the selected page only**
 requirePhrase('web/guide.html','選択中の1ページ');
 requirePhrase('web/guide.html','./guide.css');
 requirePhrase('web/guide.html','href="./"');
+requirePhrase('web/guide.html','href="./editor.html"');
+
+for(const phrase of ['漫画の「どう見せたいか」','href="./editor.html"','href="./guide.html"','選択中の1ページ単位']){
+  requirePhrase('web/index.html',phrase);
+}
+rejectPhrase('web/index.html','id="blueprintSvg"');
+requirePhrase('web/editor.html','id="blueprintSvg"');
+requirePhrase('web/editor.html','src="./app.js"');
 
 for(const phrase of ['Manga-first editor shell','Work Explorer / 作品エクスプローラー','Page settings / ページ設定','P001','selected-page scoped','Panel shape','two explicit rows','presentation quick filters','2人表示 + 集中線']){
   requirePhrase('docs/PRODUCT.md',phrase);
