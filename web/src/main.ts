@@ -1,6 +1,7 @@
 import {loadLegacyRuntime,type BuildInfo} from './legacy-runtime';
 import {installPhaseOneUi} from './phase-one-ui';
 import {initializeLegacyEditor,setBuildInfo} from './runtime/legacy-api';
+import {installBackupRestoreUi} from './ui/backup-restore';
 
 const fallbackBuildInfo:BuildInfo={
   schema:'manga-blueprint-build-info/1',
@@ -28,6 +29,7 @@ async function bootstrap(){
   await loadLegacyRuntime(buildInfo);
   await initializeLegacyEditor();
   installPhaseOneUi();
+  installBackupRestoreUi();
   document.documentElement.dataset.appVersion=buildInfo.appVersion;
 }
 
