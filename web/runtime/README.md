@@ -1,124 +1,123 @@
 # Runtime chunks
 
-Manga Blueprint Studio is a Vite-built static GitHub Pages application. `web/app.js` delegates to the TypeScript entrypoint, and `web/src/legacy-runtime.ts` then loads the remaining named classic-script chunks in explicit order so the existing global-state extension model remains deterministic during migration.
+Manga Blueprint Studio is a Vite-built static GitHub Pages application. `web/app.js` delegates to `web/src/main.ts`; `web/src/legacy-runtime.ts` loads the remaining compatibility runtime in the exact order declared by `web/runtime/manifest.json`.
 
-`web/runtime/manifest.json` is the **single canonical registry and load-order source** for that compatibility runtime. The browser loader consumes it directly; Node validators derive their legacy key/path views from the same file through `scripts/runtime-paths.mjs`. Do not maintain a second inline copy of the ordered chunk list.
+`manifest.json` is the **single canonical registry and load-order source**. Node validators derive their views through `scripts/runtime-paths.mjs`; do not maintain a second inline runtime list.
 
 ## Ownership
 
-Runtime files are named by responsibility, not prototype chronology.
+Runtime files are named by responsibility, not release chronology.
 
-- `core/` — foundational project state, IndexedDB persistence, rendering, import/export input, and base event bindings.
-- `authoring/` — page/work/container authoring, page/layout/camera, reusable characters, and localization/export hardening.
+- `core/` — base project semantics, storage, active editor state, command history, persistence lifecycle, rendering, import/export input, and base events.
+- `authoring/` — page/work/container, layout/camera, panel geometry/insets, reusable characters, localization/export hardening.
 - `assist/` — bounded Smart Manga assistance.
 - `identity/` — character identity and appearance handoff.
-- `story/` — story-readable panel semantics and Smart Manga intent.
-- `templates/` — Story Template Studio, quality, scene/cast semantics, and panel-cast flow.
+- `story/` — story-readable panel semantics.
+- `templates/` — Story Template Studio and template/cast/layout contracts.
 - `lettering/` — text writing direction.
 - `ordering/` — geometry + reading-order synchronization.
-- `integration/` — cross-feature integration with intentional load dependencies.
-- `handoff/` — prompt/manifest/render contracts and producer provenance for downstream image-generation assistants.
-- `ui/` — presentation-only responsive layout, authoring clarity, and the manga-first editor shell.
+- `integration/` — explicit cross-feature adapters.
+- `handoff/` — prompt/manifest/render contracts and producer provenance.
+- `ui/` — presentation-only compatibility layers such as `ui/editor-shell.js`.
+
+## Core editor owners
+
+The editor core is intentionally split so one file no longer owns state, history, persistence, and rendering together.
+
+```text
+core/editor-state.js
+  active project + selection + domain edit operations
+        ↓
+core/editor-commands.js
+  mutate / Undo / Redo / command history
+        ↓
+core/editor-persistence.js
+  startup load / autosave readiness
+        ↓
+core/editor-render.js
+  base SVG + inspector render lifecycle
+        ↓
+core/export-input.js
+core/event-bindings.js
+```
+
+This is still one ordered classic-script compatibility runtime. The split improves ownership without claiming an ES-module cutover.
+
+`core/editor-render.js` emits `manga-blueprint:editor-rendered` after a completed render. Typed UI code uses that explicit lifecycle event instead of observing broad DOM mutations.
+
+## TypeScript bridge
+
+New typed migration code lives under `web/src/`:
+
+- `domain/model.ts` — compile-time representation of current Project/Page/Panel/Character/Balloon concepts; JSON Schema remains serialized-data authority.
+- `runtime/legacy-api.ts` — the single TypeScript compatibility bridge to legacy globals.
+- `ui/` — task-first Page/Panel/template presentation owners.
+- `phase-one-ui.ts` — small composition/bootstrap adapter.
+
+Do not spread `globalThis` access through new TypeScript modules. Keep it behind `runtime/legacy-api.ts` until each classic owner is replaced deliberately.
 
 ## Canonical runtime manifest
 
-Each entry in `manifest.json` has three responsibilities:
+Each entry has:
 
 ```json
 { "key": "panelGeometry", "id": "authoring/panel-geometry", "path": "runtime/authoring/panel-geometry.js" }
 ```
 
-- `key` is the stable validator/read helper key used by `scripts/runtime-paths.mjs` consumers;
-- `id` is the semantic browser chunk identity written to `data-runtime-chunk`;
-- `path` is the browser-relative production path and determines `id` (`runtime/<id>.js`).
+- `key` — stable validator/read-helper key;
+- `id` — browser chunk identity (`data-runtime-chunk`);
+- `path` — production-relative path; it determines `id` as `runtime/<id>.js`.
 
-The array order is the load order. Keys, IDs, and paths must all be unique. Every `web/runtime/**/*.js` file must be registered exactly once, and the TypeScript bootstrap must not duplicate the ordered paths inline.
+The array order is execution order. Keys, IDs, and paths are unique. Every `web/runtime/**/*.js` file must be registered exactly once.
 
-## Important current owners
+## Important feature owners
 
 ### `core/project-storage.js`
-
-Owns stable work/page/container identity normalization plus IndexedDB work persistence. Saving work contents and activating a work are deliberately separate operations.
+Owns stable identity normalization and IndexedDB persistence. Saving contents and activating a work remain separate operations.
 
 ### `authoring/page-navigation.js`
-
 Owns page CRUD/reorder/number/title/selection and per-work active-page restoration.
 
 ### `authoring/work-library-hierarchy.js`
+Owns Work Library behavior, legacy container compatibility, page assignment, non-destructive container deletion, and explicit work activation.
 
-Owns Work Library behavior, container CRUD/hierarchy, page assignment, non-destructive container deletion, and explicit work activation paths.
-
-### `ui/editor-shell.js`
-
-Loads last as the current presentation/navigation layer. It reorganizes existing authoring behavior into the manga-first shell without introducing another project-state model.
-
-It owns UI presentation such as:
-
-- work title on its own line;
-- breadcrumb;
-- `P001` display formatting;
-- page navigation above the canvas;
-- explorer-style Work Structure;
-- relocation of detailed page/container controls into advanced sections;
-- Page settings naming/role clarification;
-- Japanese-first primary authoring wording cleanup.
-
-`P001` is derived UI formatting; canonical `pageNumber` remains numeric.
-
-### `integration/template-character-cast.js`
-
-Owns the cross-feature boundary between Story Template selection and reusable-character identity:
-
-- explicit primary/second-character choice before template apply;
-- exact selected-cast routing into the canonical template application pipeline;
-- the task-first apply card that replaces the redundant middle preview;
-- six generic editable starter character definitions for new works and explicit quick-add for existing works.
-
-Template browsing remains non-mutating; character-library mutation happens only during new-work creation or explicit starter-add actions.
-
-### `templates/panel-layout-grammar.js`
-
-Owns the Prototype 0.18.0 page-layout grammar layered on top of quadrilateral panel geometry: shared diagonal seams with compact gutters, asymmetric visual-weight families, Story Template layout-family assignment, compatibility handling for `diagonal3` / `diagonal4`, and diagonal discovery integration. Base polygon validation/editing remains in `authoring/panel-geometry.js`; apply-time shape transfer remains in `templates/presentation-contract.js`.
+### `authoring/panel-geometry.js`
+Owns convex-quadrilateral `Panel.shape` semantics and editing.
 
 ### `authoring/inset-panels.js`
+Owns one-level panel-in-panel relation while reusing the ordinary Panel model.
 
-Owns Prototype 0.19.0 one-level panel-in-panel compatibility behavior: optional parent relation normalization, ID-remap on duplication, semantic order insertion, white overlap mask, deletion/split safety, editor control injection, and Render Brief / manifest hierarchy. It deliberately reuses the ordinary Panel model and existing inspectors instead of creating a second inset-only content model.
+### `integration/template-character-cast.js`
+Owns explicit reusable-character choice before Story Template apply and the starter-character integration.
+
+### `templates/panel-layout-grammar.js`
+Owns shared-seam diagonal/asymmetric/buildup panel-layout families and their Story Template mapping.
+
+### `ui/editor-shell.js`
+Compatibility presentation/navigation owner for current work, breadcrumb, `P001`, page navigation, Work Explorer, and Page settings positioning. It must reuse existing project operations instead of creating a second state model.
 
 ## Public guide
 
-The full user guide is a static public page:
+The complete user guide is:
 
 ```text
 web/guide.html
-web/guide.css
-```
-
-The in-editor Help modal is a quick reference and links to `./guide.html`. It should not grow into a duplicate full manual.
-
-Markdown source/maintenance guidance lives in:
-
-```text
 docs/USER-GUIDE.md
-docs/README.md
 ```
+
+The in-editor Help surface stays concise and links to `./guide.html`.
 
 ## Rules
 
-1. Preserve the explicit array order in `web/runtime/manifest.json`; later chunks intentionally extend globals from earlier owners.
-2. Modify an existing semantic owner when one already owns the behavior instead of creating `app-N.js` or another chronology-named patch file.
-3. Add a new named runtime chunk only when it has a distinct responsibility that does not fit an existing owner, and register it once in the canonical manifest.
-4. UI-only organization must reuse existing domain/project state rather than introduce a second work/page/hierarchy model.
-5. Browser-visible behavior, project JSON, prompt, manifest, export package boundaries, RTL/LTR, writing direction, and legacy portable-file normalization are external contracts during refactors.
-6. `scripts/runtime-paths.mjs` derives validator-facing paths/order from the canonical manifest; `scripts/validate-runtime-layout.mjs` enforces registration, uniqueness, source existence, and the no-inline-duplicate rule.
-7. User-visible/runtime contract changes must also update the documentation owners defined in `docs/README.md` and `AGENTS.md`.
-8. CI evidence and visual/interaction evidence are separate; static validation cannot by itself prove a public layout is visually correct.
+1. Preserve the explicit order in `web/runtime/manifest.json` until a deliberate owner cutover.
+2. Modify/extract semantic owners instead of adding chronology-named patches.
+3. UI organization must reuse project state rather than create another domain model.
+4. New TypeScript code reaches classic globals only through `web/src/runtime/legacy-api.ts`.
+5. Prefer explicit command/lifecycle events over DOM-observer coupling.
+6. Project JSON, AI handoff, RTL/LTR, lettering, stable identity, and import compatibility remain external contracts during refactors.
+7. Runtime ownership changes must update `docs/ARCHITECTURE.md` and this file.
+8. CI evidence and visual/interaction evidence are separate.
 
-## Runtime migration boundary
+## Migration boundary
 
-This structure is a compatibility design, not an ES-module conversion.
-
-A future module/bundler/runtime migration must be handled as a separate refactor with characterization tests, semantic-equivalence checks, deployment impact analysis, and rollback/reference evidence.
-
-## Phase 1 TypeScript/Vite bridge
-
-Prototype 0.17.0 keeps this directory as the compatibility/reference runtime while the production entry uses Vite + TypeScript. `web/src/legacy-runtime.ts` owns ordered loading and commit-aware cache busting, but the ordered registry itself is owned by `web/runtime/manifest.json`. New top-level UI composition belongs in typed source under `web/src/`; do not add another chronology-named runtime patch file for Phase 1 presentation fixes.
+This directory remains a compatibility/reference runtime. A full module/runtime replacement requires characterization tests, semantic-equivalence checks, production-shaped verification, and rollback/reference evidence. The current refactor deliberately keeps classic runtime behavior while reducing responsibility concentration and making later TypeScript migration easier to review.
