@@ -24,7 +24,10 @@ for(const phrase of [
   "balloons:(panel.balloons||[]).map(balloon=>({...balloon,id:uid('balloon')}))"
 ])assert.ok(storage.includes(phrase),`storage missing Phase 2 contract: ${phrase}`);
 
-const saveBody=storage.slice(storage.indexOf('async save(input)'),storage.indexOf('async has(workId)'));
+const saveStart=storage.indexOf('async save(input)');
+const saveEnd=storage.indexOf('async saveAndActivate',saveStart);
+assert.ok(saveStart>=0&&saveEnd>saveStart,'ordinary save method boundary must remain discoverable');
+const saveBody=storage.slice(saveStart,saveEnd);
 assert.ok(saveBody.includes('PROJECT_WORK_STORE'));
 assert.ok(!saveBody.includes('ACTIVE_WORK_META_KEY'),'ordinary autosave must not change active work');
 
