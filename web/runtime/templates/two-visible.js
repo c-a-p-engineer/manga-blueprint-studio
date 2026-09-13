@@ -93,8 +93,12 @@ templateBadges22=function(id){
   return html;
 };
 
+function hasActiveSemanticQuickFilters27(filters=activeTemplateFilters27){
+  return ['visible','relationship','dialogue','art'].some(key=>filters[key]!=='all');
+}
 function templateMatchesQuick27(id){
-  const c=templateCastCounts26(id),scene=c?.scene;if(!c||!scene)return true;
+  const c=templateCastCounts26(id),scene=c?.scene;
+  if(!c||!scene)return !hasActiveSemanticQuickFilters27();
   if(activeTemplateFilters27.visible==='1'&&c.visible!==1)return false;
   if(activeTemplateFilters27.visible==='2'&&c.visible<2)return false;
   if(activeTemplateFilters27.relationship!=='all'&&scene.relationship!==activeTemplateFilters27.relationship)return false;
