@@ -19,6 +19,7 @@
   { "key": "smartIntentHardening", "id": "story/smart-intent-hardening", "path": "runtime/story/smart-intent-hardening.js" },
   { "key": "templateStudio", "id": "templates/studio", "path": "runtime/templates/studio.js" },
   { "key": "templateStudioFeedback", "id": "templates/studio-feedback", "path": "runtime/templates/studio-feedback.js" },
+  { "key": "backupRestore", "id": "integration/backup-restore", "path": "runtime/integration/backup-restore.js" },
   { "key": "writingDirection", "id": "lettering/writing-direction", "path": "runtime/lettering/writing-direction.js" },
   { "key": "readingOrder", "id": "ordering/reading-order", "path": "runtime/ordering/reading-order.js" },
   { "key": "templateLetteringOrder", "id": "integration/template-lettering-order", "path": "runtime/integration/template-lettering-order.js" },
