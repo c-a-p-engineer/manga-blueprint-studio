@@ -3,77 +3,192 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#111827" />
-  <title>Manga Blueprint Studio</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Manga Blueprint Studio は、漫画のページ構成・コマ割り・カメラ・キャラクター・文字・演出を設計し、AI画像生成へ安全に渡すためのローカルファーストなBlueprintエディタです。" />
+  <title>Manga Blueprint Studio — 漫画の演出設計をAIへ渡す</title>
+  <link rel="stylesheet" href="./landing.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand-block">
-      <div class="brand">Manga Blueprint Studio</div>
-      <div class="tagline" data-i18n="tagline">漫画演出を設計し、AIへ安全に渡すBlueprintエディタ</div>
-    </div>
-    <div class="top-actions">
-      <button id="helpBtn" type="button" aria-haspopup="dialog">? <span data-i18n="help">使い方</span></button>
-      <button id="undoBtn" type="button">↶ <span data-i18n="undo">元に戻す</span></button>
-      <button id="redoBtn" type="button">↷ <span data-i18n="redo">やり直す</span></button>
-      <select id="languageSelect" aria-label="Language"><option value="ja">日本語</option><option value="en">English</option></select>
-    </div>
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Manga Blueprint Studio ホーム">
+      <span class="brand-mark" aria-hidden="true">M</span>
+      <span>Manga Blueprint Studio</span>
+    </a>
+    <nav class="site-nav" aria-label="主要ナビゲーション">
+      <a href="#features">できること</a>
+      <a href="#workflow">使い方</a>
+      <a href="./guide.html">ガイド</a>
+      <a class="nav-cta" href="./editor.html">エディタを開く</a>
+    </nav>
   </header>
 
-  <main class="workspace">
-    <section class="canvas-column">
-      <div class="canvas-toolbar"><span data-i18n="canvasHelp">コマ・人物・吹き出しをタップして編集します。</span><span class="canvas-meta"><span id="canvasSizeStatus"></span><span id="saveStatus">local autosave</span></span></div>
-      <div class="page-stage"><svg id="blueprintSvg" viewBox="0 0 800 1130" role="img" aria-label="Manga blueprint page"></svg></div>
-      <div class="canvas-note" data-i18n="safeExportNote">AI用PNGではキャラ名・コマ番号・カメラ注記などの制作メタ文字を自動除去します。</div>
+  <main id="main">
+    <section class="hero section-shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">HUMAN-DIRECTED MANGA BLUEPRINT</p>
+        <h1 id="hero-title">漫画の「どう見せたいか」を、<br />画像生成の前に決める。</h1>
+        <p class="hero-lead">コマ割り、人物、カメラ、背景、セリフ、演出をページ単位で組み立て、その意図を<strong>見た目と構造化データの両方</strong>でAIへ渡すための漫画設計エディタです。</p>
+        <p class="hero-principle"><strong>人が監督。AIは補助。</strong> Story Template や Smart Manga が提案しても、最終的な設計はいつでも編集できます。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="./editor.html">今すぐエディタを開く</a>
+          <a class="button secondary" href="./guide.html">使い方を見る</a>
+        </div>
+        <ul class="trust-list" aria-label="製品の特徴">
+          <li>ブラウザ内に作品を保存</li>
+          <li>日本漫画の右→左に対応</li>
+          <li>AI生成用ZIPを書き出し</li>
+          <li>GitHub Pagesで公開</li>
+        </ul>
+      </div>
+
+      <div class="hero-visual" aria-label="漫画ページの設計からAIハンドオフまでのイメージ">
+        <div class="visual-card editor-card">
+          <div class="visual-card-head">
+            <span>P001</span>
+            <span>Blueprint</span>
+          </div>
+          <div class="manga-page" aria-hidden="true">
+            <div class="panel panel-a"><span>①</span><i class="figure figure-a"></i></div>
+            <div class="panel panel-b"><span>②</span><i class="figure figure-b"></i></div>
+            <div class="panel panel-c"><span>③</span><i class="figure figure-c"></i></div>
+          </div>
+          <div class="visual-tags" aria-hidden="true">
+            <span>Camera</span><span>Pose</span><span>Dialogue</span><span>Effects</span>
+          </div>
+        </div>
+        <div class="handoff-arrow" aria-hidden="true">→</div>
+        <div class="visual-card output-card">
+          <span class="output-kicker">AI HANDOFF</span>
+          <strong>生成に必要な役割を分離</strong>
+          <div class="output-row"><span>Clean PNG</span><b>空間構成</b></div>
+          <div class="output-row"><span>JSON + Prompt</span><b>意味・演出</b></div>
+          <div class="output-row"><span>Character</span><b>人物同一性</b></div>
+          <div class="output-row"><span>TEXT TO RENDER</span><b>表示文字</b></div>
+        </div>
+      </div>
     </section>
 
-    <section class="control-shell">
-      <nav class="tabbar" aria-label="Editor sections">
-        <button class="tab active" data-tab="page" type="button" data-i18n="tabPage">ページ</button><button class="tab" data-tab="panel" type="button" data-i18n="tabPanel">コマ</button><button class="tab" data-tab="character" type="button" data-i18n="tabCharacter">キャラ</button><button class="tab" data-tab="background" type="button" data-i18n="tabBackground">背景</button><button class="tab" data-tab="text" type="button" data-i18n="tabText">文字</button><button class="tab" data-tab="effects" type="button" data-i18n="tabEffects">演出</button><button class="tab" data-tab="output" type="button" data-i18n="tabOutput">出力</button>
-      </nav>
+    <section class="problem-band" aria-label="製品コンセプト">
+      <div class="section-shell problem-grid">
+        <div>
+          <p class="eyebrow">WHY</p>
+          <h2>「いい感じの漫画にして」だけでは、演出が消える。</h2>
+        </div>
+        <p>画像生成AIに一枚絵の指示だけを渡すと、コマの役割、読み順、視点、人物の位置関係、表示してよい文字などが曖昧になります。Manga Blueprint Studio は、それらを<strong>生成前の設計情報</strong>として保持します。</p>
+      </div>
+    </section>
 
-      <div class="panels">
-        <section class="tool-panel active" data-section="page">
-          <div class="section-title-row"><h2 data-i18n="pageHeading">ページ</h2><button id="randomBtn" type="button" class="primary" aria-haspopup="dialog" data-i18n="randomCreate">おまかせ作成</button></div>
-          <div class="subhead" data-i18n="canvasSize">原稿サイズ</div>
-          <label><span data-i18n="canvasSize">サイズプリセット</span><select id="canvasPresetSelect"></select></label>
-          <div id="canvasPresetHelp" class="explain-card"></div>
-          <div class="two-columns"><label><span data-i18n="canvasWidth">幅</span><input id="canvasWidth" type="number" min="320" max="4000" step="1" /></label><label><span data-i18n="canvasHeight">高さ</span><input id="canvasHeight" type="number" min="320" max="6000" step="1" /></label></div>
-          <button id="applyCanvasSize" type="button" data-i18n="applySize">このサイズを適用</button>
-          <div class="subhead" data-i18n="panelLayout">コマ割り</div>
-          <label><span data-i18n="templateLabel">レイアウト</span><select id="templateSelect"></select></label><div id="layoutHelp" class="explain-card"></div>
-          <div class="button-grid"><button id="splitVertical" type="button" data-i18n="splitVertical">左右に分割</button><button id="splitHorizontal" type="button" data-i18n="splitHorizontal">上下に分割</button></div>
-          <button id="renumber" type="button" data-i18n="renumber">読み順で番号振り直し</button><p class="help" data-i18n="pageHelp">日本漫画は右→左を既定にしています。テンプレート変更は現在のコマ配置を作り直します。</p>
-          <div class="subhead" data-i18n="panelOverviewHeading">コマ一覧</div><p class="help" data-i18n="panelOverviewHelp">各コマの内容を1行で確認できます。タップするとそのコマを選択します。</p><div id="panelOverview" class="overview-list"></div>
-        </section>
+    <section id="features" class="section-shell content-section" aria-labelledby="features-title">
+      <div class="section-heading">
+        <p class="eyebrow">FEATURES</p>
+        <h2 id="features-title">漫画を作る順番に沿って設計する</h2>
+        <p>機能一覧ではなく、「作品 → ページ → コマ → AIへ渡す」という制作の流れを中心にしています。</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-number">01</span>
+          <h3>作品とページを整理</h3>
+          <p>複数作品と複数ページをブラウザ内に保存。<code>P001</code> 形式で移動し、必要なら巻・章・フォルダも使えます。</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-number">02</span>
+          <h3>漫画らしいコマを組む</h3>
+          <p>通常の矩形だけでなく斜めコマ、四隅編集、小窓コマ、断ち切り、ブチ抜きまでページ上の構図として扱います。</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-number">03</span>
+          <h3>演出意図を残す</h3>
+          <p>人物、ポーズ、表情、視線、カメラ、背景、吹き出し、SFX、効果線などを、絵とは別の意味情報として保持します。</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-number">04</span>
+          <h3>AIへ安全に渡す</h3>
+          <p>クリーンPNG、プロジェクトJSON、Prompt、read-first manifest をまとめ、制作メタ文字を完成絵へ混入させない境界を作ります。</p>
+        </article>
+      </div>
+    </section>
 
-        <section class="tool-panel" data-section="panel">
-          <div class="section-title-row"><h2 data-i18n="panelHeading">選択中のコマ</h2><button id="deletePanel" type="button" class="danger" data-i18n="deletePanel">削除</button></div><div id="panelStatus" class="status-box"></div><div id="selectedPanelSummary" class="summary-card"></div>
-          <label><span data-i18n="narrativeRole">コマの役割</span><select id="panelRole"><option value="setup">導入 / Setup</option><option value="exposition">状況説明 / Exposition</option><option value="reaction">反応 / Reaction</option><option value="beat">間 / Beat</option><option value="climax">決め / Climax</option><option value="transition">転換 / Transition</option><option value="afterglow">余韻 / Afterglow</option></select></label>
-          <div class="subhead" data-i18n="cameraHeading">カメラ</div><label><span data-i18n="quickCamera">かんたんカメラ</span><select id="cameraQuickPreset"></select></label><label><span data-i18n="cameraDistance">距離</span><select id="cameraDistance"></select></label><label><span data-i18n="cameraAngle">高さ・角度</span><select id="cameraAngle"></select></label><label><span data-i18n="cameraViewpoint">視点方向</span><select id="cameraViewpoint"></select></label><div id="cameraHelp" class="explain-card"></div><label><span data-i18n="cameraFocus">主対象・構図メモ</span><textarea id="cameraFocus" rows="3" placeholder="例: 右拳を極端な前景へ。胸付近から見る。"></textarea></label><label><span data-i18n="cameraIntent">演出意図</span><textarea id="cameraIntent" rows="2" placeholder="例: 威圧感、緊張感、孤独感"></textarea></label>
-          <div class="subhead" data-i18n="frameHeading">コマ枠</div><label><span data-i18n="borderStyle">枠タイプ</span><select id="borderStyle"><option value="normal">通常枠 / Normal</option><option value="borderless">枠なし / Borderless</option><option value="inset">小窓風枠 / Inset-style border</option><option value="impact">衝撃枠 / Impact</option></select></label><label><span data-i18n="bleedEdge">断ち切り</span><select id="bleedEdge"><option value="none">なし</option><option value="top">上</option><option value="right">右</option><option value="bottom">下</option><option value="left">左</option><option value="all">全面</option></select></label><label><span data-i18n="breakoutMode">ブチ抜き</span><select id="breakoutMode"><option value="none">なし</option><option value="character">人物を枠外へ</option><option value="foreground">前景だけ枠外へ</option><option value="cross-panel">コマ跨ぎ</option></select></label>
-        </section>
+    <section id="workflow" class="workflow-section" aria-labelledby="workflow-title">
+      <div class="section-shell">
+        <div class="section-heading compact">
+          <p class="eyebrow">WORKFLOW</p>
+          <h2 id="workflow-title">最短4ステップ</h2>
+        </div>
+        <ol class="workflow-list">
+          <li><span>1</span><div><strong>作品を開く</strong><p>新規作品を作るか、保存済み作品を選びます。</p></div></li>
+          <li><span>2</span><div><strong>ページを作る</strong><p>原稿サイズと読み方向を決め、Story Template または手動でコマ割りを作ります。</p></div></li>
+          <li><span>3</span><div><strong>コマを演出する</strong><p>人物・カメラ・背景・文字・効果を選択中のコマへ設定します。</p></div></li>
+          <li><span>4</span><div><strong>AI生成ZIPを書き出す</strong><p>選択中の1ページを、画像生成へ渡せるパッケージとして出力します。</p></div></li>
+        </ol>
+      </div>
+    </section>
 
-        <section class="tool-panel" data-section="character">
-          <div class="section-title-row"><h2 data-i18n="charactersHeading">キャラクター</h2><button id="addCharacter" type="button" class="primary" data-i18n="addCharacter">＋ 追加</button></div><div id="characterList" class="list"></div><div id="noCharacter" class="status-box" data-i18n="selectCharacter">棒人間を選択してください。</div>
-          <div id="characterInspector" hidden><label><span data-i18n="displayName">表示名</span><input id="characterName" type="text" /></label><label>Character ID<input id="characterId" type="text" /></label><label><span data-i18n="referenceKey">Character Sheet参照キー</span><input id="referenceKey" type="text" /></label><label><span data-i18n="poseLabel">ポーズ</span><select id="poseSelect"></select></label><label><span data-i18n="expressionLabel">表情</span><select id="expressionType"><option value="neutral">無表情 / Neutral</option><option value="smile">笑顔 / Smile</option><option value="shy">照れ / Shy</option><option value="angry">怒り / Angry</option><option value="surprised">驚き / Surprised</option><option value="sad">悲しみ / Sad</option><option value="fear">恐怖 / Fear</option><option value="smirk">ニヤリ / Smirk</option><option value="sleepy">眠そう / Sleepy</option></select></label><label><span data-i18n="expressionIntensity">表情強度</span><input id="expressionIntensity" type="range" min="0" max="1" step="0.1" /></label><label><span data-i18n="expressionNotes">表情メモ</span><input id="expressionNotes" type="text" placeholder="例: 頬を赤らめ、口を少し開く" /></label><label><span data-i18n="gazeLabel">視線</span><select id="gazeTarget"><option value="camera">カメラ</option><option value="other-character">相手</option><option value="down">下</option><option value="up">上</option><option value="away">視線を外す</option><option value="closed">目を閉じる</option><option value="custom">自由指定</option></select></label><label><span data-i18n="gazeNotes">視線メモ</span><input id="gazeNotes" type="text" /></label><label><span data-i18n="scaleLabel">スケール</span> <output id="scaleOut"></output><input id="characterScale" type="range" min="0.35" max="3" step="0.05" /></label><label><span data-i18n="rotationLabel">回転</span> <output id="rotationOut"></output><input id="characterRotation" type="range" min="-60" max="60" step="1" /></label><button id="deleteCharacter" type="button" class="danger" data-i18n="deleteCharacter">キャラを削除</button></div>
-        </section>
+    <section class="section-shell content-section" aria-labelledby="handoff-title">
+      <div class="handoff-layout">
+        <div class="section-heading compact">
+          <p class="eyebrow">AI HANDOFF</p>
+          <h2 id="handoff-title">一枚のPNGに全部を背負わせない</h2>
+          <p>空間、意味、人物、画風、文字を別の責務として渡すことで、画像生成側が読み違えにくい構造にします。</p>
+        </div>
+        <div class="handoff-table" role="table" aria-label="AIハンドオフの役割分担">
+          <div class="handoff-row" role="row"><strong role="cell">Clean PNG</strong><span role="cell">コマ・人物・吹き出しの空間構成</span></div>
+          <div class="handoff-row" role="row"><strong role="cell">.manga.json + Prompt</strong><span role="cell">物語、カメラ、ポーズ、背景、文字方向</span></div>
+          <div class="handoff-row" role="row"><strong role="cell">Character guidance</strong><span role="cell">人物の見た目・同一性</span></div>
+          <div class="handoff-row" role="row"><strong role="cell">Art direction</strong><span role="cell">描画言語・仕上げ方</span></div>
+          <div class="handoff-row" role="row"><strong role="cell">TEXT TO RENDER</strong><span role="cell">完成絵に表示してよい正確な文字</span></div>
+        </div>
+      </div>
+    </section>
 
-        <section class="tool-panel" data-section="background"><h2 data-i18n="backgroundHeading">背景</h2><label><span data-i18n="locationLabel">場所</span><input id="backgroundLocation" type="text" placeholder="例: 学校の教室、屋上、路地裏" /></label><label><span data-i18n="timeLabel">時間帯</span><select id="backgroundTime"><option value="">指定なし</option><option value="morning">朝</option><option value="day">昼</option><option value="evening">夕方</option><option value="night">夜</option></select></label><label><span data-i18n="weatherLabel">天気</span><input id="backgroundWeather" type="text" placeholder="例: 晴れ、雨、曇り" /></label><label><span data-i18n="moodLabel">雰囲気</span><input id="backgroundMood" type="text" placeholder="例: 静か、不穏、柔らかい" /></label><label><span data-i18n="detailLabel">描き込み量</span><select id="backgroundDetail"><option value="none">背景なし</option><option value="low">少なめ</option><option value="medium">中</option><option value="high">多め</option></select></label><label><span data-i18n="renderModeLabel">背景の見せ方</span><select id="backgroundRenderMode"><option value="normal">通常</option><option value="selective-detail">必要部分だけ描く</option><option value="white">白背景</option><option value="blur">ぼかす</option><option value="speed-lines">スピード線へ置換</option><option value="focus-lines">集中線へ置換</option><option value="black">黒ベタ</option></select></label><label><span data-i18n="backgroundNotes">背景メモ</span><textarea id="backgroundNotes" rows="3"></textarea></label></section>
+    <section class="principles-section" aria-labelledby="principles-title">
+      <div class="section-shell">
+        <div class="section-heading compact">
+          <p class="eyebrow">DESIGN PRINCIPLES</p>
+          <h2 id="principles-title">補助機能が勝手に漫画を決めない</h2>
+        </div>
+        <div class="principle-grid">
+          <article><h3>Human directed</h3><p>Story Template と Smart Manga は候補を出します。適用するまで作品状態は変わりません。</p></article>
+          <article><h3>Local first</h3><p>作品データは IndexedDB に保存。外部AIへ渡す内容は、ユーザーが書き出す生成パッケージで明示します。</p></article>
+          <article><h3>Provider independent</h3><p>コアの作品データを特定の画像生成サービス専用にせず、下流モデルへのハンドオフ境界を分離します。</p></article>
+        </div>
+      </div>
+    </section>
 
-        <section class="tool-panel" data-section="text"><div class="section-title-row"><h2 data-i18n="balloonsHeading">吹き出し</h2><button id="addBalloon" type="button" class="primary" data-i18n="addBalloon">＋ 吹き出し</button></div><div id="balloonList" class="list"></div><div id="balloonInspector" hidden><label><span data-i18n="balloonType">種類</span><select id="balloonType"><option value="speech">会話</option><option value="thought">心の声</option><option value="shout">叫び</option><option value="whisper">小声</option><option value="narration">ナレーション</option><option value="offscreen">画面外</option></select></label><label><span data-i18n="speaker">話者</span><select id="balloonSpeaker"></select></label><label><span data-i18n="balloonText">内容</span><textarea id="balloonText" rows="3"></textarea></label><label>X<input id="balloonX" type="range" min="0" max="800" step="5" /></label><label>Y<input id="balloonY" type="range" min="0" max="1130" step="5" /></label><label><span data-i18n="balloonSize">サイズ</span><input id="balloonSize" type="range" min="0.5" max="2.2" step="0.1" /></label><button id="deleteBalloon" type="button" class="danger" data-i18n="deleteBalloon">吹き出しを削除</button></div><div class="subhead" data-i18n="textSafetyHeading">AI文字出力の安全策</div><p class="help" data-i18n="textSafetyHelp">AI用PNGでは吹き出し位置だけ残し、本文はPrompt側へ渡します。これによりキャラ名などの誤写植を減らします。</p></section>
+    <section class="section-shell scope-section" aria-labelledby="scope-title">
+      <div>
+        <p class="eyebrow">CURRENT SCOPE</p>
+        <h2 id="scope-title">いま出来ることを、過剰に見せない。</h2>
+      </div>
+      <div class="scope-copy">
+        <p>現在のAI生成パッケージは<strong>選択中の1ページ単位</strong>です。複数ページ一括書き出し、完全なバックアップ/復元、最終画像への決定論的な文字組みなどは今後の対象です。</p>
+        <a href="https://github.com/c-a-p-engineer/manga-blueprint-studio/blob/master/docs/ROADMAP.md">現在のRoadmapを見る</a>
+      </div>
+    </section>
 
-        <section class="tool-panel" data-section="effects"><h2 data-i18n="effectsHeading">漫画演出</h2><label><span data-i18n="lineEffect">効果線</span><select id="lineEffect"><option value="none">なし</option><option value="speed">スピード線</option><option value="focus">集中線</option><option value="impact">衝撃線</option><option value="tension">緊張線</option><option value="silence">無音・間</option></select></label><label><span data-i18n="effectStrength">強度</span><select id="effectStrength"><option value="low">弱</option><option value="medium">中</option><option value="high">強</option></select></label><label><span data-i18n="onomatopoeia">オノマトペ</span><input id="sfxText" type="text" placeholder="例: ドン、バキッ、シーン" /></label><label><span data-i18n="sfxStyle">文字演出</span><select id="sfxStyle"><option value="impact">衝撃</option><option value="quiet">静か</option><option value="rumble">不穏</option><option value="speed">速度</option></select></label><label><span data-i18n="effectNotes">演出メモ</span><textarea id="effectNotes" rows="3"></textarea></label></section>
-
-        <section class="tool-panel" data-section="output"><h2 data-i18n="outputHeading">出力</h2><button id="exportAiPng" class="primary full" type="button" data-i18n="exportAiPng">AI用クリーンPNG</button><button id="exportAnnotatedPng" class="full" type="button" data-i18n="exportAnnotatedPng">確認用注釈PNG</button><button id="exportJson" class="full" type="button">.manga.json</button><label class="button-like full" for="importJson" data-i18n="importJson">JSON読込</label><input id="importJson" type="file" accept="application/json,.json" hidden /><div class="warning-card" data-i18n="metaWarning">完成絵に表示してよい文字は「吹き出し本文」と「オノマトペ」だけ。キャラ名・Character ID・カメラ注記・コマ番号は描画禁止としてPromptへ明記します。</div><div class="section-title-row prompt-title"><h2 data-i18n="promptHeading">生成プロンプト</h2><button id="copyPrompt" type="button" data-i18n="copy">コピー</button></div><textarea id="promptOutput" rows="22" readonly></textarea></section>
+    <section class="final-cta" aria-labelledby="cta-title">
+      <div class="section-shell final-cta-inner">
+        <div>
+          <p class="eyebrow">START DIRECTING</p>
+          <h2 id="cta-title">生成する前に、漫画を設計する。</h2>
+          <p>まずは1ページ、コマ割りと演出を組んでみてください。</p>
+        </div>
+        <div class="hero-actions">
+          <a class="button primary light" href="./editor.html">エディタを開く</a>
+          <a class="button secondary dark" href="https://github.com/c-a-p-engineer/manga-blueprint-studio">GitHubを見る</a>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer>Prototype 0.4 — client-side only / provider-independent</footer>
-  <dialog id="helpDialog" class="modal"><form method="dialog" class="modal-card"><div class="section-title-row"><h2 data-i18n="helpTitle">はじめての使い方</h2><button value="close" aria-label="Close">×</button></div><p class="lead" data-i18n="helpLead">難しい漫画用語を覚えなくても、ページ→コマ→キャラ→背景→文字→演出の順に決めれば使えます。</p><ol class="steps"><li><strong data-i18n="helpStep1Title">原稿サイズとコマ割りを選ぶ</strong><span data-i18n="helpStep1Body">迷ったら「現行サイズ」と「アクション3コマ」、または「おまかせ作成」で開始。</span></li><li><strong data-i18n="helpStep2Title">コマをタップしてキャラを置く</strong><span data-i18n="helpStep2Body">棒人間は外見ではなく、位置とポーズをAIへ伝える設計図です。</span></li><li><strong data-i18n="helpStep3Title">カメラ・背景・吹き出し・演出を決める</strong><span data-i18n="helpStep3Body">専門語には「超寄り」「あおり」のような日本語説明を併記しています。</span></li><li><strong data-i18n="helpStep4Title">AI用PNG + JSON + Promptを出力</strong><span data-i18n="helpStep4Body">AI用PNGからキャラ名やコマ番号は除去され、描画してよい文字だけPromptへ渡されます。</span></li></ol><div class="cheat-grid"><div><strong>Close / <span data-i18n="cheatClose">寄り</span></strong><span data-i18n="cheatCloseBody">顔や感情を見せる</span></div><div><strong>Long / <span data-i18n="cheatLong">引き</span></strong><span data-i18n="cheatLongBody">全身や位置関係を見せる</span></div><div><strong>Low angle / <span data-i18n="cheatLow">あおり</span></strong><span data-i18n="cheatLowBody">下から見上げて強く見せる</span></div><div><strong>High angle / <span data-i18n="cheatHigh">ふかん</span></strong><span data-i18n="cheatHighBody">上から見下ろして弱さや全体を見せる</span></div></div><button value="close" class="primary full" data-i18n="closeHelp">使ってみる</button></form></dialog>
-  <dialog id="randomDialog" class="modal"><form method="dialog" class="modal-card" id="randomForm"><div class="section-title-row"><h2 data-i18n="randomTitle">おまかせ作成</h2><button value="cancel" type="button" id="randomCloseX" aria-label="Close">×</button></div><p class="help" data-i18n="randomLead">用途とコマ数から、漫画として成立しやすいレイアウトとカメラの初期案を作ります。あとから全部編集できます。</p><label><span data-i18n="randomPurpose">用途</span><select id="randomPurpose"><option value="auto">おまかせ / Auto</option><option value="action">アクション / Action</option><option value="conversation">会話 / Conversation</option><option value="gag">ギャグ / Gag</option><option value="daily">日常 / Daily</option><option value="climax">見せ場重視 / Climax</option><option value="fourkoma">4コマ / 4-koma</option></select></label><label><span data-i18n="randomPanelCount">コマ数</span><select id="randomPanelCount"><option value="auto">自動 / Auto</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label><label class="check-row"><input id="randomKeepSize" type="checkbox" checked /><span data-i18n="randomKeepSize">現在の原稿サイズを使う</span></label><div class="dialog-actions"><button value="cancel" type="button" id="randomCancel" data-i18n="cancel">キャンセル</button><button value="default" type="submit" class="primary" data-i18n="generateRandom">作成する</button></div></form></dialog>
-  <script type="module" src="./app.js"></script>
+  <footer class="site-footer section-shell">
+    <div><strong>Manga Blueprint Studio</strong><span>Human-directed manga planning &amp; AI handoff.</span></div>
+    <nav aria-label="フッターナビゲーション">
+      <a href="./editor.html">Editor</a>
+      <a href="./guide.html">Guide</a>
+      <a href="https://github.com/c-a-p-engineer/manga-blueprint-studio">GitHub</a>
+    </nav>
+  </footer>
 </body>
 </html>
