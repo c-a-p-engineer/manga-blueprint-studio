@@ -3,7 +3,9 @@ import {runtimeLoadOrder,runtimePaths,readRuntime} from './runtime-paths.mjs';
 
 const read=path=>fs.readFileSync(path,'utf8');
 const runtime=readRuntime('templateCharacterCast');
-const phaseOneUi=read('web/src/phase-one-ui.ts');
+const workflow=read('web/src/ui/template-workflow.ts');
+const runtimeApi=read('web/src/runtime/legacy-api.ts');
+const pageModes=read('web/src/ui/page-modes.ts');
 
 function requireText(source,text,label){
   if(!source.includes(text))throw new Error(`${label} missing ${JSON.stringify(text)}`);
@@ -48,13 +50,12 @@ for(const token of [
 
 for(const token of [
   "closest('#applyStoryTemplate11')",
-  "runtime.applySelectedTemplateWithCast36",
-  "runtime.applyTemplatePresentation34",
   'event.stopImmediatePropagation()',
   "apply.classList.add('primary','phase1-template-apply')",
-  "oldBlock.hidden=true",
-  'ensureManualLayoutDisclosure'
-])requireText(phaseOneUi,token,'Phase 1 template workflow');
+  "oldBlock.hidden=true"
+])requireText(workflow,token,'typed template workflow');
+for(const token of ['runtime.applySelectedTemplateWithCast36','runtime.applyTemplatePresentation34'])requireText(runtimeApi,token,'legacy runtime bridge');
+requireText(pageModes,'ensureManualLayoutDisclosure','page-mode owner');
 
 const newWorkOnlyComment='Existing/imported works are left untouched.';
 requireText(runtime,newWorkOnlyComment,'compatibility contract');
@@ -63,4 +64,4 @@ if(runtime.includes('normalizeProject=function(input){')&&runtime.includes('addM
   throw new Error('Starter characters must not be silently injected through normalizeProject into existing/imported works.');
 }
 
-console.log('Template cast selection, primary apply route, and starter-character contract passed.');
+console.log('Template cast selection, typed primary apply route, and starter-character contract passed.');

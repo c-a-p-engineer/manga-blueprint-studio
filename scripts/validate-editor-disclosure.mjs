@@ -1,15 +1,20 @@
 import fs from 'node:fs';
 
-const ts=fs.readFileSync('web/src/phase-one-ui.ts','utf8');
+const pageModes=fs.readFileSync('web/src/ui/page-modes.ts','utf8');
+const panelDisclosures=fs.readFileSync('web/src/ui/panel-disclosures.ts','utf8');
 const css=fs.readFileSync('web/src/phase-one-ui.css','utf8');
 const html=fs.readFileSync('web/index.html','utf8');
 
 for(const token of [
   'phase1PageModes','phase1-page-subtabs','role','tablist','aria-selected','data-page-mode',
-  'phase1PanelContentDisclosure','phase1PanelCameraDisclosure','phase1PanelFrameDisclosure',
-  'ensureDisclosure','ArrowRight','ArrowLeft','Home','End'
+  'ArrowRight','ArrowLeft','Home','End'
 ]){
-  if(!ts.includes(token))throw new Error(`Phase 1 UI missing disclosure/submode contract token: ${token}`);
+  if(!pageModes.includes(token))throw new Error(`Page submode contract missing token: ${token}`);
+}
+for(const token of [
+  'phase1PanelContentDisclosure','phase1PanelCameraDisclosure','phase1PanelFrameDisclosure','ensureDisclosure'
+]){
+  if(!panelDisclosures.includes(token))throw new Error(`Panel disclosure contract missing token: ${token}`);
 }
 for(const token of ['phase1-page-subtabs','phase1-disclosure','[role="tabpanel"][hidden]','min-height:46px']){
   if(!css.includes(token))throw new Error(`Phase 1 CSS missing disclosure UX token: ${token}`);
@@ -24,12 +29,16 @@ if(html.includes('<option value="inset">小窓 / Inset</option>'))throw new Erro
 for(const phrase of [
   "template:['テンプレート','Template']",
   "manuscript:['原稿設定','Manuscript']",
-  "layout:['手動コマ割り','Manual layout']",
+  "layout:['手動コマ割り','Manual layout']"
+]){
+  if(!pageModes.includes(phrase))throw new Error(`Expected task-first page label missing: ${phrase}`);
+}
+for(const phrase of [
   "'内容・役割','Content + role'",
   "'カメラ','Camera'",
   "'枠・形状','Frame + shape'"
 ]){
-  if(!ts.includes(phrase))throw new Error(`Expected task-first label missing: ${phrase}`);
+  if(!panelDisclosures.includes(phrase))throw new Error(`Expected panel disclosure label missing: ${phrase}`);
 }
 
 console.log('Editor disclosure UX contract: one submode layer, native disclosures, accessible tab state, mobile target sizing, and unambiguous inset terminology passed.');
