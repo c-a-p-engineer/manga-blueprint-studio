@@ -5,15 +5,16 @@ const read = path => fs.readFileSync(path,'utf8');
 const schema = JSON.parse(read('schema/manga-blueprint.schema.json'));
 const storage = read(runtimePaths.projectStorage);
 const editor = read(runtimePaths.editorState);
+const commands = read(runtimePaths.editorCommands);
 const pages = read(runtimePaths.pageNavigation);
 
 if(runtimePaths.projectStorage!=='web/runtime/core/project-storage.js')throw new Error('projectStorage runtime owner is not registered');
 if(runtimePaths.pageNavigation!=='web/runtime/authoring/page-navigation.js')throw new Error('pageNavigation runtime owner is not registered');
-for(const key of ['projectStorage','editorState','eventBindings','pageNavigation','pageLayoutCamera']){
+for(const key of ['projectStorage','editorState','editorCommands','eventBindings','pageNavigation','pageLayoutCamera']){
   if(!runtimeLoadOrder.includes(key))throw new Error(`runtimeLoadOrder missing ${key}`);
 }
 const order = Object.fromEntries(runtimeLoadOrder.map((key,index)=>[key,index]));
-if(!(order.projectStorage < order.editorState && order.eventBindings < order.pageNavigation && order.pageNavigation < order.pageLayoutCamera)){
+if(!(order.projectStorage < order.editorState && order.editorState < order.editorCommands && order.eventBindings < order.pageNavigation && order.pageNavigation < order.pageLayoutCamera)){
   throw new Error('Multi-page runtime load order is invalid');
 }
 
@@ -37,10 +38,10 @@ for(const phrase of [
 }
 
 if(!editor.includes("let selectedPageId=project.pages[0]?.id||null"))throw new Error('Editor state must track selectedPageId');
-if(!editor.includes("const currentPage = () => project.pages.find(page=>page.id===selectedPageId)||project.pages[0]||null")){
+if(!editor.includes("const currentPage=()=>project.pages.find(page=>page.id===selectedPageId)||project.pages[0]||null")){
   throw new Error('currentPage() must resolve from selectedPageId');
 }
-if(!editor.includes("if(!project.pages.some(page=>page.id===selectedPageId))selectedPageId=project.pages[0]?.id||null")){
+if(!commands.includes("if(!project.pages.some(page=>page.id===selectedPageId))selectedPageId=project.pages[0]?.id||null")){
   throw new Error('Undo/Redo restore must repair stale selectedPageId');
 }
 
