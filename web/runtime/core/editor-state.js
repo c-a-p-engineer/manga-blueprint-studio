@@ -1,5 +1,6 @@
 // Active editor state and domain-level editing operations.
 // History, persistence lifecycle, and rendering are owned by sibling core runtime chunks.
+// Legacy browser project key 'manga-blueprint-studio/0.1' is intentionally not migrated; portable .manga.json import remains the compatibility path.
 let project=createProjectWithIdentity();
 let selectedPageId=project.pages[0]?.id||null;
 let selectedPanelId=project.pages[0]?.panels[0]?.id||null;
