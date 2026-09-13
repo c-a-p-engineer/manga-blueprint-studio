@@ -1,5 +1,6 @@
 import {loadLegacyRuntime,type BuildInfo} from './legacy-runtime';
 import {installPhaseOneUi} from './phase-one-ui';
+import {initializeLegacyEditor,setBuildInfo} from './runtime/legacy-api';
 
 const fallbackBuildInfo:BuildInfo={
   schema:'manga-blueprint-build-info/1',
@@ -8,13 +9,6 @@ const fallbackBuildInfo:BuildInfo={
   buildSource:'vite-fallback',
   deployedAt:null
 };
-
-type RuntimeGlobals=typeof globalThis&{
-  MANGA_BLUEPRINT_BUILD_INFO?:Readonly<BuildInfo>;
-  initializeEditorState?:()=>Promise<void>;
-};
-
-const runtime=globalThis as RuntimeGlobals;
 
 async function loadBuildInfo():Promise<BuildInfo>{
   try{
@@ -30,10 +24,9 @@ async function loadBuildInfo():Promise<BuildInfo>{
 
 async function bootstrap(){
   const buildInfo=Object.freeze(await loadBuildInfo());
-  runtime.MANGA_BLUEPRINT_BUILD_INFO=buildInfo;
+  setBuildInfo(buildInfo);
   await loadLegacyRuntime(buildInfo);
-  if(typeof runtime.initializeEditorState!=='function')throw new Error('Editor runtime did not expose initializeEditorState.');
-  await runtime.initializeEditorState();
+  await initializeLegacyEditor();
   installPhaseOneUi();
   document.documentElement.dataset.appVersion=buildInfo.appVersion;
 }
