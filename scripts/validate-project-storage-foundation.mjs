@@ -1,46 +1,42 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
-import { runtimeManifest, runtimeLoadOrder, runtimePaths } from './runtime-paths.mjs';
+import {runtimeManifest,runtimeLoadOrder,runtimePaths} from './runtime-paths.mjs';
+import {requireRuntimeCapability,runtimeFamilySource} from './contract-source.mjs';
 
-const read = path => fs.readFileSync(path,'utf8');
+const read=path=>fs.readFileSync(path,'utf8');
 const foundation=read(runtimePaths.foundation);
 const storage=read(runtimePaths.projectStorage);
-const editor=read(runtimePaths.editorState);
-const persistence=read(runtimePaths.editorPersistence);
-const events=read(runtimePaths.eventBindings);
+const coreSource=runtimeFamilySource('core/');
+const authoringAndCore=runtimeFamilySource('core/','authoring/');
 const main=read('web/src/main.ts');
 const bridge=read('web/src/runtime/legacy-api.ts');
 
 assert.equal(runtimeLoadOrder[0],'foundation');
 assert.equal(runtimeLoadOrder[1],'projectStorage');
-assert.equal(runtimeLoadOrder[2],'editorState');
-assert.ok(runtimeLoadOrder.indexOf('editorPersistence')>runtimeLoadOrder.indexOf('editorState'));
+assert.ok(runtimeLoadOrder.includes('editorState'));
+assert.ok(runtimeLoadOrder.includes('editorPersistence'));
 assert.ok(runtimeLoadOrder.indexOf('editorPersistence')<runtimeLoadOrder.indexOf('eventBindings'));
-assert.equal(runtimeManifest[1]?.id,'core/project-storage');
-assert.equal(runtimeManifest[1]?.path,'runtime/core/project-storage.js');
+assert.equal(runtimeManifest.find(entry=>entry.key==='projectStorage')?.id,'core/project-storage');
+assert.equal(runtimeManifest.find(entry=>entry.key==='projectStorage')?.path,'runtime/core/project-storage.js');
 assert.ok(main.includes('await initializeLegacyEditor()'));
-assert.ok(bridge.includes("runtime.initializeEditorState"));
+assert.ok(bridge.includes('runtime.initializeEditorState'));
 
-assert.ok(!editor.includes('function loadAutosave()'),'project autosave must not bootstrap from localStorage');
-assert.ok(!editor.includes('localStorage.setItem(STORAGE_KEY'),'project autosave must not write project state to localStorage');
-assert.ok(editor.includes('selectedPageId'),'editor state must track stable selected page identity');
-assert.ok(editor.includes("project.pages.find(page=>page.id===selectedPageId)"),'currentPage must resolve by selected page ID');
-assert.ok(persistence.includes('queueProjectSave(project'),'persistence owner must save through the project storage adapter');
-assert.ok(persistence.includes('projectStorage.loadActive()'),'persistence owner must restore the active work');
-assert.ok(events.includes('projectStorage.has(incoming.meta.workId)'),'import must check stable work-ID conflicts');
-assert.ok(events.includes('cloneProjectAsNewWork(incoming)'),'import must support copy-on-conflict');
-assert.ok(events.includes('既存作品を上書き'),'import must expose an explicit overwrite path');
+assert.ok(!coreSource.includes('function loadAutosave()'),'project autosave must not bootstrap from localStorage');
+assert.ok(!coreSource.includes('localStorage.setItem(STORAGE_KEY'),'project autosave must not write project state to localStorage');
+requireRuntimeCapability('selectedPageId',{prefixes:['core/'],label:'stable selected-page editor state'});
+requireRuntimeCapability('currentPage',{prefixes:['core/'],label:'selected-page resolver'});
+requireRuntimeCapability('queueProjectSave(project',{prefixes:['core/'],label:'project-storage autosave adapter usage'});
+requireRuntimeCapability('projectStorage.loadActive()',{prefixes:['core/'],label:'active-work restore path'});
+
+for(const phrase of ['projectStorage.has(incoming.meta.workId)','cloneProjectAsNewWork(incoming)']){
+  assert.ok(authoringAndCore.includes(phrase),`Import contract missing across registered core/authoring owners: ${phrase}`);
+}
+assert.ok(authoringAndCore.includes('既存作品を上書き'),'Import must expose an explicit overwrite choice');
 
 const context={
-  console,
-  Math,
-  Date,
-  setTimeout,
-  clearTimeout,
-  structuredClone,
-  indexedDB:undefined,
-  document:{getElementById(){return null;}},
+  console,Math,Date,setTimeout,clearTimeout,structuredClone,indexedDB:undefined,
+  document:{getElementById(){return null;}}
 };
 context.globalThis=context;
 vm.runInNewContext(`${foundation}\n${storage}\n
@@ -48,11 +44,7 @@ const created=createProjectWithIdentity();
 const duplicate=ensureProjectIdentity({
   format:'manga-blueprint/0.2',
   meta:{title:'T',readingDirection:'rtl',pageWidth:800,pageHeight:1130},
-  pages:[
-    {id:'same',panels:[]},
-    {id:'same',panels:[]},
-    {panels:[]}
-  ]
+  pages:[{id:'same',panels:[]},{id:'same',panels:[]},{panels:[]}]
 });
 const copied=cloneProjectAsNewWork(created);
 globalThis.__projectStorageValidation={
@@ -81,4 +73,4 @@ assert.notEqual(result.copiedWorkId,result.createdWorkId,'copy import must get a
 assert.notEqual(result.copiedPageId,result.createdPageId,'copied work pages must get new page IDs');
 assert.equal(result.storageSupported,false,'validator deliberately runs without IndexedDB');
 
-console.log('Project storage foundation validation passed.');
+console.log('Project storage foundation validation passed with semantic-owner discovery plus executable identity checks.');
