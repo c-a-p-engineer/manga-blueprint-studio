@@ -23,7 +23,6 @@ const context=vm.createContext({
   selectedPageId:null,selectedPanelId:null,selectedCharacterId:'old-char',selectedBalloonId:'old-balloon',
   ensureProjectIdentity:input=>clone(input),
   createProjectWithIdentity:()=>clone(loadedProject),
-  currentPage(){return this.project.pages.find(page=>page.id===this.selectedPageId)||this.project.pages[0]||null;},
   projectStorage:{
     supported:()=>true,
     async loadActive(){calls.loadActive+=1;return clone(loadedProject);},
@@ -32,10 +31,10 @@ const context=vm.createContext({
   resetEditorHistory:()=>{calls.resetHistory+=1;},
   render:()=>{calls.render+=1;},
   queueProjectSave:(project,options)=>{calls.saveQueue+=1;queued={project:clone(project),options};},
-  $:id=>id==='saveStatus'?status:{textContent:''},
-  __calls:calls
+  $:id=>id==='saveStatus'?status:{textContent:''}
 });
 
+vm.runInContext("function currentPage(){return project.pages.find(page=>page.id===selectedPageId)||project.pages[0]||null;}",context);
 vm.runInContext(source,context,{filename:`runtime:${owners[0]}`});
 const evaluate=expression=>vm.runInContext(expression,context);
 const assert=(condition,message)=>{if(!condition)throw new Error(message);};
