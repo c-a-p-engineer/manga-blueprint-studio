@@ -51,6 +51,7 @@ const validators=[
   'scripts/validate-runtime-layout.mjs',
   'scripts/validate-editor-architecture.mjs',
   'scripts/validate-editor-command-behavior.mjs',
+  'scripts/validate-editor-persistence-behavior.mjs',
   'scripts/validate.mjs',
   'scripts/validate-project-storage-foundation.mjs',
   'scripts/validate-multi-page-core.mjs',

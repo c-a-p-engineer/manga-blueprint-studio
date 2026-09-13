@@ -1,25 +1,30 @@
-import fs from 'node:fs';
 import vm from 'node:vm';
+import {readRuntime} from './runtime-paths.mjs';
+import {runtimeOwnersContaining} from './contract-source.mjs';
 
-const stateSource=fs.readFileSync('web/runtime/core/editor-state.js','utf8');
-const commandSource=fs.readFileSync('web/runtime/core/editor-commands.js','utf8');
+const stateOwners=runtimeOwnersContaining('currentPage=',{prefixes:['core/']});
+const commandOwners=runtimeOwnersContaining('function mutate(',{prefixes:['core/']});
+if(stateOwners.length!==1)throw new Error(`Expected one current-page state owner, found: ${stateOwners.join(', ')||'none'}`);
+if(commandOwners.length!==1)throw new Error(`Expected one editor-command owner, found: ${commandOwners.join(', ')||'none'}`);
+const stateSource=readRuntime(stateOwners[0]);
+const commandSource=readRuntime(commandOwners[0]);
 
+const panel=id=>({
+  id,order:1,rect:{x:35,y:35,w:730,h:1060},role:'setup',
+  style:{border:'normal',bleed:'none',breakout:'none'},
+  camera:{distance:'medium',angle:'eye-level',viewpoint:'front',focus:'',intent:''},
+  background:{location:'',timeOfDay:'',weather:'',mood:'',detailLevel:'medium',renderMode:'normal',notes:''},
+  effects:{lineEffect:'none',strength:'medium',sfxText:'',sfxStyle:'impact',notes:''},
+  characters:[],balloons:[]
+});
 const initialProject={
   format:'manga-blueprint/0.2',
   meta:{workId:'work-a',title:'Original',readingDirection:'rtl',pageWidth:800,pageHeight:1130},
-  containers:[],
-  characterLibrary:[],
-  pages:[{
-    id:'page-a',pageNumber:1,order:1,title:'',containerId:null,
-    panels:[{
-      id:'panel-a',order:1,rect:{x:35,y:35,w:730,h:1060},role:'setup',
-      style:{border:'normal',bleed:'none',breakout:'none'},
-      camera:{distance:'medium',angle:'eye-level',viewpoint:'front',focus:'',intent:''},
-      background:{location:'',timeOfDay:'',weather:'',mood:'',detailLevel:'medium',renderMode:'normal',notes:''},
-      effects:{lineEffect:'none',strength:'medium',sfxText:'',sfxStyle:'impact',notes:''},
-      characters:[],balloons:[]
-    }]
-  }]
+  containers:[],characterLibrary:[],
+  pages:[
+    {id:'page-a',pageNumber:1,order:1,title:'',containerId:null,panels:[panel('panel-a')]},
+    {id:'page-b',pageNumber:2,order:2,title:'Second',containerId:null,panels:[panel('panel-b')]}
+  ]
 };
 
 let renderCount=0;
@@ -33,28 +38,25 @@ const context=vm.createContext({
   render:()=>{renderCount+=1;},
   posePresets:{stand:{ja:'立つ',en:'Stand'}},
   i18n:{ja:{}},
-  console,
-  JSON,
-  Math,
-  structuredClone:clone,
-  confirm:()=>true,
-  alert:()=>{},
-  GUTTER:18,
-  clone,
-  uid:prefix=>`${prefix}-test`,
-  templates:{action3:[]},
-  makePanel:()=>({}),
+  console,JSON,Math,structuredClone:clone,
+  confirm:()=>true,alert:()=>{},GUTTER:18,clone,
+  uid:prefix=>`${prefix}-test`,templates:{action3:[]},makePanel:()=>({}),
   document:{documentElement:{lang:'ja'},querySelectorAll:()=>[]},
   $:()=>({value:'',textContent:''})
 });
 
-vm.runInContext(stateSource,context,{filename:'editor-state.js'});
-vm.runInContext(commandSource,context,{filename:'editor-commands.js'});
+vm.runInContext(stateSource,context,{filename:`runtime:${stateOwners[0]}`});
+vm.runInContext(commandSource,context,{filename:`runtime:${commandOwners[0]}`});
 
 const evaluate=expression=>vm.runInContext(expression,context);
 const assert=(condition,message)=>{if(!condition)throw new Error(message);};
 
 assert(evaluate('project.meta.title')==='Original','Initial project title mismatch');
+assert(evaluate('currentPage().id')==='page-a','Current page must resolve from initial selectedPageId');
+evaluate("selectedPageId='page-b'");
+assert(evaluate('currentPage().id')==='page-b','Changing selectedPageId must change currentPage without mutating project order');
+evaluate("selectedPageId='page-a'");
+
 evaluate("mutate(()=>{project.meta.title='Changed';})");
 assert(evaluate('project.meta.title')==='Changed','mutate() did not apply command');
 assert(evaluate('history.length')===1,'mutate() did not create one history entry');
@@ -74,7 +76,11 @@ evaluate("mutate(()=>{project.meta.title='Changed again';})");
 assert(evaluate('future.length')===0,'new mutation must clear redo history');
 assert(evaluate('history.length')===2,'second mutation must append history');
 
+evaluate("selectedPageId='missing-page'; restore(snapshot())");
+assert(evaluate('selectedPageId')==='page-a','restore() must repair a stale selectedPageId');
+assert(evaluate('currentPage().id')==='page-a','repaired current page must resolve to a valid page');
+
 evaluate('resetEditorHistory()');
 assert(evaluate('history.length')===0&&evaluate('future.length')===0,'resetEditorHistory() did not clear command history');
 
-console.log('Editor command behavior passed: mutate, Undo, Redo, redo invalidation, and history reset.');
+console.log('Editor command behavior passed: selected-page resolution, mutate, Undo, Redo, stale-selection repair, redo invalidation, and history reset.');

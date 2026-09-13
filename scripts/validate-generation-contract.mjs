@@ -1,14 +1,13 @@
-import {runtimePaths, readRuntime} from './runtime-paths.mjs';
+import {requireText,runtimeFamilySource} from './contract-source.mjs';
 
-const app=readRuntime('interactionGenerationContract');
-if(runtimePaths.interactionGenerationContract!=='web/runtime/handoff/interaction-generation-contract.js')throw new Error('Interaction-generation runtime owner is not registered');
+const handoff=runtimeFamilySource('handoff/');
 
 for(const phrase of [
   "'approach-right'",
   "'hug-right'",
   "'hug-left'",
   "'hug-receive-left'",
-  "storyTemplates11.twoVisibleHug27",
+  'storyTemplates11.twoVisibleHug27',
   "climax.actors27[0].pose='hug-right'",
   "climax.actors27[1].pose='hug-receive-left'",
   "afterglow.actors27[1].pose='hug-left'",
@@ -22,12 +21,13 @@ for(const phrase of [
   'appearanceSummaryRemainsAuthoritative',
   'cleanPngExpectedDimensions',
   'readinessActionPoseConflict29'
-])if(!app.includes(phrase))throw new Error(`Missing generation-contract hardening: ${phrase}`);
+])requireText(handoff,phrase,'registered handoff owners');
 
-if(!app.includes('width="${size.w}" height="${size.h}" viewBox="0 0 ${size.w} ${size.h}"'))throw new Error('Serialized SVG must carry explicit intrinsic dimensions');
-if(!app.includes('ctx.drawImage(img,0,0,size.w,size.h)'))throw new Error('PNG rasterization must scale SVG to the full destination canvas');
-if(!app.includes("if(!blob||!blob.size)throw new Error('PNG encoding failed')"))throw new Error('PNG export must reject an empty encoded blob');
-if(!app.includes("if(kind!=='hug'||(panel.characters||[]).length<2)continue"))throw new Error('Readiness warning must remain bounded to actionable two-person hug conflicts');
-if(!app.includes("if(kind==='hug')return id.startsWith('hug-')"))throw new Error('Hug readiness check must require explicit contact-aware pose semantics');
+// These strings/operations define observable export and readiness behavior, not a specific chunk location.
+requireText(handoff,'width="${size.w}" height="${size.h}" viewBox="0 0 ${size.w} ${size.h}"','serialized SVG intrinsic dimensions');
+requireText(handoff,'ctx.drawImage(img,0,0,size.w,size.h)','full-canvas PNG rasterization');
+requireText(handoff,"if(!blob||!blob.size)throw new Error('PNG encoding failed')",'empty PNG rejection');
+requireText(handoff,"if(kind!=='hug'||(panel.characters||[]).length<2)continue",'bounded two-person hug readiness warning');
+requireText(handoff,"if(kind==='hug')return id.startsWith('hug-')",'contact-aware hug pose semantics');
 
-console.log('Prototype 0.12.7 generation contract validation passed.');
+console.log('Generation contract validation passed across the registered handoff semantic family.');
