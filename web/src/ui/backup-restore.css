@@ -1,0 +1,18 @@
+.backup-restore{margin-top:18px;padding:12px;border:1px solid #d8dee8;border-radius:12px;background:#f8fafc}
+.backup-restore summary{cursor:pointer}
+.backup-restore[open] summary{margin-bottom:10px}
+.backup-restore-option{display:flex;align-items:center;gap:8px}
+.backup-restore-option input{width:auto}
+.backup-restore-file-button{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:pointer;text-align:center}
+.backup-restore-file-button:hover{border-color:#64748b}
+.backup-restore [data-error="true"]{color:#b91c1c}
+.backup-restore-dialog{width:min(560px,calc(100vw - 32px));border:0;border-radius:14px;padding:0;box-shadow:0 22px 64px rgba(15,23,42,.28)}
+.backup-restore-dialog::backdrop{background:rgba(15,23,42,.52)}
+.backup-restore-dialog form{padding:20px}
+.backup-restore-dialog h2{margin:0 0 12px;font-size:1.15rem}
+.backup-restore-preview{margin:0 0 14px;padding:10px;border-radius:8px;background:#f1f5f9;white-space:pre-wrap;font:inherit}
+.backup-restore-dialog fieldset{display:grid;gap:10px;margin:0;padding:12px;border:1px solid #cbd5e1;border-radius:10px}
+.backup-restore-dialog fieldset label{display:flex;gap:8px;align-items:flex-start}
+.backup-restore-dialog fieldset input{width:auto;margin-top:3px}
+.backup-restore-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+@media(max-width:680px){.backup-restore-dialog-actions{display:grid;grid-template-columns:1fr 1fr}.backup-restore-file-button{min-height:48px}}
