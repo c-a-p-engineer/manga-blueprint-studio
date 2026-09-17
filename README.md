@@ -1,134 +1,111 @@
 # Manga Blueprint Studio
 
-Manga Blueprint Studio is becoming an **AI/human co-authoring system for manga planning**. The canonical project state remains `manga-blueprint/0.2`; the Web editor is one client, while the new Blueprint Engine can compile a lightweight manga name directly into AI-ready project state and visual handoff assets.
+**English** | [日本語](README.ja.md)
 
-**The human remains the director.** AI may draft or revise beats, layout intent, camera, cast, text, and effects, but the resulting blueprint stays inspectable and editable.
+**Design how a manga page should read before asking an image model to draw it.**
 
-## Current prototype: 0.19.0
+Manga Blueprint Studio is a human-directed, AI-assisted manga planning system. It turns story intent into an **Executable Name**: inspectable manga structure covering panel layout, emphasis, attention, reading flow, camera, pose, contact and lettering regions, then packages that structure for downstream image generation.
 
-Blueprint Engine is an experimental preview track layered on the current prototype.
+> **The human is the director.** AI suggestions and solver decisions remain inspectable and editable; authored intent must not be silently replaced.
 
-- canonical project format: `manga-blueprint/0.2`
-- existing Web export manifest: `manga-blueprint-export-manifest/3`
-- AI Name package preview: `manga-blueprint-name-package/2`
-- Web editor export scope: selected page only
-- Blueprint Engine input: lightweight Markdown Name DSL
+## Try it
 
-## Links
+- Product: https://c-a-p-engineer.github.io/manga-blueprint-studio/
+- Web editor: https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
+- Manga techniques: https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html
+- User guide: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
 
-- **Repository:** https://github.com/c-a-p-engineer/manga-blueprint-studio
-- **Product page:** https://c-a-p-engineer.github.io/manga-blueprint-studio/
-- **Editor:** https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
-- **Full user guide:** https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
-- **Canonical schema:** https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
-- **AI Name DSL:** [`core/name-schema.md`](core/name-schema.md)
-- **Blueprint Engine guide:** [`docs/BLUEPRINT-ENGINE.md`](docs/BLUEPRINT-ENGINE.md)
+## Why a blueprint?
 
-The root GitHub Pages URL remains the **public product landing page**. The dedicated Web editor remains available as an optional visual client.
-
-## AI-first workflow
+A single image prompt is a poor place to encode panel geometry, reading order, gaze, character relationships, contact points and exact visible text. Manga Blueprint Studio separates those responsibilities:
 
 ```text
-Name / beats (Markdown DSL)
-        ↓
-Blueprint Engine
-        ↓
-canonical work.manga.json
-        ├─ Web editor (optional human refinement)
-        ├─ clean blueprint visual
-        ├─ annotated review visual
-        ├─ page generation prompt
-        └─ manifest-first package
+story / name intent
+  ↓
+AI Name DSL
+  ↓
+Energy / Attention / Reading Flow
+  ↓
+Layout Candidate Solver
+  ↓
+Pose / Contact Solver
+  ↓
+Executable Name
+  ├─ Clean SVG/PNG      → generation-facing spatial contract
+  ├─ Annotated SVG/PNG  → human review
+  ├─ work.manga.json    → canonical semantics
+  └─ Prompt             → rendering instructions
 ```
 
-The author does not need to manually enter IDs or pixel coordinates. The Name DSL expresses story beats and useful direction such as cast, expression, camera, background, dialogue, SFX, emphasis, and coarse layout hints. The compiler owns deterministic IDs, initial panel geometry, character placement, balloon placement, and canonical project serialization.
+The Clean and Annotated views are rendered from the same canonical geometry. Review annotations therefore cannot silently change the composition seen by the image model.
 
-### Example
+## Blueprint Engine
+
+The headless engine compiles a lightweight Markdown Name DSL. Authors and agents describe manga intent rather than manually entering IDs and pixel coordinates.
 
 ```md
-# Page 1: 受信
-@layout: hero-bottom
-@background: 明るいリビング
-@time: day
+# Page 1: Duel
+@background: ruined city plaza
 
-コマ1: 少女がスマホを見る
-登場: girl@right
-カメラ: close high-angle
-セリフ: girl> ……え？
+コマ1: Two fighters face each other
+登場: fighter-a@left, fighter-b@right
+カメラ: long low-angle
 
-コマ2: 画面の内容に気づく
-登場: girl@center
-表情: girl> shock
+コマ2: Both lunge and their swords collide
+登場: fighter-a@left, fighter-b@right
+ポーズ: fighter-a> explosive-lunge-two-handed-sword
+ポーズ: fighter-b> counter-slash-twisting-torso
+接触: fighter-a.sword > fighter-b.sword
 強調: strong
 
-コマ3: スマホを落とす
-登場: girl@center
-セリフ: girl> そんな……
-効果音: ガタン
-演出: impact
+コマ3: The decisive horizontal slash
+登場: fighter-a@left, fighter-b@right
 強調: climax
 ```
 
-Compile:
+Compile it:
 
 ```bash
 npm install
-npm run blueprint -- examples/name.md blueprint-out
+npm run blueprint -- examples/combat-1p.md blueprint-out
 ```
 
-The generated `.manga.json` uses the same canonical project format as the Web editor, so AI-authored output can be handed to the GUI instead of creating a second project model.
+For fixed source/options the engine deterministically produces canonical project JSON, Clean/Annotated blueprint assets, per-page prompts and a read-first manifest. PNG raster output is added when a supported local rasterizer is available.
 
-## Existing Web editor capabilities
+## Manga technique guide
 
-### Organize a manga work
+You do not need to already know Japanese manga-production vocabulary. The public [Manga Technique Guide](https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html) explains techniques such as bleed/crop, character breakout, diagonal panels, gaze guidance, hero panels, insets, pacing and page turns in terms of **what they do, when to use them, and what an AI system needs to preserve**.
 
-- multiple local works with IndexedDB persistence;
-- multiple pages with stable identity and `P001` navigation;
-- optional volume / chapter / folder hierarchy through Work Explorer;
-- per-work active-page restoration and explicit activation.
+## Web editor
 
-### Design pages and panels
+The optional Web client supports multiple local works/pages, Japanese RTL reading order, manga-aware panel geometry, inset panels, characters, camera/action intent, balloons, SFX/effects, Story Templates and bounded Smart Manga proposals. Project data is stored locally in IndexedDB.
 
-- manuscript presets and RTL/LTR reading order;
-- manga-aware layouts;
-- rectangle and convex-quadrilateral panel geometry;
-- editable inset panels;
-- camera, action intent, pose/expression/gaze, backgrounds, balloons, SFX, effects, bleed, and breakout semantics.
+The current established Web AI export remains selected-page scoped; the headless Blueprint Engine can independently compile multi-page Name source into per-page assets.
 
-### Character and story direction
+## Technology
 
-- reusable characters with `sheet | description | free` identity modes;
-- Story Template Studio;
-- bounded Smart Manga proposals;
-- starter character bases.
+- JavaScript ES Modules / Node.js — compiler, solvers, renderer and CLI
+- TypeScript + Vite — Web client/build
+- SVG — shared Clean/Annotated spatial representation
+- JSON Schema — canonical `manga-blueprint/0.2` project contract
+- IndexedDB — local Web project persistence
 
-### AI handoff
+Python is not required by the core pipeline.
 
-The existing Web generation package separates:
+## For AI / coding agents
 
-```text
-clean visual          → spatial composition
-.manga.json + prompt  → story / camera / pose / background / lettering semantics
-character guidance    → identity / appearance
-art direction         → rendering language
-TEXT TO RENDER        → exact visible text allowlist
-```
+Read [`AGENTS.md`](AGENTS.md) first. For blueprint-authoring tasks, use [`.agents/skills/manga-blueprint/SKILL.md`](.agents/skills/manga-blueprint/SKILL.md). Prefer semantic Name DSL over invented coordinates; let deterministic compiler/solver stages resolve geometry, and never treat Annotated output as default image-generation input.
 
-The Blueprint Engine follows the same authority split: semantic project state remains canonical, clean visuals carry spatial structure, and exact visible strings are explicitly allowlisted.
+## Documentation
 
-## Architecture at a glance
-
-```text
-core/blueprint-engine.mjs   AI Name DSL parser/compiler + visual/prompt package builders
-core/name-schema.md         human/AI authoring DSL contract
-cli/                        headless compiler entry
-web/                        optional Web editor/client
-schema/                     canonical serialized project schema
-docs/                       product/architecture/handoff/roadmap authorities
-scripts/                    build and regression validation
-```
-
-The intended architecture is **Core first, clients second**. The Web editor should consume the same project contract rather than own a competing manga model.
+- [`docs/BLUEPRINT-ENGINE.md`](docs/BLUEPRINT-ENGINE.md) — headless compiler workflow
+- [`core/name-schema.md`](core/name-schema.md) — AI/human Name DSL
+- [`docs/MANGA-TECHNIQUES.md`](docs/MANGA-TECHNIQUES.md) — manga direction concepts
+- [`docs/PRODUCT.md`](docs/PRODUCT.md) — canonical user-visible behavior
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — runtime/state/ownership
+- [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff authority split
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — delivery/status authority
+- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — canonical serialized data contract
 
 ## Development
 
@@ -138,21 +115,6 @@ npm run typecheck
 npm run build
 npm run validate
 ```
-
-Blueprint compiler regression coverage is included in the main CI validator.
-
-For the current Web workflow, see [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md).
-
-## Documentation map
-
-- [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) — current Web editor workflow.
-- [`docs/PRODUCT.md`](docs/PRODUCT.md) — canonical user-visible product behavior.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — runtime/state/ownership.
-- [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff authority split.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — delivery/status authority.
-- [`docs/BLUEPRINT-ENGINE.md`](docs/BLUEPRINT-ENGINE.md) — headless compiler workflow.
-- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — canonical serialized data contract.
-- [`core/name-schema.md`](core/name-schema.md) — AI/human Name DSL.
 
 ## License
 
