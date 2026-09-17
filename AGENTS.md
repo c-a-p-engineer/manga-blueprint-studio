@@ -12,11 +12,28 @@ For any task that authors, edits, diagnoses or compiles manga Name/Blueprint con
 
 1. this file;
 2. `.agents/skills/manga-blueprint/SKILL.md`;
-3. `core/name-schema.md`;
-4. `docs/BLUEPRINT-ENGINE.md`;
-5. `docs/MANGA-TECHNIQUES.md` when making manga-direction choices.
+3. `docs/MANGA-KNOWLEDGE.md` — shared human+AI manga vocabulary, medium profiles, genre heuristics and terminology;
+4. `core/name-schema.md`;
+5. `docs/BLUEPRINT-ENGINE.md`;
+6. `docs/MANGA-TECHNIQUES.md` when a concise direction-technique reference is useful.
 
 **Author semantics; derive geometry.** Do not make an AI author invent IDs, joint coordinates or pixel geometry when the compiler/solver can derive them. Preserve explicit human locks and hard constraints.
+
+When converting human language to manga direction, prefer this order:
+
+```text
+medium
+→ scene purpose / beat
+→ attention target
+→ importance + hold
+→ gaze / motion
+→ camera
+→ technique candidates
+→ Name DSL / solver constraints
+→ downstream generation prompt
+```
+
+Human-named techniques such as `大ゴマ`, `寄り`, `引き`, `斜めコマ`, `断ち切り`, `ブチ抜き`, `小窓`, `見開き` are explicit direction and must be preserved unless the human asks for alternatives.
 
 ## Source of truth
 
@@ -29,7 +46,8 @@ Use these authorities in order for their respective concerns:
 5. implementation under `core/` and `web/` — shipped behavior when a document is stale.
 6. `docs/PROMPT_HANDOFF.md` — AI generation/review package and prompt contract.
 7. `docs/ROADMAP.md` — current delivery status and future phases.
-8. `docs/USER-GUIDE.md`, `web/guide.html`, and `docs/MANGA-TECHNIQUES.md` — derived user guidance; they must match higher authorities.
+8. `docs/MANGA-KNOWLEDGE.md` — shared manga concepts/heuristics/terminology used by humans and AI; medium/platform facts are advisory unless backed by the current target specification.
+9. `docs/USER-GUIDE.md`, `web/guide.html`, `docs/MANGA-TECHNIQUES.md`, and `web/techniques.html` — derived user guidance; they must match higher authorities.
 
 `docs/README.md` is the documentation map. Dated research notes, baseline notes, and old `PROTOTYPE-*` files are historical evidence, not current runtime authority.
 
@@ -113,6 +131,16 @@ Assistance must not silently replace recorded panel layout, action intent, pose,
 
 Narrative/visual/transition importance and `hold` are solver inputs. Do not implement a universal `important = large panel` rule. Relative energy, neighbor contrast, reading flow, attention, gaze, motion, explicit layout intent and hard constraints determine geometry. Keep solver decisions inspectable/explainable.
 
+### Medium and genre knowledge are heuristic, not hidden hard rules
+
+The shared manga knowledge base may provide starting recommendations for panel density, page shape, camera or technique choice. Treat these as **candidate biases** only.
+
+- explicit publisher/printer/platform requirements override generic medium profiles;
+- explicit human direction overrides genre defaults;
+- scene purpose overrides broad genre labels;
+- vertical-scroll composition must not inherit page-turn assumptions;
+- AI should state when a recommendation is a heuristic rather than a requirement.
+
 ### Reading order and writing direction
 
 Panel reading direction and lettering direction are separate.
@@ -149,7 +177,8 @@ Documentation is shipped product contract.
 
 - `README.md` / `README.ja.md`: concise baseline and quick start.
 - `docs/README.md`: documentation map/maintenance rules.
-- `docs/MANGA-TECHNIQUES.md` + `web/techniques.html`: semantically aligned manga-direction guidance.
+- `docs/MANGA-KNOWLEDGE.md`: shared human+AI manga knowledge and AI translation contract.
+- `docs/MANGA-TECHNIQUES.md` + `web/techniques.html`: semantically aligned human-facing manga-direction guidance derived from the shared knowledge.
 - `docs/USER-GUIDE.md` + `web/guide.html`: semantically aligned Web workflow guidance.
 - `docs/PRODUCT.md`: user-visible behavior.
 - schema: serialized project contract.
@@ -192,6 +221,7 @@ Relevant changes must preserve or intentionally update:
 - pose/contact relationships when semantically required;
 - Clean vs Annotated separation and shared geometry;
 - strict visible-text allowlist and manifest-first handoff;
+- medium-specific rules without hard-coding stale platform limits into canonical grammar;
 - mobile usability;
 - documentation synchronization;
 - GitHub Pages deployment for public runtime/docs changes.
