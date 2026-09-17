@@ -8,12 +8,21 @@ Manga Blueprint Studio is a human-directed, AI-assisted manga planning system. I
 
 > **The human is the director.** AI suggestions and solver decisions remain inspectable and editable; authored intent must not be silently replaced.
 
+## Current prototype: 0.19.0
+
+- canonical project format: `manga-blueprint/0.2`
+- established Web export manifest: `manga-blueprint-export-manifest/3`
+- Web generation/review export: selected-page scoped
+- Blueprint Engine: headless Name DSL → canonical project + per-page Executable Name assets
+
 ## Try it
 
 - Product: https://c-a-p-engineer.github.io/manga-blueprint-studio/
 - Web editor: https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
 - Manga techniques: https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html
 - User guide: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
+
+The root GitHub Pages URL is the **public product landing page**; the editor is a separate optional visual client.
 
 ## Why a blueprint?
 
@@ -37,7 +46,7 @@ Executable Name
   └─ Prompt             → rendering instructions
 ```
 
-The Clean and Annotated views are rendered from the same canonical geometry. Review annotations therefore cannot silently change the composition seen by the image model.
+Clean and Annotated are rendered from the same canonical geometry, so review annotations cannot silently change the composition seen by the image model.
 
 ## Blueprint Engine
 
@@ -63,31 +72,29 @@ The headless engine compiles a lightweight Markdown Name DSL. Authors and agents
 強調: climax
 ```
 
-Compile it:
-
 ```bash
 npm install
 npm run blueprint -- examples/combat-1p.md blueprint-out
 ```
 
-For fixed source/options the engine deterministically produces canonical project JSON, Clean/Annotated blueprint assets, per-page prompts and a read-first manifest. PNG raster output is added when a supported local rasterizer is available.
+For fixed source/options the engine deterministically produces canonical project JSON, Clean/Annotated assets, per-page prompts and a read-first manifest. PNG raster output is added when a supported local rasterizer is available.
 
 ## Manga technique guide
 
-You do not need to already know Japanese manga-production vocabulary. The public [Manga Technique Guide](https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html) explains techniques such as bleed/crop, character breakout, diagonal panels, gaze guidance, hero panels, insets, pacing and page turns in terms of **what they do, when to use them, and what an AI system needs to preserve**.
+The public [Manga Technique Guide](https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html) explains bleed/crop, character breakout, diagonal panels, gaze guidance, hero panels, insets, pacing and page turns in terms of **what they do, when to use them, and what an AI system needs to preserve**.
 
 ## Web editor
 
 The optional Web client supports multiple local works/pages, Japanese RTL reading order, manga-aware panel geometry, inset panels, characters, camera/action intent, balloons, SFX/effects, Story Templates and bounded Smart Manga proposals. Project data is stored locally in IndexedDB.
 
-The current established Web AI export remains selected-page scoped; the headless Blueprint Engine can independently compile multi-page Name source into per-page assets.
+The established Web AI export remains selected-page scoped; the Blueprint Engine can independently compile multi-page Name source into per-page assets.
 
 ## Technology
 
 - JavaScript ES Modules / Node.js — compiler, solvers, renderer and CLI
 - TypeScript + Vite — Web client/build
 - SVG — shared Clean/Annotated spatial representation
-- JSON Schema — canonical `manga-blueprint/0.2` project contract
+- JSON Schema — canonical `manga-blueprint/0.2`
 - IndexedDB — local Web project persistence
 
 Python is not required by the core pipeline.
