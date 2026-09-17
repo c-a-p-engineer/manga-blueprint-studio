@@ -1,41 +1,5 @@
-import {loadLegacyRuntime,type BuildInfo} from './legacy-runtime';
-import {installPhaseOneUi} from './phase-one-ui';
-import {initializeLegacyEditor,setBuildInfo} from './runtime/legacy-api';
-
-const fallbackBuildInfo:BuildInfo={
-  schema:'manga-blueprint-build-info/1',
-  appVersion:'0.19.0',
-  gitCommit:null,
-  buildSource:'vite-fallback',
-  deployedAt:null
-};
-
-async function loadBuildInfo():Promise<BuildInfo>{
-  try{
-    const response=await fetch(`${import.meta.env.BASE_URL}build-info.json`,{cache:'no-store'});
-    if(!response.ok)throw new Error(`HTTP ${response.status}`);
-    const loaded=await response.json() as Partial<BuildInfo>;
-    return {...fallbackBuildInfo,...loaded};
-  }catch(error){
-    console.warn('Build provenance unavailable; using Vite fallback.',error);
-    return fallbackBuildInfo;
-  }
-}
-
-async function bootstrap(){
-  const buildInfo=Object.freeze(await loadBuildInfo());
-  setBuildInfo(buildInfo);
-  await loadLegacyRuntime(buildInfo);
-  await initializeLegacyEditor();
-  installPhaseOneUi();
-  document.documentElement.dataset.appVersion=buildInfo.appVersion;
-}
-
-void bootstrap().catch(error=>{
-  console.error('Manga Blueprint Studio failed to start.',error);
-  const message=document.createElement('div');
-  message.className='phase1-startup-error';
-  message.setAttribute('role','alert');
-  message.textContent='Manga Blueprint Studio の起動に失敗しました。ページを再読み込みしてください。';
-  document.body.prepend(message);
-});
+import {loadLegacyRuntime,type BuildInfo} from './legacy-runtime';import {installPhaseOneUi} from './phase-one-ui';import {initializeLegacyEditor,setBuildInfo} from './runtime/legacy-api';import {installProductionTools} from './ui/production-tools';
+const fallbackBuildInfo:BuildInfo={schema:'manga-blueprint-build-info/1',appVersion:'0.20.0',gitCommit:null,buildSource:'vite-fallback',deployedAt:null};
+async function loadBuildInfo():Promise<BuildInfo>{try{const response=await fetch(`${import.meta.env.BASE_URL}build-info.json`,{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);return{...fallbackBuildInfo,...await response.json() as Partial<BuildInfo>}}catch(error){console.warn('Build provenance unavailable; using Vite fallback.',error);return fallbackBuildInfo}}
+async function bootstrap(){const buildInfo=Object.freeze(await loadBuildInfo());setBuildInfo(buildInfo);await loadLegacyRuntime(buildInfo);await initializeLegacyEditor();installPhaseOneUi();installProductionTools();document.documentElement.dataset.appVersion=buildInfo.appVersion;}
+void bootstrap().catch(error=>{console.error('Manga Blueprint Studio failed to start.',error);const message=document.createElement('div');message.className='phase1-startup-error';message.setAttribute('role','alert');message.textContent='Manga Blueprint Studio の起動に失敗しました。ページを再読み込みしてください。';document.body.prepend(message);});
