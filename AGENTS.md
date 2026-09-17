@@ -12,10 +12,11 @@ For any task that authors, edits, diagnoses or compiles manga Name/Blueprint con
 
 1. this file;
 2. `.agents/skills/manga-blueprint/SKILL.md`;
-3. `docs/MANGA-KNOWLEDGE.md` — shared human+AI manga vocabulary, medium profiles, genre heuristics and terminology;
-4. `core/name-schema.md`;
-5. `docs/BLUEPRINT-ENGINE.md`;
-6. `docs/MANGA-TECHNIQUES.md` when a concise direction-technique reference is useful.
+3. `docs/MANGA-KNOWLEDGE.md` — shared fundamentals, medium profiles and core terminology;
+4. `docs/MANGA-EXPRESSION-CATALOG.md` — extended technique/style taxonomy and human→AI translation patterns;
+5. `core/name-schema.md`;
+6. `docs/BLUEPRINT-ENGINE.md`;
+7. `docs/MANGA-TECHNIQUES.md` when a concise direction-technique reference is useful.
 
 **Author semantics; derive geometry.** Do not make an AI author invent IDs, joint coordinates or pixel geometry when the compiler/solver can derive them. Preserve explicit human locks and hard constraints.
 
@@ -26,14 +27,18 @@ medium
 → scene purpose / beat
 → attention target
 → importance + hold
+→ transition / pacing
 → gaze / motion
-→ camera
+→ camera / composition
 → technique candidates
+→ visual-style axes
 → Name DSL / solver constraints
 → downstream generation prompt
 ```
 
 Human-named techniques such as `大ゴマ`, `寄り`, `引き`, `斜めコマ`, `断ち切り`, `ブチ抜き`, `小窓`, `見開き` are explicit direction and must be preserved unless the human asks for alternatives.
+
+Do not collapse every expressive choice into a single technique label. Keep at least these conceptual axes distinct: transition/editing, framing/camera, composition/depth, panel grammar, pacing/time, action/impact, attention/reveal, psychological abstraction, lettering, medium-native grammar and visual style.
 
 ## Source of truth
 
@@ -46,8 +51,9 @@ Use these authorities in order for their respective concerns:
 5. implementation under `core/` and `web/` — shipped behavior when a document is stale.
 6. `docs/PROMPT_HANDOFF.md` — AI generation/review package and prompt contract.
 7. `docs/ROADMAP.md` — current delivery status and future phases.
-8. `docs/MANGA-KNOWLEDGE.md` — shared manga concepts/heuristics/terminology used by humans and AI; medium/platform facts are advisory unless backed by the current target specification.
-9. `docs/USER-GUIDE.md`, `web/guide.html`, `docs/MANGA-TECHNIQUES.md`, and `web/techniques.html` — derived user guidance; they must match higher authorities.
+8. `docs/MANGA-KNOWLEDGE.md` — shared manga concepts/heuristics/terminology used by humans and AI.
+9. `docs/MANGA-EXPRESSION-CATALOG.md` — extended expressive vocabulary/style axes; candidate knowledge, not hidden hard rules.
+10. `docs/USER-GUIDE.md`, `web/guide.html`, `docs/MANGA-TECHNIQUES.md`, and `web/techniques.html` — derived user guidance; they must match higher authorities.
 
 `docs/README.md` is the documentation map. Dated research notes, baseline notes, and old `PROTOTYPE-*` files are historical evidence, not current runtime authority.
 
@@ -131,14 +137,15 @@ Assistance must not silently replace recorded panel layout, action intent, pose,
 
 Narrative/visual/transition importance and `hold` are solver inputs. Do not implement a universal `important = large panel` rule. Relative energy, neighbor contrast, reading flow, attention, gaze, motion, explicit layout intent and hard constraints determine geometry. Keep solver decisions inspectable/explainable.
 
-### Medium and genre knowledge are heuristic, not hidden hard rules
+### Medium, genre and expression knowledge are heuristic, not hidden hard rules
 
-The shared manga knowledge base may provide starting recommendations for panel density, page shape, camera or technique choice. Treat these as **candidate biases** only.
+The shared knowledge base and expression catalog may provide starting recommendations for panel density, transition, camera, composition, style or technique choice. Treat these as **candidate biases** only.
 
 - explicit publisher/printer/platform requirements override generic medium profiles;
-- explicit human direction overrides genre defaults;
+- explicit human direction overrides genre/style defaults;
 - scene purpose overrides broad genre labels;
 - vertical-scroll composition must not inherit page-turn assumptions;
+- named style families should expand into observable line/value/color/shape/texture/background attributes before prompting;
 - AI should state when a recommendation is a heuristic rather than a requirement.
 
 ### Reading order and writing direction
@@ -177,8 +184,9 @@ Documentation is shipped product contract.
 
 - `README.md` / `README.ja.md`: concise baseline and quick start.
 - `docs/README.md`: documentation map/maintenance rules.
-- `docs/MANGA-KNOWLEDGE.md`: shared human+AI manga knowledge and AI translation contract.
-- `docs/MANGA-TECHNIQUES.md` + `web/techniques.html`: semantically aligned human-facing manga-direction guidance derived from the shared knowledge.
+- `docs/MANGA-KNOWLEDGE.md`: shared human+AI manga fundamentals and AI translation contract.
+- `docs/MANGA-EXPRESSION-CATALOG.md`: extended technique/style discovery taxonomy; AI candidate vocabulary.
+- `docs/MANGA-TECHNIQUES.md` + `web/techniques.html`: semantically aligned human-facing manga-direction guidance derived from shared knowledge.
 - `docs/USER-GUIDE.md` + `web/guide.html`: semantically aligned Web workflow guidance.
 - `docs/PRODUCT.md`: user-visible behavior.
 - schema: serialized project contract.
