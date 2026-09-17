@@ -18,7 +18,8 @@ export default defineConfig({
       input:{
         landing:resolve(webRoot,'index.html'),
         app:resolve(webRoot,'editor.html'),
-        guide:resolve(webRoot,'guide.html')
+        guide:resolve(webRoot,'guide.html'),
+        techniques:resolve(webRoot,'techniques.html')
       }
     }
   },
