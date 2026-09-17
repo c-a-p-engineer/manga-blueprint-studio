@@ -19,7 +19,8 @@ export default defineConfig({
         landing:resolve(webRoot,'index.html'),
         app:resolve(webRoot,'editor.html'),
         guide:resolve(webRoot,'guide.html'),
-        techniques:resolve(webRoot,'techniques.html')
+        techniques:resolve(webRoot,'techniques.html'),
+        dictionary:resolve(webRoot,'dictionary.html')
       }
     }
   },
