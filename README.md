@@ -4,7 +4,7 @@
 
 **Design how a manga page should read before asking an image model to draw it.**
 
-Manga Blueprint Studio is a human-directed, AI-assisted manga planning system. It turns story intent into an **Executable Name**: inspectable manga structure covering panel layout, emphasis, attention, reading flow, camera, pose, contact and lettering regions, then packages that structure for downstream image generation.
+Manga Blueprint Studio is a human-directed, AI-assisted manga planning system. It turns story intent into an **Executable Name** covering panel layout, emphasis, attention, reading flow, camera, pose, contact and lettering regions, then packages that structure for downstream image generation.
 
 > **The human is the director.** AI suggestions and solver decisions remain inspectable and editable; authored intent must not be silently replaced.
 
@@ -26,7 +26,7 @@ The root GitHub Pages URL is the **public product landing page**; the editor is 
 
 ## Why a blueprint?
 
-A single image prompt is a poor place to encode panel geometry, reading order, gaze, character relationships, contact points and exact visible text. Manga Blueprint Studio separates those responsibilities:
+A single image prompt is a poor place to encode panel geometry, reading order, gaze, character relationships, contact points and exact visible text.
 
 ```text
 story / name intent
@@ -46,11 +46,11 @@ Executable Name
   └─ Prompt             → rendering instructions
 ```
 
-Clean and Annotated are rendered from the same canonical geometry, so review annotations cannot silently change the composition seen by the image model.
+Clean and Annotated are rendered from the same canonical geometry, so review annotations cannot silently change generation composition.
 
 ## Blueprint Engine
 
-The headless engine compiles a lightweight Markdown Name DSL. Authors and agents describe manga intent rather than manually entering IDs and pixel coordinates.
+The headless engine compiles lightweight Markdown Name DSL. Authors/agents describe manga intent instead of manually entering IDs and pixel coordinates.
 
 ```md
 # Page 1: Duel
@@ -66,10 +66,6 @@ The headless engine compiles a lightweight Markdown Name DSL. Authors and agents
 ポーズ: fighter-b> counter-slash-twisting-torso
 接触: fighter-a.sword > fighter-b.sword
 強調: strong
-
-コマ3: The decisive horizontal slash
-登場: fighter-a@left, fighter-b@right
-強調: climax
 ```
 
 ```bash
@@ -77,17 +73,19 @@ npm install
 npm run blueprint -- examples/combat-1p.md blueprint-out
 ```
 
-For fixed source/options the engine deterministically produces canonical project JSON, Clean/Annotated assets, per-page prompts and a read-first manifest. PNG raster output is added when a supported local rasterizer is available.
+Fixed source/options deterministically produce canonical JSON, Clean/Annotated assets, per-page prompts and a read-first manifest. PNG raster output is added when a supported local rasterizer is available.
 
 ## Manga technique guide
 
-The public [Manga Technique Guide](https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html) explains bleed/crop, character breakout, diagonal panels, gaze guidance, hero panels, insets, pacing and page turns in terms of **what they do, when to use them, and what an AI system needs to preserve**.
+The public [Manga Technique Guide](https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html) explains bleed/crop, character breakout, diagonal panels, gaze guidance, hero panels, insets, pacing and page turns as **intent → technique → AI-preserved constraint**.
 
 ## Web editor
 
-The optional Web client supports multiple local works/pages, Japanese RTL reading order, manga-aware panel geometry, inset panels, characters, camera/action intent, balloons, SFX/effects, Story Templates and bounded Smart Manga proposals. Project data is stored locally in IndexedDB.
+The optional Web client supports multiple local works/pages, Japanese RTL reading order, rectangle and **convex-quadrilateral** panel geometry, inset panels, characters, camera/action intent, balloons, SFX/effects, Story Templates and bounded Smart Manga proposals. Project data is stored locally in IndexedDB.
 
 The established Web AI export remains selected-page scoped; the Blueprint Engine can independently compile multi-page Name source into per-page assets.
+
+For the complete current Web workflow see [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md).
 
 ## Technology
 
@@ -101,10 +99,11 @@ Python is not required by the core pipeline.
 
 ## For AI / coding agents
 
-Read [`AGENTS.md`](AGENTS.md) first. For blueprint-authoring tasks, use [`.agents/skills/manga-blueprint/SKILL.md`](.agents/skills/manga-blueprint/SKILL.md). Prefer semantic Name DSL over invented coordinates; let deterministic compiler/solver stages resolve geometry, and never treat Annotated output as default image-generation input.
+Read [`AGENTS.md`](AGENTS.md) first. For blueprint-authoring tasks, use [`.agents/skills/manga-blueprint/SKILL.md`](.agents/skills/manga-blueprint/SKILL.md). Prefer semantic Name DSL over invented coordinates and never treat Annotated output as default image-generation input.
 
 ## Documentation
 
+- [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) — current Web workflow
 - [`docs/BLUEPRINT-ENGINE.md`](docs/BLUEPRINT-ENGINE.md) — headless compiler workflow
 - [`core/name-schema.md`](core/name-schema.md) — AI/human Name DSL
 - [`docs/MANGA-TECHNIQUES.md`](docs/MANGA-TECHNIQUES.md) — manga direction concepts
@@ -112,7 +111,7 @@ Read [`AGENTS.md`](AGENTS.md) first. For blueprint-authoring tasks, use [`.agent
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — runtime/state/ownership
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff authority split
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — delivery/status authority
-- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — canonical serialized data contract
+- [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — serialized data contract
 
 ## Development
 
