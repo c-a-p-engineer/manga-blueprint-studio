@@ -2,11 +2,63 @@
 
 ## Purpose
 
-This document describes the current runtime/state/storage ownership of Manga Blueprint Studio. User-visible behavior belongs in `docs/PRODUCT.md`; serialized field shape belongs in `schema/manga-blueprint.schema.json`; delivery status belongs only in `docs/ROADMAP.md`.
+Manga Blueprint Studio now has two authoring surfaces over one canonical project model:
 
-Manga Blueprint Studio is a static GitHub Pages application built with Vite. `web/app.js` delegates to `web/src/main.ts`. TypeScript owns bootstrap, build provenance, typed migration boundaries, and top-level UI composition. Ordered classic scripts under `web/runtime/` remain a compatibility/reference runtime while owners are migrated incrementally.
+1. **Blueprint Engine** — headless AI/human name-to-blueprint compiler.
+2. **Web editor** — visual GUI client for refinement, persistence, and the established generation/review export flow.
 
-## Production bootstrap
+`schema/manga-blueprint.schema.json` remains the serialized-data authority. Neither the Name DSL nor the Web UI owns a second project model.
+
+## Architecture direction
+
+```text
+Name DSL / AI / human beats
+          ↓
+core/blueprint-engine.mjs
+          ↓
+canonical manga-blueprint/0.2
+          ├──────────────→ CLI package builder
+          │                 ├ clean spatial visual
+          │                 ├ annotated review visual
+          │                 ├ page prompt
+          │                 └ manifest
+          │
+          └──────────────→ Web editor
+                            ├ visual refinement
+                            ├ IndexedDB persistence
+                            └ established Web export pipeline
+```
+
+The architectural rule is **Core first, clients second**. A client may add transient editing state and presentation, but shared manga semantics belong in canonical project state or reusable Core logic.
+
+## Blueprint Engine ownership
+
+`core/blueprint-engine.mjs` owns the current headless compiler prototype:
+
+- parsing the lightweight AI Name DSL;
+- deterministic work/page/panel/placed-character/balloon identity;
+- bounded manga-layout selection from panel count, emphasis, and optional layout hint;
+- initial camera inference from explicit camera terms plus beat semantics;
+- reusable character placeholders from semantic character tokens;
+- initial stick-figure placement from coarse `left | center | right | foreground | background` slots;
+- background/time propagation;
+- dialogue and exact SFX transfer;
+- line-effect inference;
+- clean vs annotated SVG blueprint generation;
+- generation prompt construction with exact visible-text allowlist;
+- manifest-first package metadata.
+
+`core/name-schema.md` owns the authoring DSL contract. The DSL intentionally excludes generated IDs and exact pixel coordinates.
+
+### Name DSL is not persistent authority
+
+The Name input is source material. After compilation, `manga-blueprint/0.2` is authoritative project state. Editing the resulting project in the Web editor does not require round-tripping changes back into the original Name source.
+
+A future explicit source-sync feature would require its own conflict semantics; it must not be inferred from deterministic compilation.
+
+## Existing Web production bootstrap
+
+The Web editor remains a static GitHub Pages application built with Vite.
 
 ```text
 web/app.js
@@ -20,130 +72,11 @@ web/app.js
        -> install typed UI composition
 ```
 
-`web/runtime/manifest.json` is the single ordered registry for compatibility-runtime key, semantic chunk ID, browser path, and load order. `scripts/runtime-paths.mjs` derives validator-facing paths from that same registry. Runtime URLs include application version plus deployed commit revision; Vite owns the hashed module entry.
+`web/runtime/manifest.json` remains the ordered registry for the compatibility runtime. New typed Web code keeps legacy-global access behind `web/src/runtime/legacy-api.ts`.
 
-Direct `globalThis` access from new TypeScript code is isolated behind `web/src/runtime/legacy-api.ts`. New typed UI/domain code must not rediscover legacy globals independently.
+## Canonical serialized project model
 
-## TypeScript migration boundary
-
-```text
-web/src/
-├─ main.ts                    bootstrap only
-├─ legacy-runtime.ts          ordered compatibility loader
-├─ domain/
-│  └─ model.ts                typed view of current schema concepts
-├─ runtime/
-│  └─ legacy-api.ts           one compatibility bridge to classic globals
-└─ ui/
-   ├─ dom-helpers.ts
-   ├─ page-modes.ts
-   ├─ panel-disclosures.ts
-   └─ template-workflow.ts
-```
-
-`domain/model.ts` improves compile-time readability for migrated code. It does **not** replace the JSON Schema as serialized-data authority and does not introduce a second project model.
-
-The task-first Page/Panel composition is event-driven. The classic render owner emits `manga-blueprint:editor-rendered`; typed UI composition reacts to that explicit lifecycle signal. A page-wide `MutationObserver` must not be used as a self-recomposition loop.
-
-## Compatibility runtime ownership
-
-```text
-web/runtime/
-├─ manifest.json  canonical load registry
-├─ core/          state, commands/history, persistence lifecycle, rendering, I/O/events
-├─ authoring/     page/work/container/panel/character authoring
-├─ assist/        bounded Smart Manga assistance
-├─ identity/      character identity / appearance handoff
-├─ story/         story-readable semantics
-├─ templates/     Story Template ownership
-├─ lettering/     writing direction
-├─ ordering/      reading-order synchronization
-├─ integration/   explicit cross-feature adapters
-├─ handoff/       prompt / manifest / render contracts
-└─ ui/            presentation-only compatibility layers
-```
-
-### Core owners
-
-`core/foundation.js`
-- shared constants and helpers;
-- base project factory/normalization;
-- camera/pose/template defaults used by later owners.
-
-`core/project-storage.js`
-- stable work/page/container identity normalization;
-- IndexedDB storage;
-- save vs activate boundary;
-- per-work active-page metadata;
-- full-work identity regeneration/remapping.
-
-`core/editor-state.js`
-- active `project` reference;
-- selected page/panel/character/balloon IDs;
-- selection resolvers such as `currentPage()` and `selectedPanel()`;
-- language state;
-- domain-level edit operations such as add/split/delete/template apply.
-
-`core/editor-commands.js`
-- project snapshots for editor history;
-- `mutate()` command boundary;
-- Undo / Redo;
-- history reset at work/import boundaries.
-
-`core/editor-persistence.js`
-- persistence readiness;
-- autosave scheduling entry;
-- initial active-work loading;
-- editor-state initialization.
-
-`core/editor-render.js`
-- base SVG/editor rendering;
-- base inspector rendering;
-- `render()` lifecycle;
-- explicit `manga-blueprint:editor-rendered` notification consumed by typed presentation code.
-
-`core/export-input.js` / `core/event-bindings.js`
-- base import/export and UI event paths that later semantic owners may extend.
-
-This split is intentionally lexical-compatible with the existing ordered classic runtime. It reduces responsibility concentration without pretending the migration to ES modules is complete.
-
-### Authoring owners
-
-`authoring/page-navigation.js`
-- page CRUD/reorder/number/title;
-- page selection;
-- per-work active-page restoration.
-
-`authoring/work-library-hierarchy.js`
-- Work Library create/open/rename/duplicate/delete;
-- legacy container compatibility;
-- page-to-container assignment;
-- non-destructive container deletion;
-- explicit work activation.
-
-`authoring/panel-geometry.js`
-- optional convex-quadrilateral `Panel.shape` normalization;
-- shape presets and corner editing;
-- polygon hit/clip/border rendering;
-- shape-aware canvas scaling;
-- render-brief geometry enrichment.
-
-`authoring/inset-panels.js`
-- one-level panel-in-panel relation;
-- inset ID-remap/deletion/split safety;
-- overlap mask and AI handoff hierarchy.
-
-### Presentation owners
-
-`ui/editor-shell.js` remains the compatibility presentation/navigation owner for the manga-first shell. It reuses canonical page/work operations and never owns a second project-state model. It provides the active work title, breadcrumb, P001 display formatting, page navigation, Work Explorer / 作品エクスプローラー, and Page settings positioning.
-
-`ui/mobile-header.js` owns only narrow-screen header composition.
-
-New task-first UI composition lives under `web/src/ui/`; compatibility UI chunks remain until behavior-equivalent typed owners replace them.
-
-## Serialized project model
-
-Current format is `manga-blueprint/0.2`.
+Current format remains `manga-blueprint/0.2`.
 
 ```text
 Project
@@ -160,125 +93,90 @@ Project
    └─ Page
       ├─ stable id / number / order / title / containerId
       └─ panels[]
-         ├─ id / order / rect / optional Panel.shape / optional inset
+         ├─ id / order / rect / optional shape / optional inset
          ├─ role / actionIntent
          ├─ style / camera / background / effects
          ├─ characters[]
          └─ balloons[]
 ```
 
-The JSON Schema is authoritative for field-level shape. Rectangle-only projects remain valid. `Panel.shape` may define one convex quadrilateral; its synchronized `rect` remains the compatibility bounding box. Optional inset relation keeps an ordinary child Panel with stable identity rather than creating a separate content model.
+The JSON Schema remains authoritative for field-level shape. The Blueprint Engine must emit schema-compatible project state rather than introducing compiler-only serialized semantics.
 
-## Identity and selection
+## Identity boundary
 
-Stable identity includes `meta.workId`, container/page/panel IDs, placed-character instance IDs, and balloon IDs. Titles, numbers, ordering, and hierarchy references are mutable presentation/organization data.
+Stable identity includes `meta.workId`, page/panel IDs, placed-character IDs, balloon IDs, and reusable character IDs. The compiler derives deterministic IDs from source content so repeated compilation of identical input is stable. The Web editor may later duplicate/import-as-new using its existing remapping contracts.
 
-Editor selection is transient and not serialized as competing project semantics:
+Human-readable character tokens in Name DSL are semantic handles, not identity authority. The compiler maps them to generated reusable-character IDs.
+
+## Spatial / semantic boundary
+
+The same authority split is used across headless and Web workflows:
+
+- canonical `.manga.json` — semantic project state;
+- clean visual — spatial composition only;
+- annotated visual — human review aid;
+- prompt — generation instructions and explicit visible-text allowlist;
+- manifest — read-first package/file-role index.
+
+Clean compiler visuals must not contain authored dialogue/SFX/action labels as visible text. They may contain abstract placement figures and balloon geometry.
+
+## Existing Web runtime ownership
+
+The established Web compatibility runtime keeps its current semantic owners:
 
 ```text
-project
-selectedPageId
-selectedPanelId
-selectedCharacterId
-selectedBalloonId
+web/runtime/
+├─ core/          state, commands/history, persistence lifecycle, rendering, I/O/events
+├─ authoring/     page/work/container/panel/character authoring
+├─ assist/        Smart Manga assistance
+├─ identity/      character identity / appearance handoff
+├─ story/         story-readable semantics
+├─ templates/     Story Template ownership
+├─ lettering/     writing direction
+├─ ordering/      reading-order synchronization
+├─ integration/   explicit cross-feature adapters
+├─ handoff/       Web prompt / manifest / render contracts
+└─ ui/            compatibility presentation layers
 ```
 
-Work/import boundaries reset command history so Undo/Redo cannot cross work identity.
+The long-term direction is to extract genuinely reusable pure semantics toward shared Core modules when behavior-equivalence evidence exists. Do not rewrite working Web owners merely to make the directory tree look cleaner.
 
 ## Persistence and activation
 
-IndexedDB layout:
+The Web client retains IndexedDB persistence and explicit activation semantics. The Blueprint Engine is filesystem/headless and does not own browser persistence.
 
-```text
-manga-blueprint-studio
-├─ works: workId -> { title, updatedAt, project }
-└─ meta
-   ├─ activeWorkId
-   └─ activePageId:<workId>
-```
+A compiled `work.manga.json` is a portable project artifact. Importing it into the Web editor follows the Web editor's existing import identity/conflict rules.
 
-Critical invariant:
+## Web AI handoff vs Name package
 
-```text
-projectStorage.save(project)     // persist contents only
-projectStorage.setActive(workId) // explicit activation only
-```
+The existing Web generation/review packages remain selected-page scoped and use `manga-blueprint-export-manifest/3`.
 
-A delayed autosave from one work may finish after another work opens, but it cannot reactivate the old work. Historical browser project-autosave localStorage is intentionally not migrated; portable `.manga.json` import is the compatibility path.
+The headless compiler preview uses a distinct `manga-blueprint-name-package/2` manifest because it is a compilation artifact rather than the shipped Web export implementation. Both packages share the same conceptual authority split and canonical project schema.
 
-## Navigation and ordering
+Do not silently claim byte-level or schema-level compatibility between the two manifest formats.
 
-Presentation hierarchy is:
+## Verification
 
-```text
-App controls
-  -> current work
-  -> breadcrumb / P001
-  -> page navigation / Work Explorer
-  -> manga canvas
-  -> Page settings and selected-object inspectors
-```
+Main CI must cover:
 
-`P001` is derived UI formatting; `pageNumber` remains numeric.
+- TypeScript typecheck + Vite production build;
+- existing Web behavioral/contract validators;
+- Blueprint Engine parser/compiler regression tests;
+- deterministic canonical project output for fixed Name input;
+- exact visible-text transfer;
+- clean visual text safety;
+- manifest file-role correctness;
+- schema-compatible emitted fields.
 
-Panel reading direction (`rtl | ltr`) is independent from lettering direction (`vertical-rl | horizontal-tb`). Geometry and reading direction synchronize panel `order`, which is then shared by canvas badges, Story Templates, Panel Peek/List, prompt, manifest, and export.
-
-## Story Template / assistance ownership
-
-Story Template is the one canonical template feature name. Browsing/filtering/preview is non-mutating; explicit apply creates ordinary editable project state. `meta.storyTemplate` is provenance only.
-
-Smart Manga is a separate bounded proposal system and remains non-mutating until explicit apply.
-
-Reusable character identity is project-level; placed figures are panel instances. Stick figures communicate placement/body relation/pose, not finished appearance or clothing.
-
-## AI handoff
-
-Current generation/review is **selected-page scoped**.
-
-- AI generation ZIP: clean PNG + `.manga.json` + prompt + `manga-blueprint-export-manifest/3`;
-- Review/archive ZIP: the same state-linked inputs plus annotated PNG;
-- clean output excludes authoring labels;
-- exact visible text comes only from the `TEXT TO RENDER` allowlist;
-- Character Sheet requirements derive from actually used characters;
-- authored rectangle/quadrilateral/inset geometry is preserved in the handoff.
-
-`handoff/render-brief.js` owns the current-page semantic render contract. `authoring/panel-geometry.js` and `authoring/inset-panels.js` enrich it with their geometry relations instead of creating competing handoff implementations.
-
-## Public/user documentation
-
-The complete user guide is maintained in `docs/USER-GUIDE.md` and the public `web/guide.html`. The editor Help surface stays concise and links to the full guide.
-
-Current contract owners:
-- `docs/PRODUCT.md` — user-visible behavior;
-- `schema/manga-blueprint.schema.json` — project schema;
-- `docs/PROMPT_HANDOFF.md` — AI package contract;
-- `docs/ROADMAP.md` — only delivery/status authority;
-- this document — runtime/state/storage boundaries.
+GitHub Actions success is implementation evidence. Public Web visual usability still requires deployed-page verification for UI changes.
 
 ## Refactor rules
 
-1. Preserve the explicit runtime manifest order until an owner is deliberately cut over to ES modules.
-2. Add no chronology-named patch files; modify or extract a semantic owner.
-3. Keep new TypeScript dependencies on classic globals behind `runtime/legacy-api.ts`.
-4. Prefer explicit lifecycle/command boundaries over DOM mutation observation or hidden side effects.
-5. Keep schema/project semantics independent of presentation reorganization.
-6. Characterization/behavior tests must protect public behavior before large owner replacement.
-7. Migrate one responsibility at a time; keep a reference/rollback path until equivalence is established.
-8. CI and visual interaction are separate evidence. Public layout quality requires deployed-page verification, not static checks alone.
-
-## Verification map
-
-Repository validation covers:
-- TypeScript typecheck + Vite production build;
-- canonical runtime registration/order;
-- editor architecture responsibility boundaries;
-- executable command-history behavior;
-- project/storage identity contracts;
-- multi-page/work hierarchy behavior;
-- Story Template/cast/presentation contracts;
-- reading/writing direction;
-- panel geometry/layout/inset behavior;
-- AI generation/render-brief/text-safety contracts;
-- documentation/version synchronization.
-
-A future full ES-module/runtime cutover remains a separate refactor requiring semantic-equivalence evidence and rollback planning.
+1. Keep one canonical serialized manga model.
+2. Do not make the Web DOM or IndexedDB representation the Blueprint Engine's core API.
+3. Do not require AI authors to generate IDs or pixel coordinates when the compiler can derive them.
+4. Keep exact visible text explicit and allowlisted.
+5. Preserve clean-vs-annotated visual separation.
+6. Prefer reusable pure Core semantics over duplicating the same inference in CLI and Web code.
+7. Do not force a full legacy-runtime rewrite as a prerequisite for headless authoring.
+8. Any future source round-trip/synchronization requires explicit conflict semantics.
