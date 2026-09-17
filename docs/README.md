@@ -14,8 +14,8 @@ This directory separates **current contracts**, **user guidance**, **delivery pl
 | Web AI generation/review handoff | [`PROMPT_HANDOFF.md`](PROMPT_HANDOFF.md) | Canonical Web handoff contract |
 | Headless Blueprint Engine | [`BLUEPRINT-ENGINE.md`](BLUEPRINT-ENGINE.md) | Headless workflow guide |
 | AI/human Name DSL syntax | [`../core/name-schema.md`](../core/name-schema.md) | Name-source contract |
-| AI agent workflow | [`../.agents/skills/manga-blueprint/SKILL.md`](../.agents/skills/manga-blueprint/SKILL.md) | Agent task guidance subordinate to AGENTS/contracts |
-| Shipped / next / planned | [`ROADMAP.md`](ROADMAP.md) | **Only roadmap status authority** |
+| AI agent workflow | [`../.agents/skills/manga-blueprint/SKILL.md`](../.agents/skills/manga-blueprint/SKILL.md) | Agent guidance subordinate to contracts |
+| Shipped / next / planned | [`ROADMAP.md`](ROADMAP.md) | **Only status authority** |
 | Serialized project fields | [`../schema/manga-blueprint.schema.json`](../schema/manga-blueprint.schema.json) | Canonical machine-readable schema |
 | Repository invariants | [`../AGENTS.md`](../AGENTS.md) | Highest repository rule set |
 
@@ -26,17 +26,17 @@ Public pages:
 - User guide: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
 - Manga techniques: https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html
 
+`docs/USER-GUIDE.md` and `web/guide.html` remain semantically aligned for the Web workflow. `docs/MANGA-TECHNIQUES.md` and `web/techniques.html` remain semantically aligned for manga-direction education.
+
 ## Current vs historical
 
 Current contract/guidance files include `../AGENTS.md`, multilingual READMEs, Product, Architecture, Prompt Handoff, Blueprint Engine, Name schema, Roadmap, User Guide, Manga Techniques, schema, and the agent skill.
 
-`PROTOTYPE-*.md` files are historical release records. Dated `BASELINE-*`, `COMPETITOR-*`, `RESEARCH-*`, `TASKS-*`, and `PANEL-LAYOUT-GRAMMAR-*` documents are evidence/planning input, not current authority.
-
-When current decisions differ from historical research, update current contracts rather than rewriting history.
+`PROTOTYPE-*.md` files are historical release records. Dated `BASELINE-*`, `COMPETITOR-*`, `RESEARCH-*`, `TASKS-*`, and `PANEL-LAYOUT-GRAMMAR-*` documents are evidence/planning input, not current authority. Update current contracts rather than rewriting history.
 
 ## Documentation maintenance rule
 
-A change is not documentation-complete until the affected authority and user-facing guidance are synchronized.
+A change is not documentation-complete until affected authority and user-facing guidance are synchronized.
 
 | Change type | Required documentation |
 |---|---|
@@ -46,7 +46,7 @@ A change is not documentation-complete until the affected authority and user-fac
 | Project JSON/schema | schema + Product + Architecture + compatibility notes |
 | Runtime/state/storage | Architecture + runtime README when applicable |
 | Web prompt/manifest/export | Prompt Handoff + Product/Architecture as needed |
-| Agent workflow | `AGENTS.md` + relevant `.agents/skills/*`; never weaken higher product/schema contracts |
+| Agent workflow | `AGENTS.md` + relevant `.agents/skills/*`; never weaken higher contracts |
 | Roadmap status | `ROADMAP.md` only |
 | Release version | build info/runtime provenance/README/Roadmap/release note through version-sync validation |
 
