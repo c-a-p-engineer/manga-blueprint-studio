@@ -100,7 +100,7 @@ function cameraFor(beat, i) {
   const dialogue = beat.dialogue.map((d) => d.text).join(' ');
   const text = `${beat.action} ${dialogue} ${beat.camera}`;
   let distance = /extreme[- ]?close|超アップ/i.test(text) ? 'extreme-close' : /close|アップ|顔|表情|目|手元|スマホ/i.test(text) ? 'close' : /long|引き|全景/i.test(text) ? 'long' : 'medium';
-  if (beat.emphasis === 'climax' && distance === 'medium') distance = 'extreme-close';
+  if (beat.emphasis === 'climax' && !/long|引き|全景/i.test(beat.camera)) distance = 'extreme-close';
   const angle = /high|俯瞰|ハイアングル/i.test(text) ? 'high-angle' : /low|煽り|ローアングル/i.test(text) ? 'low-angle' : /dutch|斜め/i.test(text) ? 'dutch-angle' : 'eye-level';
   const viewpoint = /pov|主観/i.test(text) ? 'pov' : /back|背面|後ろ/i.test(text) ? 'back' : /side|横/i.test(text) ? 'side' : 'three-quarter-front';
   return { distance, angle, viewpoint, focus: beat.action || `panel ${i + 1}`, intent: beat.emphasis === 'climax' ? 'climax emphasis' : 'story clarity' };
