@@ -14,73 +14,22 @@ export const GENRE_BIASES=Object.freeze({
 
 const T=(id,category,effects,semantic={},extra={})=>Object.freeze({id,category,effects,semantic,...extra});
 export const TECHNIQUES=Object.freeze({
- 'closeup':T('closeup','camera',['emotion','attention','information'],{cameraDistance:'close',subjectScale:'large'},{conflicts:['spatial-establishing']}),
- 'extreme-closeup':T('extreme-closeup','camera',['emotion','attention','fear'],{cameraDistance:'extreme-close',cropContext:true},{conflicts:['spatial-establishing']}),
- 'wide-shot':T('wide-shot','camera',['information','space'],{cameraDistance:'long',showEnvironment:true}),
- 'low-angle':T('low-angle','camera',['impact','scale'],{cameraAngle:'low-angle'}),
- 'high-angle':T('high-angle','camera',['information','isolation'],{cameraAngle:'high-angle'}),
- 'dutch-angle':T('dutch-angle','camera',['fear','instability','impact'],{cameraRoll:'tilted'}),
- 'pov':T('pov','camera',['immersion','fear','information'],{cameraMode:'first-person'}),
- 'foreshortening':T('foreshortening','composition',['impact','speed','depth'],{depthContrast:'high',foregroundScale:'large'},{pairs:['low-angle','extreme-foreground','motion-lines']}),
- 'extreme-foreground':T('extreme-foreground','composition',['impact','depth','attention'],{foregroundScale:'very-large',depthContrast:'high'}),
- 'negative-space':T('negative-space','composition',['pause','emotion','fear','attention'],{negativeSpace:'high',density:'low'}),
- 'hero-panel':T('hero-panel','panel',['impact','emotion','reveal','hold'],{relativePanelScale:'large'}),
- 'small-panel':T('small-panel','panel',['speed','detail'],{relativePanelScale:'small',beatDuration:'short'}),
- 'diagonal-panel':T('diagonal-panel','panel',['impact','speed','instability'],{panelShape:'diagonal'}),
- 'detail-inset':T('detail-inset','panel',['information','attention','emotion'],{inset:true}),
- 'bleed':T('bleed','panel',['scale','impact'],{reachesTrim:true},{requires:['page']}),
- 'character-breakout':T('character-breakout','panel',['impact','presence'],{crossPanelBoundary:true}),
- 'stable-grid':T('stable-grid','panel',['clarity','setup'],{panelRhythm:'regular'}),
- 'grid-break':T('grid-break','panel',['impact','surprise'],{panelRhythm:'break'},{requires:['prior-stable-rhythm']}),
- 'moment-to-moment':T('moment-to-moment','transition',['hold','emotion'],{transition:'moment-to-moment'}),
- 'action-to-action':T('action-to-action','transition',['clarity','speed'],{transition:'action-to-action'}),
- 'aspect-to-aspect':T('aspect-to-aspect','transition',['mood','hold'],{transition:'aspect-to-aspect'}),
- 'reaction-shot':T('reaction-shot','transition',['emotion','surprise'],{transition:'reaction'}),
- 'insert-shot':T('insert-shot','transition',['information','attention'],{transition:'insert'}),
- 'match-cut':T('match-cut','transition',['continuity','contrast'],{transition:'match-cut'}),
- 'montage':T('montage','transition',['compression','information'],{transition:'montage'}),
- 'ellipsis':T('ellipsis','pacing',['speed','surprise'],{omitIntermediate:true}),
- 'pause':T('pause','pacing',['hold','emotion','fear'],{holdDelta:.3,densityDelta:-.25}),
- 'decompression':T('decompression','pacing',['hold','emotion','fear'],{beatExpansion:true}),
- 'accelerando':T('accelerando','pacing',['speed','impact'],{beatDurationTrend:'shorter'}),
- 'anticipation':T('anticipation','action',['clarity','impact'],{motionPhase:'anticipation'}),
- 'contact-focus':T('contact-focus','action',['impact','clarity'],{motionPhase:'contact',attentionTarget:'contact'}),
- 'follow-through':T('follow-through','action',['impact','direction'],{motionPhase:'follow-through'}),
- 'motion-lines':T('motion-lines','action',['speed','direction'],{motionLines:true}),
- 'focus-lines':T('focus-lines','action',['attention','impact'],{focusLines:true}),
- 'afterimage':T('afterimage','action',['speed'],{afterimage:true}),
- 'impact-flash':T('impact-flash','action',['impact','surprise'],{valueContrast:'extreme'}),
- 'attention-control':T('attention-control','attention',['clarity','flow'],{alignGazeGestureFlow:true}),
- 'progressive-reveal':T('progressive-reveal','attention',['reveal','fear'],{informationRelease:'progressive'}),
- 'cropped-information':T('cropped-information','attention',['fear','mystery'],{cropContext:true}),
- 'misdirection':T('misdirection','attention',['surprise','mystery'],{attentionDecoy:true}),
- 'background-dropout':T('background-dropout','psychology',['emotion','attention'],{backgroundMode:'dropout'}),
- 'symbolic-background':T('symbolic-background','psychology',['emotion','mood'],{backgroundMode:'symbolic'}),
- 'silent-panel':T('silent-panel','lettering',['hold','emotion','fear'],{dialogue:'none'}),
- 'cross-panel-sfx':T('cross-panel-sfx','lettering',['impact','continuity'],{sfxCrossBoundary:true}),
- 'page-turn-reveal':T('page-turn-reveal','medium',['reveal','surprise'],{revealMechanism:'page-turn'},{requires:['page']}),
- 'spread':T('spread','medium',['scale','impact'],{pageSpan:2},{requires:['page']}),
- 'scroll-delay':T('scroll-delay','medium',['hold','fear','reveal'],{scrollGap:'large'},{requires:['scroll']}),
- 'viewport-reveal':T('viewport-reveal','medium',['reveal','surprise'],{revealMechanism:'viewport'},{requires:['scroll']}),
- 'continuous-vertical-pan':T('continuous-vertical-pan','medium',['space','hold'],{continuousVerticalEnvironment:true},{requires:['scroll']}),
- 'long-fall':T('long-fall','medium',['impact','fear','speed'],{scrollEmbodiesDistance:true},{requires:['scroll']})
+ 'closeup':T('closeup','camera',['emotion','attention','information'],{cameraDistance:'close',subjectScale:'large'},{conflicts:['spatial-establishing']}),'extreme-closeup':T('extreme-closeup','camera',['emotion','attention','fear'],{cameraDistance:'extreme-close',cropContext:true},{conflicts:['spatial-establishing']}),'wide-shot':T('wide-shot','camera',['information','space'],{cameraDistance:'long',showEnvironment:true}),'low-angle':T('low-angle','camera',['impact','scale'],{cameraAngle:'low-angle'}),'high-angle':T('high-angle','camera',['information','isolation'],{cameraAngle:'high-angle'}),'dutch-angle':T('dutch-angle','camera',['fear','instability','impact'],{cameraRoll:'tilted'}),'pov':T('pov','camera',['immersion','fear','information'],{cameraMode:'first-person'}),'foreshortening':T('foreshortening','composition',['impact','speed','depth'],{depthContrast:'high',foregroundScale:'large'},{pairs:['low-angle','extreme-foreground','motion-lines']}),'extreme-foreground':T('extreme-foreground','composition',['impact','depth','attention'],{foregroundScale:'very-large',depthContrast:'high'}),'negative-space':T('negative-space','composition',['pause','emotion','fear','attention'],{negativeSpace:'high',density:'low'}),'hero-panel':T('hero-panel','panel',['impact','emotion','reveal','hold'],{relativePanelScale:'large'}),'small-panel':T('small-panel','panel',['speed','detail'],{relativePanelScale:'small',beatDuration:'short'}),'diagonal-panel':T('diagonal-panel','panel',['impact','speed','instability'],{panelShape:'diagonal'}),'detail-inset':T('detail-inset','panel',['information','attention','emotion'],{inset:true}),'bleed':T('bleed','panel',['scale','impact'],{reachesTrim:true},{requires:['page']}),'character-breakout':T('character-breakout','panel',['impact','presence'],{crossPanelBoundary:true}),'stable-grid':T('stable-grid','panel',['clarity','setup'],{panelRhythm:'regular'}),'grid-break':T('grid-break','panel',['impact','surprise'],{panelRhythm:'break'},{requires:['prior-stable-rhythm']}),'moment-to-moment':T('moment-to-moment','transition',['hold','emotion'],{transition:'moment-to-moment'}),'action-to-action':T('action-to-action','transition',['clarity','speed'],{transition:'action-to-action'}),'aspect-to-aspect':T('aspect-to-aspect','transition',['mood','hold'],{transition:'aspect-to-aspect'}),'reaction-shot':T('reaction-shot','transition',['emotion','surprise'],{transition:'reaction'}),'insert-shot':T('insert-shot','transition',['information','attention'],{transition:'insert'}),'match-cut':T('match-cut','transition',['continuity','contrast'],{transition:'match-cut'}),'montage':T('montage','transition',['compression','information'],{transition:'montage'}),'ellipsis':T('ellipsis','pacing',['speed','surprise'],{omitIntermediate:true}),'pause':T('pause','pacing',['hold','emotion','fear'],{holdDelta:.3,densityDelta:-.25}),'decompression':T('decompression','pacing',['hold','emotion','fear'],{beatExpansion:true}),'accelerando':T('accelerando','pacing',['speed','impact'],{beatDurationTrend:'shorter'}),'anticipation':T('anticipation','action',['clarity','impact'],{motionPhase:'anticipation'}),'contact-focus':T('contact-focus','action',['impact','clarity'],{motionPhase:'contact',attentionTarget:'contact'}),'follow-through':T('follow-through','action',['impact','direction'],{motionPhase:'follow-through'}),'motion-lines':T('motion-lines','action',['speed','direction'],{motionLines:true}),'focus-lines':T('focus-lines','action',['attention','impact'],{focusLines:true}),'afterimage':T('afterimage','action',['speed'],{afterimage:true}),'impact-flash':T('impact-flash','action',['impact','surprise'],{valueContrast:'extreme'}),'attention-control':T('attention-control','attention',['clarity','flow'],{alignGazeGestureFlow:true}),'progressive-reveal':T('progressive-reveal','attention',['reveal','fear'],{informationRelease:'progressive'}),'cropped-information':T('cropped-information','attention',['fear','mystery'],{cropContext:true}),'misdirection':T('misdirection','attention',['surprise','mystery'],{attentionDecoy:true}),'background-dropout':T('background-dropout','psychology',['emotion','attention'],{backgroundMode:'dropout'}),'symbolic-background':T('symbolic-background','psychology',['emotion','mood'],{backgroundMode:'symbolic'}),'silent-panel':T('silent-panel','lettering',['hold','emotion','fear'],{dialogue:'none'}),'cross-panel-sfx':T('cross-panel-sfx','lettering',['impact','continuity'],{sfxCrossBoundary:true}),'page-turn-reveal':T('page-turn-reveal','medium',['reveal','surprise'],{revealMechanism:'page-turn'},{requires:['page']}),'spread':T('spread','medium',['scale','impact'],{pageSpan:2},{requires:['page']}),'scroll-delay':T('scroll-delay','medium',['hold','fear','reveal'],{scrollGap:'large'},{requires:['scroll']}),'viewport-reveal':T('viewport-reveal','medium',['reveal','surprise'],{revealMechanism:'viewport'},{requires:['scroll']}),'continuous-vertical-pan':T('continuous-vertical-pan','medium',['space','hold'],{continuousVerticalEnvironment:true},{requires:['scroll']}),'long-fall':T('long-fall','medium',['impact','fear','speed'],{scrollEmbodiesDistance:true},{requires:['scroll']})
 });
 
-export const TERMS=Object.freeze({
- yori:{ja:'寄り',en:'close framing',technique:'closeup'},hiki:{ja:'引き',en:'wide framing',technique:'wide-shot'},aori:{ja:'あおり',en:'low angle',technique:'low-angle'},fukan:{ja:'俯瞰',en:'high angle',technique:'high-angle'},hero_panel:{ja:'大ゴマ',en:'hero panel',technique:'hero-panel'},small_panel:{ja:'小ゴマ',en:'small panel',technique:'small-panel'},diagonal:{ja:'斜めコマ',en:'diagonal panel',technique:'diagonal-panel'},bleed:{ja:'断ち切り',en:'bleed panel',technique:'bleed'},breakout:{ja:'ブチ抜き',en:'breakout',technique:'character-breakout'},inset:{ja:'小窓',en:'inset',technique:'detail-inset'},hold:{ja:'間',en:'hold/pause',technique:'pause'},spread:{ja:'見開き',en:'spread',technique:'spread'},page_turn:{ja:'ページめくり',en:'page-turn reveal',technique:'page-turn-reveal'},speed_lines:{ja:'速度線・流線',en:'speed lines',technique:'motion-lines'},focus_lines:{ja:'集中線',en:'focus lines',technique:'focus-lines'}
-});
+export const TERMS=Object.freeze({yori:{ja:'寄り',en:'close framing',technique:'closeup'},hiki:{ja:'引き',en:'wide framing',technique:'wide-shot'},aori:{ja:'あおり',en:'low angle',technique:'low-angle'},fukan:{ja:'俯瞰',en:'high angle',technique:'high-angle'},hero_panel:{ja:'大ゴマ',en:'hero panel',technique:'hero-panel'},small_panel:{ja:'小ゴマ',en:'small panel',technique:'small-panel'},diagonal:{ja:'斜めコマ',en:'diagonal panel',technique:'diagonal-panel'},bleed:{ja:'断ち切り',en:'bleed panel',technique:'bleed'},breakout:{ja:'ブチ抜き',en:'breakout',technique:'character-breakout'},inset:{ja:'小窓',en:'inset',technique:'detail-inset'},hold:{ja:'間',en:'hold/pause',technique:'pause'},spread:{ja:'見開き',en:'spread',technique:'spread'},page_turn:{ja:'ページめくり',en:'page-turn reveal',technique:'page-turn-reveal'},speed_lines:{ja:'速度線・流線',en:'speed lines',technique:'motion-lines'},focus_lines:{ja:'集中線',en:'focus lines',technique:'focus-lines'}});
 
 const uniq=xs=>[...new Set(xs.filter(Boolean))];
 const mediumRequirementOk=(technique,profile)=>!(technique.requires||[]).some(r=>r==='page'&&profile.progression==='scroll'||r==='scroll'&&profile.progression!=='scroll');
 export function techniqueRecord(id){return TECHNIQUES[id]||null;}
-export function composeTechniques(candidates,{medium='print-page',limit=6}={}){
- const profile=MEDIUM_PROFILES[medium]||MEDIUM_PROFILES['print-page'];const accepted=[],rejected=[];
- for(const id of uniq(candidates)){const t=TECHNIQUES[id];if(!t){rejected.push({id,reason:'unknown'});continue}if(!mediumRequirementOk(t,profile)){rejected.push({id,reason:'medium-conflict'});continue}if(accepted.some(a=>(t.conflicts||[]).includes(a)||(TECHNIQUES[a]?.conflicts||[]).includes(id))){rejected.push({id,reason:'technique-conflict'});continue}accepted.push(id);if(accepted.length>=limit)break}
- return {techniques:accepted,rejected};
-}
+export function composeTechniques(candidates,{medium='print-page',limit=6}={}){const profile=MEDIUM_PROFILES[medium]||MEDIUM_PROFILES['print-page'];const accepted=[],rejected=[];for(const id of uniq(candidates)){const t=TECHNIQUES[id];if(!t){rejected.push({id,reason:'unknown'});continue}if(!mediumRequirementOk(t,profile)){rejected.push({id,reason:'medium-conflict'});continue}if(accepted.some(a=>(t.conflicts||[]).includes(a)||(TECHNIQUES[a]?.conflicts||[]).includes(id))){rejected.push({id,reason:'technique-conflict'});continue}accepted.push(id);if(accepted.length>=limit)break}return{techniques:accepted,rejected};}
 
 export function recommendMangaDirection({medium='print-page',genre='',purpose='',importance=.5,hold=.5,motion='',attention=''}={}){
- const profile=MEDIUM_PROFILES[medium]||MEDIUM_PROFILES['print-page'];const candidates=[...(GENRE_BIASES[String(genre).toLowerCase()]||[])];const why=[];const p=String(purpose).toLowerCase(),m=String(motion).toLowerCase(),a=String(attention).toLowerCase();
+ const profile=MEDIUM_PROFILES[medium]||MEDIUM_PROFILES['print-page'];const candidates=[];const genreBias=[...(GENRE_BIASES[String(genre).toLowerCase()]||[])];const why=[];const p=String(purpose).toLowerCase(),m=String(motion).toLowerCase(),a=String(attention).toLowerCase();
+ // Put medium-native constraints first so a bounded technique limit cannot erase the medium grammar.
+ if(profile.progression==='scroll'&&/reveal|suspense|horror|驚|恐/.test(`${p} ${genre}`.toLowerCase())){candidates.push('scroll-delay','viewport-reveal');why.push('scroll-native reveal')}
+ if(profile.progression==='page'&&/reveal|驚|正体/.test(p)){candidates.push('page-turn-reveal');why.push('page-turn reveal')}
+ candidates.push(...genreBias);
  if(/climax|reveal|impact|決め|衝撃/.test(p)||importance>=.8){candidates.push('hero-panel');why.push('high-impact/important beat')}
  if(/impact|action|attack|collision|衝突|攻撃/.test(p)){candidates.push('anticipation','contact-focus','follow-through');why.push('action phase clarity')}
  if(/impact|attack|collision|突進|攻撃/.test(p)||/left|right|up|down|左|右|上|下/.test(m)){candidates.push('diagonal-panel','motion-lines');why.push('directional action')}
@@ -89,7 +38,5 @@ export function recommendMangaDirection({medium='print-page',genre='',purpose=''
  if(/establish|location|位置|場所|全景/.test(p))candidates.push('wide-shot');
  if(hold>=.75){candidates.push('pause','negative-space');why.push('long reading hold')}
  if(a&&/contact|hand|eye|face|prop|接触|手|目|顔/.test(a))candidates.push('detail-inset');
- if(profile.progression==='scroll'&&/reveal|suspense|horror|驚|恐/.test(`${p} ${genre}`.toLowerCase()))candidates.push('scroll-delay','viewport-reveal');
- if(profile.progression==='page'&&/reveal|驚|正体/.test(p))candidates.push('page-turn-reveal');
- const composed=composeTechniques(candidates,{medium});return {medium,profile,genreBias:GENRE_BIASES[String(genre).toLowerCase()]||[],...composed,why};
+ const composed=composeTechniques(candidates,{medium});return{medium,profile,genreBias,...composed,why};
 }
