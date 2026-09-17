@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { compileName, renderBlueprintSvg, buildPrompt, buildManifest } from '../core/blueprint-engine.mjs';
+import { renderBlueprintSvg, buildPrompt, buildManifest } from '../core/blueprint-engine.mjs';
+import { compileMangaName } from '../core/manga-grammar.mjs';
 
 const [input, out = 'blueprint-out'] = process.argv.slice(2);
 if (!input) {
@@ -10,7 +11,7 @@ if (!input) {
 }
 
 const text = await fs.readFile(input, 'utf8');
-const project = compileName(text, { title: path.basename(input, path.extname(input)) });
+const project = compileMangaName(text, { title: path.basename(input, path.extname(input)) });
 await fs.mkdir(out, { recursive: true });
 await fs.writeFile(path.join(out, 'work.manga.json'), JSON.stringify(project, null, 2));
 
