@@ -1,52 +1,95 @@
-// Machine-readable subset of docs/MANGA-KNOWLEDGE.md.
-// Human documentation explains nuance; this module exposes stable vocabulary and recommendation profiles to agents/solvers.
+// Executable manga-direction knowledge shared by agents, solvers and UI-facing adapters.
+// Keep technique IDs stable. Human docs explain nuance; this module owns machine-readable semantics.
 
-export const MEDIUM_PROFILES = Object.freeze({
-  'print-page': {readingDirection:'rtl', progression:'page', panelCount:{min:3,neutral:[4,6],max:7}, notes:['publisher/printer template overrides defaults','use trim/bleed/safe-area/gutter semantics']},
-  'web-page': {readingDirection:'rtl', progression:'page', panelCount:{min:3,neutral:[4,6],max:7}, notes:['optimize lettering/detail for phone display','platform export requirements are not manga grammar']},
-  'vertical-scroll': {readingDirection:'ttb', progression:'scroll', panelCount:{min:null,neutral:null,max:null}, notes:['pace with vertical spacing','use scroll-distance reveals instead of page-turn assumptions']},
-  'social-short': {readingDirection:'rtl', progression:'page-or-carousel', panelCount:{min:1,neutral:[2,4],max:null}, notes:['favor phone legibility','keep attention targets simple']}
+export const MEDIUM_PROFILES=Object.freeze({
+ 'print-page':{readingDirection:'rtl',progression:'page',panelCount:{min:3,neutral:[4,6],max:7},capabilities:['page-turn','spread','bleed'],notes:['publisher/printer template overrides defaults','use trim/bleed/safe-area/gutter semantics']},
+ 'web-page':{readingDirection:'rtl',progression:'page',panelCount:{min:3,neutral:[4,6],max:7},capabilities:['page-turn'],notes:['optimize lettering/detail for phone display','platform export requirements are not manga grammar']},
+ 'vertical-scroll':{readingDirection:'ttb',progression:'scroll',panelCount:{min:null,neutral:null,max:null},capabilities:['scroll-delay','viewport-reveal','continuous-pan'],notes:['pace with vertical spacing','check composition at mobile viewport scale','do not assume page-turn mechanics']},
+ 'social-short':{readingDirection:'rtl',progression:'page-or-carousel',panelCount:{min:1,neutral:[2,4],max:null},capabilities:['carousel-turn'],notes:['favor phone legibility','keep attention targets simple']}
 });
 
-export const GENRE_BIASES = Object.freeze({
-  action:['diagonal-panel','depth-contrast','motion-lines','contact-focus','low-angle','hero-panel'],
-  comedy:['stable-setup','reaction-closeup','pause','size-contrast'],
-  romance:['closeup','detail-inset','pause','gaze-chain','spacious-panel'],
-  horror:['negative-space','slow-reveal','cropped-information','odd-angle','reveal'],
-  mystery:['clue-inset','attention-control','establishing-shot','reaction-shot'],
-  slice_of_life:['medium-shot','establishing-shot','quiet-hold','stable-grid'],
-  sports:['motion-direction','anticipation-impact-result','wide-geography','detail-inset'],
-  drama:['reaction-shot','closeup','silence','size-contrast'],
-  exposition:['stable-grid','clear-flow','detail-inset','moderate-camera-change']
+export const GENRE_BIASES=Object.freeze({
+ action:['diagonal-panel','foreshortening','motion-lines','contact-focus','low-angle','hero-panel'],comedy:['stable-grid','reaction-shot','pause','size-contrast'],romance:['closeup','detail-inset','pause','gaze-chain','negative-space'],horror:['negative-space','progressive-reveal','cropped-information','dutch-angle','silence'],mystery:['detail-inset','attention-control','establishing-shot','reaction-shot','misdirection'],slice_of_life:['medium-shot','establishing-shot','quiet-hold','stable-grid'],sports:['motion-direction','anticipation','contact-focus','follow-through','wide-geography'],drama:['reaction-shot','closeup','silence','size-contrast'],exposition:['stable-grid','clear-flow','detail-inset','moderate-camera-change']
 });
 
-export const TERMS = Object.freeze({
-  yori:{ja:'寄り',en:'close framing',meaning:'Frame closer to the subject so it occupies more of the image.',semantic:{cameraDistance:'close'}},
-  hiki:{ja:'引き',en:'wide framing',meaning:'Frame wider to show body, environment or spatial relationship.',semantic:{cameraDistance:'long'}},
-  aori:{ja:'あおり',en:'low angle',meaning:'Look upward toward the subject.',semantic:{cameraAngle:'low-angle'}},
-  fukan:{ja:'俯瞰',en:'high angle',meaning:'Look downward toward the subject or scene.',semantic:{cameraAngle:'high-angle'}},
-  hero_panel:{ja:'大ゴマ',en:'hero panel',meaning:'Relatively large panel for hold, spectacle, reveal or emphasis.',technique:'hero-panel'},
-  small_panel:{ja:'小ゴマ',en:'small panel',meaning:'Small panel for quick beats, detail or reaction.',technique:'small-panel'},
-  diagonal:{ja:'斜めコマ',en:'diagonal panel',meaning:'Diagonal panel boundary reinforcing motion, collision or instability.',technique:'diagonal-panel'},
-  bleed:{ja:'断ち切り',en:'bleed panel',meaning:'Artwork reaches the page trim/edge to expand perceived space.',technique:'bleed-panel'},
-  breakout:{ja:'ブチ抜き',en:'breakout',meaning:'Character or object crosses panel boundaries.',technique:'breakout'},
-  inset:{ja:'小窓',en:'inset',meaning:'Small overlaid/nested panel for detail, reaction or simultaneity.',technique:'inset'},
-  hold:{ja:'間',en:'hold/pause',meaning:'Designed reading time or silence; independent from importance.',semantic:{timing:'hold'}},
-  spread:{ja:'見開き',en:'spread',meaning:'Two facing pages treated as one composition.',technique:'spread'},
-  page_turn:{ja:'ページめくり',en:'page-turn reveal',meaning:'Withhold information until the next page becomes visible.',technique:'page-turn'},
-  speed_lines:{ja:'速度線・流線',en:'speed lines',meaning:'Lines that communicate movement direction/speed.',technique:'motion-lines'},
-  focus_lines:{ja:'集中線',en:'focus lines',meaning:'Lines converging attention on a target.',technique:'focus-lines'}
+const T=(id,category,effects,semantic={},extra={})=>Object.freeze({id,category,effects,semantic,...extra});
+export const TECHNIQUES=Object.freeze({
+ 'closeup':T('closeup','camera',['emotion','attention','information'],{cameraDistance:'close',subjectScale:'large'},{conflicts:['spatial-establishing']}),
+ 'extreme-closeup':T('extreme-closeup','camera',['emotion','attention','fear'],{cameraDistance:'extreme-close',cropContext:true},{conflicts:['spatial-establishing']}),
+ 'wide-shot':T('wide-shot','camera',['information','space'],{cameraDistance:'long',showEnvironment:true}),
+ 'low-angle':T('low-angle','camera',['impact','scale'],{cameraAngle:'low-angle'}),
+ 'high-angle':T('high-angle','camera',['information','isolation'],{cameraAngle:'high-angle'}),
+ 'dutch-angle':T('dutch-angle','camera',['fear','instability','impact'],{cameraRoll:'tilted'}),
+ 'pov':T('pov','camera',['immersion','fear','information'],{cameraMode:'first-person'}),
+ 'foreshortening':T('foreshortening','composition',['impact','speed','depth'],{depthContrast:'high',foregroundScale:'large'},{pairs:['low-angle','extreme-foreground','motion-lines']}),
+ 'extreme-foreground':T('extreme-foreground','composition',['impact','depth','attention'],{foregroundScale:'very-large',depthContrast:'high'}),
+ 'negative-space':T('negative-space','composition',['pause','emotion','fear','attention'],{negativeSpace:'high',density:'low'}),
+ 'hero-panel':T('hero-panel','panel',['impact','emotion','reveal','hold'],{relativePanelScale:'large'}),
+ 'small-panel':T('small-panel','panel',['speed','detail'],{relativePanelScale:'small',beatDuration:'short'}),
+ 'diagonal-panel':T('diagonal-panel','panel',['impact','speed','instability'],{panelShape:'diagonal'}),
+ 'detail-inset':T('detail-inset','panel',['information','attention','emotion'],{inset:true}),
+ 'bleed':T('bleed','panel',['scale','impact'],{reachesTrim:true},{requires:['page']}),
+ 'character-breakout':T('character-breakout','panel',['impact','presence'],{crossPanelBoundary:true}),
+ 'stable-grid':T('stable-grid','panel',['clarity','setup'],{panelRhythm:'regular'}),
+ 'grid-break':T('grid-break','panel',['impact','surprise'],{panelRhythm:'break'},{requires:['prior-stable-rhythm']}),
+ 'moment-to-moment':T('moment-to-moment','transition',['hold','emotion'],{transition:'moment-to-moment'}),
+ 'action-to-action':T('action-to-action','transition',['clarity','speed'],{transition:'action-to-action'}),
+ 'aspect-to-aspect':T('aspect-to-aspect','transition',['mood','hold'],{transition:'aspect-to-aspect'}),
+ 'reaction-shot':T('reaction-shot','transition',['emotion','surprise'],{transition:'reaction'}),
+ 'insert-shot':T('insert-shot','transition',['information','attention'],{transition:'insert'}),
+ 'match-cut':T('match-cut','transition',['continuity','contrast'],{transition:'match-cut'}),
+ 'montage':T('montage','transition',['compression','information'],{transition:'montage'}),
+ 'ellipsis':T('ellipsis','pacing',['speed','surprise'],{omitIntermediate:true}),
+ 'pause':T('pause','pacing',['hold','emotion','fear'],{holdDelta:.3,densityDelta:-.25}),
+ 'decompression':T('decompression','pacing',['hold','emotion','fear'],{beatExpansion:true}),
+ 'accelerando':T('accelerando','pacing',['speed','impact'],{beatDurationTrend:'shorter'}),
+ 'anticipation':T('anticipation','action',['clarity','impact'],{motionPhase:'anticipation'}),
+ 'contact-focus':T('contact-focus','action',['impact','clarity'],{motionPhase:'contact',attentionTarget:'contact'}),
+ 'follow-through':T('follow-through','action',['impact','direction'],{motionPhase:'follow-through'}),
+ 'motion-lines':T('motion-lines','action',['speed','direction'],{motionLines:true}),
+ 'focus-lines':T('focus-lines','action',['attention','impact'],{focusLines:true}),
+ 'afterimage':T('afterimage','action',['speed'],{afterimage:true}),
+ 'impact-flash':T('impact-flash','action',['impact','surprise'],{valueContrast:'extreme'}),
+ 'attention-control':T('attention-control','attention',['clarity','flow'],{alignGazeGestureFlow:true}),
+ 'progressive-reveal':T('progressive-reveal','attention',['reveal','fear'],{informationRelease:'progressive'}),
+ 'cropped-information':T('cropped-information','attention',['fear','mystery'],{cropContext:true}),
+ 'misdirection':T('misdirection','attention',['surprise','mystery'],{attentionDecoy:true}),
+ 'background-dropout':T('background-dropout','psychology',['emotion','attention'],{backgroundMode:'dropout'}),
+ 'symbolic-background':T('symbolic-background','psychology',['emotion','mood'],{backgroundMode:'symbolic'}),
+ 'silent-panel':T('silent-panel','lettering',['hold','emotion','fear'],{dialogue:'none'}),
+ 'cross-panel-sfx':T('cross-panel-sfx','lettering',['impact','continuity'],{sfxCrossBoundary:true}),
+ 'page-turn-reveal':T('page-turn-reveal','medium',['reveal','surprise'],{revealMechanism:'page-turn'},{requires:['page']}),
+ 'spread':T('spread','medium',['scale','impact'],{pageSpan:2},{requires:['page']}),
+ 'scroll-delay':T('scroll-delay','medium',['hold','fear','reveal'],{scrollGap:'large'},{requires:['scroll']}),
+ 'viewport-reveal':T('viewport-reveal','medium',['reveal','surprise'],{revealMechanism:'viewport'},{requires:['scroll']}),
+ 'continuous-vertical-pan':T('continuous-vertical-pan','medium',['space','hold'],{continuousVerticalEnvironment:true},{requires:['scroll']}),
+ 'long-fall':T('long-fall','medium',['impact','fear','speed'],{scrollEmbodiesDistance:true},{requires:['scroll']})
 });
+
+export const TERMS=Object.freeze({
+ yori:{ja:'寄り',en:'close framing',technique:'closeup'},hiki:{ja:'引き',en:'wide framing',technique:'wide-shot'},aori:{ja:'あおり',en:'low angle',technique:'low-angle'},fukan:{ja:'俯瞰',en:'high angle',technique:'high-angle'},hero_panel:{ja:'大ゴマ',en:'hero panel',technique:'hero-panel'},small_panel:{ja:'小ゴマ',en:'small panel',technique:'small-panel'},diagonal:{ja:'斜めコマ',en:'diagonal panel',technique:'diagonal-panel'},bleed:{ja:'断ち切り',en:'bleed panel',technique:'bleed'},breakout:{ja:'ブチ抜き',en:'breakout',technique:'character-breakout'},inset:{ja:'小窓',en:'inset',technique:'detail-inset'},hold:{ja:'間',en:'hold/pause',technique:'pause'},spread:{ja:'見開き',en:'spread',technique:'spread'},page_turn:{ja:'ページめくり',en:'page-turn reveal',technique:'page-turn-reveal'},speed_lines:{ja:'速度線・流線',en:'speed lines',technique:'motion-lines'},focus_lines:{ja:'集中線',en:'focus lines',technique:'focus-lines'}
+});
+
+const uniq=xs=>[...new Set(xs.filter(Boolean))];
+const mediumRequirementOk=(technique,profile)=>!(technique.requires||[]).some(r=>r==='page'&&profile.progression==='scroll'||r==='scroll'&&profile.progression!=='scroll');
+export function techniqueRecord(id){return TECHNIQUES[id]||null;}
+export function composeTechniques(candidates,{medium='print-page',limit=6}={}){
+ const profile=MEDIUM_PROFILES[medium]||MEDIUM_PROFILES['print-page'];const accepted=[],rejected=[];
+ for(const id of uniq(candidates)){const t=TECHNIQUES[id];if(!t){rejected.push({id,reason:'unknown'});continue}if(!mediumRequirementOk(t,profile)){rejected.push({id,reason:'medium-conflict'});continue}if(accepted.some(a=>(t.conflicts||[]).includes(a)||(TECHNIQUES[a]?.conflicts||[]).includes(id))){rejected.push({id,reason:'technique-conflict'});continue}accepted.push(id);if(accepted.length>=limit)break}
+ return {techniques:accepted,rejected};
+}
 
 export function recommendMangaDirection({medium='print-page',genre='',purpose='',importance=.5,hold=.5,motion='',attention=''}={}){
-  const profile=MEDIUM_PROFILES[medium]||MEDIUM_PROFILES['print-page'];
-  const techniques=new Set(GENRE_BIASES[String(genre).toLowerCase()]||[]);
-  const why=[];
-  const p=String(purpose).toLowerCase(),m=String(motion).toLowerCase();
-  if(/climax|reveal|impact|決め|衝撃/.test(p)||importance>=.8){techniques.add('hero-panel');why.push('high-impact/important beat');}
-  if(/impact|action|attack|collision|衝突|攻撃/.test(p)||/left|right|up|down|斜/.test(m)){techniques.add('diagonal-panel');why.push('directional action');}
-  if(hold>=.75){techniques.add('spacious-panel');why.push('long reading hold');}
-  if(attention&&/contact|hand|eye|face|prop|接触|手|目|顔/.test(String(attention).toLowerCase()))techniques.add('detail-inset');
-  if(profile.progression==='scroll'&&/reveal|suspense|horror|驚|恐/.test(`${p} ${genre}`.toLowerCase()))techniques.add('scroll-distance-reveal');
-  return {medium,profile,genreBias:GENRE_BIASES[String(genre).toLowerCase()]||[],techniques:[...techniques],why};
+ const profile=MEDIUM_PROFILES[medium]||MEDIUM_PROFILES['print-page'];const candidates=[...(GENRE_BIASES[String(genre).toLowerCase()]||[])];const why=[];const p=String(purpose).toLowerCase(),m=String(motion).toLowerCase(),a=String(attention).toLowerCase();
+ if(/climax|reveal|impact|決め|衝撃/.test(p)||importance>=.8){candidates.push('hero-panel');why.push('high-impact/important beat')}
+ if(/impact|action|attack|collision|衝突|攻撃/.test(p)){candidates.push('anticipation','contact-focus','follow-through');why.push('action phase clarity')}
+ if(/impact|attack|collision|突進|攻撃/.test(p)||/left|right|up|down|左|右|上|下/.test(m)){candidates.push('diagonal-panel','motion-lines');why.push('directional action')}
+ if(/fear|horror|suspense|恐|不安/.test(`${p} ${genre}`.toLowerCase()))candidates.push('cropped-information','progressive-reveal','negative-space');
+ if(/emotion|confession|reaction|感情|告白|反応/.test(p))candidates.push('closeup','reaction-shot');
+ if(/establish|location|位置|場所|全景/.test(p))candidates.push('wide-shot');
+ if(hold>=.75){candidates.push('pause','negative-space');why.push('long reading hold')}
+ if(a&&/contact|hand|eye|face|prop|接触|手|目|顔/.test(a))candidates.push('detail-inset');
+ if(profile.progression==='scroll'&&/reveal|suspense|horror|驚|恐/.test(`${p} ${genre}`.toLowerCase()))candidates.push('scroll-delay','viewport-reveal');
+ if(profile.progression==='page'&&/reveal|驚|正体/.test(p))candidates.push('page-turn-reveal');
+ const composed=composeTechniques(candidates,{medium});return {medium,profile,genreBias:GENRE_BIASES[String(genre).toLowerCase()]||[],...composed,why};
 }
