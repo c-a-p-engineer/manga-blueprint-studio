@@ -8,20 +8,23 @@ A headless AI/human co-authoring path is now implemented alongside the existing 
 
 Shipped preview slices:
 
-- lightweight Markdown Name DSL;
+- AI-facing Markdown Name DSL;
 - deterministic Name → canonical `manga-blueprint/0.2` compilation;
 - generated work/page/panel/reusable-character/placement/balloon identity;
-- coarse layout hints (`auto`, `vertical`, `grid`, `hero-top`, `hero-bottom`);
-- initial camera inference;
-- cast slots and stick-figure placement;
-- expression, background/time, dialogue, SFX, emphasis and line-effect transfer;
-- clean vs annotated SVG blueprint rendering;
+- panel energy from narrative / visual / transition importance plus hold;
+- primary/secondary attention targets and reading-flow entry/exit metadata;
+- candidate layout solver with explainable winning score/candidate list;
+- layout candidates including balanced grid, vertical rhythm, hero-top, hero-bottom, action-diagonal and inset-focus;
+- camera inference;
+- cast slots and semantic pose/gaze/depth/support/motion/contact compilation;
+- diagonal/trapezoid panel geometry and one-level inset derivation;
+- layered Executable Name renderer: generation-facing clean SVG and human-review annotated SVG from one geometry source;
 - page prompt with explicit `TEXT TO RENDER` allowlist;
 - `manga-blueprint-name-package/2` manifest-first package metadata;
 - CLI entry and CI regression coverage;
 - `.manga.json` remains the shared canonical project state so Web refinement stays available.
 
-The Blueprint Engine is an **experimental authoring track**, not a replacement manifest for the established Web generation package. Its next useful improvements are richer manga-layout grammar, pose/contact semantics, character appearance/reference binding, and stronger package verification.
+The Blueprint Engine is an **experimental authoring track**, not a replacement manifest for the established Web generation package. Its core architecture now centers on Executable Name compilation; remaining work is primarily rendering/solver quality, reference binding, raster/provider adapters and broader manga direction semantics.
 
 ## Shipped through Prototype 0.19.0
 
@@ -95,7 +98,7 @@ The Blueprint Engine is an **experimental authoring track**, not a replacement m
 
 | Phase | Priority | Goal | Status |
 |---:|:---:|---|:---:|
-| E | S-enabler | Headless Blueprint Engine / AI co-authoring | **Preview implemented; active expansion** |
+| E | S-enabler | Headless Blueprint Engine / AI co-authoring | **Executable Name core implemented; active quality expansion** |
 | 0 | S | Storage / stable identity | **Shipped** |
 | 1 | S | Multi-page Core | **Shipped in 0.13.0** |
 | 2 | S | Work / Volume / Folder management | **Shipped in 0.14.0** |
@@ -115,13 +118,16 @@ Blueprint Engine work can proceed independently where it reuses the canonical pr
 Shared capabilities should converge on reusable semantics rather than duplicate project models:
 
 ```text
-AI Name / human Name
+human natural-language direction
       ↓
-Blueprint Engine
+AI Name DSL
+      ↓
+Executable Name compiler
       ↓
 canonical project state
-      ├─ Web editor refinement
-      └─ headless handoff package
+      ├─ clean generation visual
+      ├─ annotated human review visual
+      └─ Web editor refinement
 ```
 
 The established Web sequence remains:
@@ -142,13 +148,13 @@ Storage / stable identity
 
 Priority candidates:
 
-1. **Layout grammar reuse** — extract/reuse suitable manga-layout knowledge from the Web template/layout owners instead of growing a second arbitrary layout system.
-2. **Pose/contact semantics** — Name DSL fields for pose, gaze, support, contact and interaction; compile them into existing canonical fields.
+1. **Pose/contact renderer quality** — articulated silhouettes and contact-point solving so Clean predicts the final composition more closely.
+2. **Raster adapter** — deterministic clean/annotated PNG emission from the shared SVG geometry when the environment provides a rasterizer.
 3. **Character identity input** — appearance descriptions and explicit Character Sheet/reference keys without requiring Web entry.
-4. **Irregular/inset intent** — bounded semantic hints that compile into the existing quadrilateral/inset model.
-5. **Package verification** — schema validation and filesystem package checks as direct CLI acceptance evidence.
-6. **Raster adapter** — optional deterministic clean PNG generation while retaining SVG/project state as inspectable sources.
-7. **Agent editing contract** — documented safe edit loop for changing the Name or canonical project and recompiling/reviewing.
+4. **Page-turn/spread grammar** — page-level rhythm, turn reveals and spread composition.
+5. **Provider adapters** — explicit image-model invocation contracts without moving provider concerns into canonical state.
+6. **Solver quality metrics** — compare Clean vs generated outputs for panel geometry/composition preservation.
+7. **Agent editing contract** — documented safe edit/recompile/review loop for autonomous agents.
 
 ## Existing Web roadmap highlights
 
