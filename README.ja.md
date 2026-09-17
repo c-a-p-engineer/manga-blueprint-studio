@@ -15,6 +15,15 @@ Manga Blueprint Studio は、ネームの役割を人間とAIの両方が扱え�
 - 漫画演出ガイド: https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html
 - 操作ガイド: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
 
+## 人間とAIが同じ漫画知識を使う
+
+漫画の基本、ページサイズ、媒体別のおすすめ、ジャンル別の演出傾向、「寄り」「引き」「あおり」「俯瞰」「断ち切り」「ブチ抜き」などの用語は、[`docs/MANGA-KNOWLEDGE.md`](docs/MANGA-KNOWLEDGE.md) を共有知識の正本として整理しています。
+
+- 人間 → 公開[漫画演出ガイド](https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html)を見て技法を選び、そのまま「寄って」「最後は大ゴマ」「ブチ抜きにして」と指定できる。
+- AI → 同じ知識を読み、媒体・ジャンル・Beat目的・重要度・視線・動きから技法候補を選ぶ。
+- 実装 → [`core/manga-knowledge.mjs`](core/manga-knowledge.mjs) の機械可読subsetをSolver/Agentから利用できる。
+- 画像生成 → 技法名をそのまま投げるのではなく、カメラ・Attention・Motion・Contactなど観測可能な制約へ変換する。
+
 ## 何が違う？
 
 一般的な画像生成では「漫画にして」という指示に、コマ割り・読み順・視線誘導・人物位置・接触・表示文字まで背負わせがちです。本プロジェクトでは責務を分離します。
@@ -70,7 +79,16 @@ npm run blueprint -- examples/combat-1p.md blueprint-out
 
 ## 漫画技法を知らなくても使える
 
-「断ち切り」「ブチ抜き」「斜めコマ」「視線誘導」「大ゴマ」「小窓」「間」「ページめくり」などを、単なる用語集ではなく **何のために使うか / いつ使うか / AIへ何を伝えるか** の形で説明する公開ガイドを用意しています。
+公開ガイドは以下をカテゴリ別に説明します。
+
+- 漫画の基本
+- ページサイズと印刷用語
+- 紙 / Webページ / 縦スクロール / SNS短編の媒体別おすすめ
+- アクション / コメディ / 恋愛 / ホラー / ミステリー / 日常 / スポーツ / ドラマの技法傾向
+- 大ゴマ / 小ゴマ / 斜めコマ / 断ち切り / ブチ抜き / 小窓
+- 視線誘導 / カメラ / 時間 / アクション / 吹き出し / ページ演出
+- 寄り / 引き / あおり / 俯瞰 / 真俯瞰 / 前景 / 余白 / ノド / トンボ等の専門用語
+- 人間の指定をAI Name DSL・Solver・画像生成プロンプトへどう翻訳するか
 
 → [漫画演出ガイド](https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html)
 
@@ -86,13 +104,14 @@ Pythonはコア実行に必須ではありません。
 
 ## AIエージェントから使う
 
-AI/Coding Agentは最初に [`AGENTS.md`](AGENTS.md) を読み、Blueprint作成タスクでは [`.agents/skills/manga-blueprint/SKILL.md`](.agents/skills/manga-blueprint/SKILL.md) を使用してください。人間向け座標入力を増やすのではなく、意味をName DSLへ記述しCompiler/Solverに解決させるのが基本方針です。
+AI/Coding Agentは最初に [`AGENTS.md`](AGENTS.md) を読み、Blueprint作成タスクでは [`.agents/skills/manga-blueprint/SKILL.md`](.agents/skills/manga-blueprint/SKILL.md) を使用してください。AIは `docs/MANGA-KNOWLEDGE.md` を読んで媒体・用語・ジャンル・演出意図を理解し、意味をName DSLへ記述してCompiler/Solverに幾何を解決させます。
 
 ## ドキュメント
 
+- [`docs/MANGA-KNOWLEDGE.md`](docs/MANGA-KNOWLEDGE.md) — 人間＋AI共有の漫画知識
+- [`docs/MANGA-TECHNIQUES.md`](docs/MANGA-TECHNIQUES.md) — 漫画演出の技法リファレンス
 - [`docs/BLUEPRINT-ENGINE.md`](docs/BLUEPRINT-ENGINE.md) — headless compiler
 - [`core/name-schema.md`](core/name-schema.md) — AI Name DSL
-- [`docs/MANGA-TECHNIQUES.md`](docs/MANGA-TECHNIQUES.md) — 漫画演出の基礎
 - [`docs/PRODUCT.md`](docs/PRODUCT.md) — 製品仕様
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — アーキテクチャ
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff
