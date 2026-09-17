@@ -74,6 +74,8 @@ web/app.js
 
 `web/runtime/manifest.json` remains the ordered registry for the compatibility runtime. New typed Web code keeps legacy-global access behind `web/src/runtime/legacy-api.ts`.
 
+The compatibility presentation/navigation owner remains `ui/editor-shell.js`; narrow-screen header composition remains owned by `ui/mobile-header.js`. The public Web usage document remains `web/guide.html`.
+
 ## Canonical serialized project model
 
 Current format remains `manga-blueprint/0.2`.
@@ -93,7 +95,7 @@ Project
    └─ Page
       ├─ stable id / number / order / title / containerId
       └─ panels[]
-         ├─ id / order / rect / optional shape / optional inset
+         ├─ id / order / rect / optional Panel.shape / optional inset
          ├─ role / actionIntent
          ├─ style / camera / background / effects
          ├─ characters[]
@@ -139,6 +141,8 @@ web/runtime/
 └─ ui/            compatibility presentation layers
 ```
 
+`authoring/panel-geometry.js` remains the current Web owner for convex-quadrilateral panel geometry and `Panel.shape` behavior.
+
 The long-term direction is to extract genuinely reusable pure semantics toward shared Core modules when behavior-equivalence evidence exists. Do not rewrite working Web owners merely to make the directory tree look cleaner.
 
 ## Persistence and activation
@@ -147,9 +151,11 @@ The Web client retains IndexedDB persistence and explicit activation semantics. 
 
 A compiled `work.manga.json` is a portable project artifact. Importing it into the Web editor follows the Web editor's existing import identity/conflict rules.
 
+Visible Web page labels such as `P001` remain presentation formatting over numeric `pageNumber`.
+
 ## Web AI handoff vs Name package
 
-The existing Web generation/review packages remain selected-page scoped and use `manga-blueprint-export-manifest/3`.
+The existing Web generation/review packages remain **selected-page scoped** and use `manga-blueprint-export-manifest/3`.
 
 The headless compiler preview uses a distinct `manga-blueprint-name-package/2` manifest because it is a compilation artifact rather than the shipped Web export implementation. Both packages share the same conceptual authority split and canonical project schema.
 
