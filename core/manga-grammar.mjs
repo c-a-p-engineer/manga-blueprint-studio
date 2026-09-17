@@ -1,6 +1,7 @@
 // Manga-expression pass layered over the canonical Blueprint Engine.
 // AI authors semantic intent; this pass resolves it into deterministic geometry/state.
 import { compileName } from './blueprint-engine.mjs';
+import { solveLayout } from './layout-solver.mjs';
 
 const split = (v='') => v.split(/[,、]/).map(x=>x.trim()).filter(Boolean);
 const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
@@ -13,7 +14,6 @@ const weight = (v='', fallback=.5) => {
   if(/low|weak|低|弱/.test(s)) return .25;
   return fallback;
 };
-
 function parseImportance(value=''){
   const out={narrative:.5,visual:.5,transition:.5};
   for(const part of split(value)){
@@ -25,7 +25,6 @@ function parseImportance(value=''){
   }
   return out;
 }
-
 function parseSemanticPanels(text){
   const pages=[]; let page={layout:'auto',panels:[]}; let panel=null;
   const flushPage=()=>{ if(page.panels.length) pages.push(page); page={layout:'auto',panels:[]}; panel=null; };
@@ -58,7 +57,6 @@ function parseSemanticPanels(text){
   if(page.panels.length) pages.push(page);
   return pages;
 }
-
 function assignMap(target,value){ const m=value.match(/^([^>＞]+)[>＞]\s*(.+)$/); if(m) target[m[1].trim()]=m[2].trim(); }
 function quad(rect,preset){
   const {x,y,w,h}=rect, d=Math.min(w,h)*.10;
@@ -70,38 +68,36 @@ function support(v=''){ return /air|空中|jump/i.test(v)?'airborne':/supported|
 function motion(v=''){ for(const [re,val] of [[/anticip|予備/,'anticipation'],[/approach|接近/,'approach'],[/launch|踏み切/,'launch'],[/air|空中/,'airborne'],[/impact|衝突|着地/,'impact'],[/recover|回復/,'recovery']]) if(re.test(v)) return val; return 'still'; }
 function depthRank(v=''){ return /foreground|最前|手前/i.test(v)?2:/background|奥/i.test(v)?-2:/front|前/i.test(v)?1:/back|後/i.test(v)?-1:0; }
 function energy(imp,hold=.5){ return clamp01(imp.narrative*.42 + imp.visual*.43 + imp.transition*.15 + Math.max(0,hold-.5)*.10); }
-
-function applyEnergyGrammar(page,sem){
-  const scores=sem.panels.map(s=>energy(s.importance,s.timing.hold));
-  if(!scores.length) return;
-  const max=Math.max(...scores), min=Math.min(...scores);
-  page.panels.forEach((p,i)=>{
-    const s=sem.panels[i], score=scores[i]??.5, prev=i?scores[i-1]:score;
-    p.importance={...s.importance,energy:score,emphasisDelta:score-prev};
-    p.timing={...s.timing}; p.attention={...s.attention}; p.flow={...s.flow};
-    // Energy is a bounded layout weight, not a direct size command. Only a clearly dominant beat grows.
-    if(score===max && max-min>=.25 && !p.inset){ const grow=Math.min(130,p.rect.h*(.10+.12*score)); p.rect.y=Math.max(54,p.rect.y-grow/2); p.rect.h+=grow; }
+function annotateEnergy(sp){
+  const scores=sp.panels.map(s=>energy(s.importance,s.timing.hold));
+  sp.panels.forEach((s,i)=>{const score=scores[i]??.5,prev=i?scores[i-1]:score;s.importance={...s.importance,energy:score,emphasisDelta:score-prev};});
+}
+function applySolvedGeometry(page,sp,readingDirection){
+  annotateEnergy(sp);
+  const solved=solveLayout(sp.panels,{hint:sp.layout,readingDirection});
+  page.layoutDecision={solver:'candidate-v1',winner:solved.name,score:solved.score,candidates:solved.candidates};
+  page.panels.forEach((panel,i)=>{
+    const solvedRect=solved.rects[i]; if(solvedRect){panel.rect={x:solvedRect.x,y:solvedRect.y,w:solvedRect.w,h:solvedRect.h}; if(solvedRect.skew && !(sp.panels[i]?.shape && sp.panels[i].shape!=='rectangle')) sp.panels[i].shape=solvedRect.skew;}
+    const s=sp.panels[i]; panel.importance={...s.importance}; panel.timing={...s.timing}; panel.attention={...s.attention}; panel.flow={...s.flow};
   });
 }
 
 export function compileMangaName(text,options={}){
   const project=compileName(text,options); const semantic=parseSemanticPanels(text);
   project.pages.forEach((page,pi)=>{
-    const sp=semantic[pi]||{panels:[]}; applyEnergyGrammar(page,sp);
+    const sp=semantic[pi]||{layout:'auto',panels:[]}; applySolvedGeometry(page,sp,project.meta.readingDirection);
     page.panels.forEach((panel,i)=>{
-      const s=sp.panels[i]||{}; const preset=normalizeShape(s.shape);
-      if(preset!=='rectangle') panel.shape=quad(panel.rect,preset);
+      const s=sp.panels[i]||{}; const preset=normalizeShape(s.shape); if(preset!=='rectangle') panel.shape=quad(panel.rect,preset);
       if(s.inset){
         const m=s.inset.match(/(?:parent|親)?\s*(?:panel|p|コマ)?\s*(\d+)/i); const parentIndex=m?Number(m[1])-1:Math.max(0,i-1); const parent=page.panels[parentIndex];
-        if(parent && parent!==panel){ const anchor=/top-left|左上/i.test(s.inset)?'top-left':/bottom-left|左下/i.test(s.inset)?'bottom-left':/bottom-right|右下/i.test(s.inset)?'bottom-right':/center|中央/i.test(s.inset)?'center':'top-right'; const size=/large|大/i.test(s.inset)?'large':/small|小/i.test(s.inset)?'small':'medium'; panel.inset={kind:'panel-in-panel',parentPanelId:parent.id,anchor,size}; panel.style.border='inset'; const ratio=size==='small'?.28:size==='large'?.52:.40, iw=parent.rect.w*ratio, ih=parent.rect.h*ratio; const left=/left/.test(anchor), bottom=/bottom/.test(anchor); panel.rect={x:left?parent.rect.x+18:parent.rect.x+parent.rect.w-iw-18,y:bottom?parent.rect.y+parent.rect.h-ih-18:parent.rect.y+18,w:iw,h:ih}; if(anchor==='center'){panel.rect.x=parent.rect.x+(parent.rect.w-iw)/2;panel.rect.y=parent.rect.y+(parent.rect.h-ih)/2;} if(panel.shape) panel.shape=quad(panel.rect,preset); }
+        if(parent && parent!==panel){ const anchor=/top-left|左上/i.test(s.inset)?'top-left':/bottom-left|左下/i.test(s.inset)?'bottom-left':/bottom-right|右下/i.test(s.inset)?'bottom-right':/center|中央/i.test(s.inset)?'center':'top-right'; const size=/large|大/i.test(s.inset)?'large':/small|小/i.test(s.inset)?'small':'medium'; panel.inset={kind:'panel-in-panel',parentPanelId:parent.id,anchor,size}; panel.style.border='inset'; const ratio=size==='small'?.28:size==='large'?.52:.40, iw=parent.rect.w*ratio, ih=parent.rect.h*ratio; const left=/left/.test(anchor), bottom=/bottom/.test(anchor); panel.rect={x:left?parent.rect.x+18:parent.rect.x+parent.rect.w-iw-18,y:bottom?parent.rect.y+parent.rect.h-ih-18:parent.rect.y+18,w:iw,h:ih}; if(anchor==='center'){panel.rect.x=parent.rect.x+(parent.rect.w-iw)/2;panel.rect.y=parent.rect.y+(parent.rect.h-ih)/2;} panel.shape=quad(panel.rect,preset); }
       }
       panel.characters.forEach(c=>{ c.poseId=s.pose?.[c.name]||c.poseId; c.gaze.target=s.gaze?.[c.name]||c.gaze.target; c.supportState=support(s.support?.[c.name]||''); c.motionPhase=motion(s.motion?.[c.name]||''); c.depthOrder=depthRank(s.depth?.[c.name]||''); });
       panel.characters.sort((a,b)=>(a.depthOrder||0)-(b.depthOrder||0));
       panel.interactions=(s.contacts||[]).map(raw=>{ const m=raw.match(/^([\w.-]+)\.([\w-]+)\s*[>＞]\s*([\w.-]+)\.([\w-]+)$/); return m?{type:'contact',source:{character:m[1],part:m[2]},target:{character:m[3],part:m[4]},intent:raw}:{type:'contact',intent:raw}; });
     });
   });
-  project.meta.compiler={name:'manga-expression-grammar',version:2,source:'AI Name DSL'};
+  project.meta.compiler={name:'manga-expression-grammar',version:3,source:'AI Name DSL'};
   return project;
 }
-
 export { parseSemanticPanels };
