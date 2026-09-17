@@ -91,6 +91,8 @@ The Blueprint Engine is an **experimental authoring track**, not a replacement m
 
 ## Delivery phases
 
+**Phase 3 — Backup / Restore — Next** remains the next numbered Web product phase. The Blueprint Engine preview is a parallel experimental track and does not silently reorder the established Web roadmap.
+
 | Phase | Priority | Goal | Status |
 |---:|:---:|---|:---:|
 | E | S-enabler | Headless Blueprint Engine / AI co-authoring | **Preview implemented; active expansion** |
@@ -99,7 +101,7 @@ The Blueprint Engine is an **experimental authoring track**, not a replacement m
 | 2 | S | Work / Volume / Folder management | **Shipped in 0.14.0** |
 | 2.5 | S | Manga-first editor shell / navigation UX | **Shipped** |
 | 2.6 | A | Bounded Design Direction handoff | **Shipped** |
-| 3 | S | Backup / Restore | Planned |
+| 3 | S | Backup / Restore | **Next** |
 | 4 | S | Scoped Export | Planned |
 | 4.5 | S-enabler | Advanced Panel Geometry | **Quadrilateral foundation shipped** |
 | 5 | S | Panel-first / Hybrid generation | Planned |
