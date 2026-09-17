@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 const read=path=>fs.readFileSync(path,'utf8');
-for(const path of ['web/index.html','web/editor.html','web/landing.css','web/guide.html','web/techniques.html','vite.config.ts','README.md','README.ja.md']){
+for(const path of ['web/index.html','web/editor.html','web/landing.css','web/guide.html','web/techniques.html','vite.config.ts','README.md','README.ja.md','docs/MANGA-KNOWLEDGE.md']){
   if(!fs.existsSync(path))throw new Error(`Missing public-entry file: ${path}`);
 }
 
@@ -12,6 +12,7 @@ const guide=read('web/guide.html');
 const techniques=read('web/techniques.html');
 const vite=read('vite.config.ts');
 const readme=read('README.md');
+const knowledge=read('docs/MANGA-KNOWLEDGE.md');
 
 for(const phrase of ['<meta name="description"','<main id="main">','class="skip-link"','href="./editor.html"','href="./guide.html"','href="./techniques.html"','AIに描かせる前に','人が監督。AIは補助。','Executable Name']){
   if(!landing.includes(phrase))throw new Error(`Landing page contract missing ${JSON.stringify(phrase)}`);
@@ -20,7 +21,8 @@ if(landing.includes('id="blueprintSvg"')||landing.includes('src="./app.js"'))thr
 
 for(const phrase of ['id="blueprintSvg"','id="helpBtn"','src="./app.js"','href="./styles.css"'])if(!editor.includes(phrase))throw new Error(`Dedicated editor entry missing ${JSON.stringify(phrase)}`);
 if(!guide.includes('href="./editor.html"'))throw new Error('Public guide must link back to the dedicated editor entry.');
-for(const phrase of ['断ち切り','ブチ抜き','斜めコマ','視線誘導','間','href="./editor.html"'])if(!techniques.includes(phrase))throw new Error(`Technique guide missing ${JSON.stringify(phrase)}`);
+for(const phrase of ['漫画の基本','ページの大きさ','媒体ごとのおすすめ','ジャンルごとの使いやすい技法','断ち切り','ブチ抜き','斜めコマ','視線・読み順','寄り / Close-up','引き / Long','href="./editor.html"'])if(!techniques.includes(phrase))throw new Error(`Technique guide missing ${JSON.stringify(phrase)}`);
+for(const phrase of ['Manga basics','Page size and manuscript vocabulary','Medium profiles','Genre / scene heuristics','寄り','引き','AI reasoning contract'])if(!knowledge.includes(phrase))throw new Error(`Shared manga knowledge missing ${JSON.stringify(phrase)}`);
 
 for(const phrase of ["landing:resolve(webRoot,'index.html')","app:resolve(webRoot,'editor.html')","guide:resolve(webRoot,'guide.html')","techniques:resolve(webRoot,'techniques.html')"])if(!vite.includes(phrase))throw new Error(`Vite multi-entry contract missing ${JSON.stringify(phrase)}`);
 
@@ -28,4 +30,4 @@ for(const phrase of ['https://c-a-p-engineer.github.io/manga-blueprint-studio/',
 
 for(const phrase of ['a:focus-visible','min-height:48px','@media(max-width:620px)','@media(prefers-reduced-motion:reduce)'])if(!landingCss.includes(phrase))throw new Error(`Landing accessibility/responsive contract missing ${JSON.stringify(phrase)}`);
 
-console.log('Public landing / editor / guide / techniques entry contract passed.');
+console.log('Public landing / editor / guide / expanded manga knowledge contract passed.');
