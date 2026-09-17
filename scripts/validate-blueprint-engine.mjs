@@ -1,4 +1,8 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { compileName, parseName, renderBlueprintSvg, buildPrompt, buildManifest } from '../core/blueprint-engine.mjs';
 
 const source = `# Page 1: 受信
@@ -28,6 +32,8 @@ assert.equal(parsed[0].beats[0].cast[0].token, 'girl');
 assert.equal(parsed[0].beats[1].expressions.girl, 'shock');
 
 const project = compileName(source, { title: 'validation' });
+const projectAgain = compileName(source, { title: 'validation' });
+assert.deepEqual(projectAgain, project, 'fixed Name input must compile deterministically');
 assert.equal(project.format, 'manga-blueprint/0.2');
 assert.equal(project.characterLibrary.length, 1);
 assert.equal(project.characterLibrary[0].name, 'girl');
@@ -51,5 +57,25 @@ const manifest = buildManifest(project, 'name.md');
 assert.equal(manifest.format, 'manga-blueprint-name-package/2');
 assert.equal(manifest.pages[0].cleanBlueprint, 'P001.clean.svg');
 assert.equal(manifest.characters[0].needsRefinement, true);
+
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'manga-blueprint-'));
+try {
+  const input = path.join(tmp, 'sample.md');
+  const out = path.join(tmp, 'out');
+  fs.writeFileSync(input, source);
+  const result = spawnSync(process.execPath, ['cli/manga-blueprint.mjs', input, out], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const expectedFiles = ['manifest.json', 'work.manga.json', 'P001.clean.svg', 'P001.blueprint.svg', 'P001.prompt.md'];
+  for (const file of expectedFiles) assert.ok(fs.existsSync(path.join(out, file)), `missing CLI output ${file}`);
+  const cliProject = JSON.parse(fs.readFileSync(path.join(out, 'work.manga.json'), 'utf8'));
+  const cliManifest = JSON.parse(fs.readFileSync(path.join(out, 'manifest.json'), 'utf8'));
+  assert.equal(cliProject.format, 'manga-blueprint/0.2');
+  assert.equal(cliManifest.format, 'manga-blueprint-name-package/2');
+  assert.equal(cliManifest.pages[0].cleanBlueprint, 'P001.clean.svg');
+  assert.match(fs.readFileSync(path.join(out, 'P001.prompt.md'), 'utf8'), /TEXT TO RENDER/);
+  assert.doesNotMatch(fs.readFileSync(path.join(out, 'P001.clean.svg'), 'utf8'), /ガタン|そんな/);
+} finally {
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
 
 console.log('Blueprint engine validation passed.');
