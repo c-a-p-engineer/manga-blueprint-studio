@@ -1,0 +1,28 @@
+name: Combat Blueprint Trial
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'examples/combat-1p.md'
+      - 'core/**'
+      - 'cli/**'
+      - '.github/workflows/combat-blueprint-trial.yml'
+  workflow_dispatch:
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compile combat page through real CLI
+        run: |
+          mkdir -p trial-out
+          /usr/bin/time -f 'CLI_ELAPSED_SECONDS=%e' node cli/manga-blueprint.mjs examples/combat-1p.md trial-out 2>&1 | tee trial-out/timing.txt
+          ls -lah trial-out
+      - name: Upload actual blueprint package
+        uses: actions/upload-artifact@v4
+        with:
+          name: combat-blueprint-trial
+          path: trial-out/
