@@ -1,35 +1,17 @@
 // Deterministic manga-direction advisor.
-// Turns semantic intent into technique candidates without silently changing authored state.
+// Turns authored semantic intent into explainable technique candidates without mutating authored state.
+import{recommendMangaDirection,techniqueRecord}from'./manga-knowledge.mjs';
 const text=v=>String(v||'').toLowerCase();
-const uniq=xs=>[...new Set(xs)];
 
-export function advisePanelDirection(panel={},index=0,count=1){
-  const purpose=text(panel.purpose||panel.actionIntent), motion=text(panel.motionDirection||Object.values(panel.motion||{}).join(' ')), focus=text(panel.attention?.primary), hold=panel.timing?.hold??.5, energy=panel.importance?.energy??.5;
-  const techniques=[];
-  if(/impact|衝突|攻撃|slash|punch|kick|爆発|climax|決め/.test(purpose)||energy>.78)techniques.push('hero-panel');
-  if(/impact|衝突|加速|fall|落下|slash|attack/.test(purpose)||/(left|right|up|down|左|右|上|下)/.test(motion))techniques.push('diagonal-panel');
-  if(/establish|景色|登場|reveal|広|全景/.test(purpose))techniques.push('bleed');
-  if(/entrance|登場|必殺|power|hero/.test(purpose)&&energy>.65)techniques.push('character-breakout');
-  if(/eye|hand|目|手|detail|細部/.test(focus))techniques.push('inset');
-  if(hold>.72)techniques.push('ma-pause');
-  if(hold<.32)techniques.push('short-beat');
-  if(index===count-1&&(/reveal|疑問|途中|turn|次/.test(purpose)))techniques.push('page-turn-hook');
-  return uniq(techniques).slice(0,4);
+export function advisePanelDirection(panel={},index=0,count=1,context={}){
+ const purpose=text(panel.purpose||panel.actionIntent),motion=text(panel.motionDirection||Object.values(panel.motion||{}).join(' ')),attention=text(panel.attention?.primary),hold=panel.timing?.hold??.5,importance=panel.importance?.energy??.5;
+ const result=recommendMangaDirection({medium:context.medium||panel.medium||'print-page',genre:context.genre||panel.genre||'',purpose,importance,hold,motion,attention});
+ let techniques=[...result.techniques];
+ if(index===count-1&&/reveal|疑問|途中|turn|次|正体/.test(purpose)){const id=result.profile.progression==='scroll'?'viewport-reveal':'page-turn-reveal';if(!techniques.includes(id))techniques.unshift(id)}
+ techniques=techniques.slice(0,6);
+ return {techniques,rejected:result.rejected,reasons:techniques.map(id=>({technique:id,reason:directionReason(id)}))};
 }
 
-export function advisePageDirection(semanticPanels=[]){
-  return semanticPanels.map((p,i)=>({panel:i+1,techniques:advisePanelDirection(p,i,semanticPanels.length)}));
-}
-
-export function directionReason(technique){
-  return ({
-    'hero-panel':'重要な瞬間を周囲との面積差で強調',
-    'diagonal-panel':'動き・衝撃の方向性を枠形状でも補強',
-    bleed:'画面外へ続くスケールや登場感を補強',
-    'character-breakout':'人物を枠から越境させ存在感を補強',
-    inset:'主要構図を保ったまま細部へ注意を追加',
-    'ma-pause':'情報量とは別に読者の滞在時間を確保',
-    'short-beat':'短い反応や瞬間を小さく刻む',
-    'page-turn-hook':'次ページまで情報を保留してrevealを作る'
-  })[technique]||'';
-}
+export function advisePageDirection(semanticPanels=[],context={}){return semanticPanels.map((p,i)=>({panel:i+1,...advisePanelDirection(p,i,semanticPanels.length,context)}));}
+export function directionReason(id){const t=techniqueRecord(id);if(!t)return'';const map={
+ 'hero-panel':'周囲との面積差で重要Beatを強調','diagonal-panel':'枠形状で動き・不安定さを補強','bleed':'画面外へ続くスケールを作る','character-breakout':'枠越境で存在感を強める','detail-inset':'主構図を保ちながら細部へ注意を追加','pause':'情報密度を落として滞在時間を作る','small-panel':'短いBeatとして刻む','page-turn-reveal':'次ページまで情報を保留','viewport-reveal':'現在viewport外へ情報を保留','scroll-delay':'縦距離そのものを間として使う','foreshortening':'前後差を誇張して奥行きと威力を作る','contact-focus':'接触点を物理因果の主注目にする','reaction-shot':'出来事の意味を受け手の反応で伝える','negative-space':'空白で静けさ・孤立・緊張を作る','progressive-reveal':'情報量を段階的に増やして期待を作る','cropped-information':'必要な一部を隠して補完を促す','motion-lines':'動きのベクトルと速度を補強','anticipation':'本動作前の溜めで次の動作を明確化','follow-through':'動作後の流れで力の方向と結果を示す','closeup':'被写体を大きくして感情・情報へ集中','wide-shot':'環境と人物の位置関係を明確化'};return map[id]||`${t.category}: ${t.effects.join(', ')}`;}
