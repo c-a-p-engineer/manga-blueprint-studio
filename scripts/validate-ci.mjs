@@ -39,6 +39,8 @@ assertArtifact();
 const syntaxTargets=[
   'web/app.js',
   ...walk('scripts',file=>file.endsWith('.mjs')),
+  ...walk('core',file=>file.endsWith('.mjs')),
+  ...walk('cli',file=>file.endsWith('.mjs')),
   ...walk('web/runtime',file=>file.endsWith('.js')),
 ];
 for(const file of [...new Set(syntaxTargets)]){
@@ -46,6 +48,7 @@ for(const file of [...new Set(syntaxTargets)]){
 }
 
 const validators=[
+  'scripts/validate-blueprint-engine.mjs',
   'scripts/validate-public-entry.mjs',
   'scripts/validate-phase1-toolchain.mjs',
   'scripts/validate-runtime-layout.mjs',
