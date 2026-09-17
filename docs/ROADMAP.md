@@ -9,7 +9,7 @@ The Executable Name path now includes:
 - AI-facing Markdown Name DSL → deterministic `manga-blueprint/0.2` compilation;
 - Energy from narrative / visual / transition importance plus hold;
 - Attention, gaze, motion direction and reading-flow semantics;
-- machine-readable manga-direction knowledge base and technique composition;
+- **single-source machine-readable manga-direction knowledge base** shared by Core/Solver and the public dictionary;
 - explainable Direction Advisor with medium-aware recommendations;
 - **Layout Solver v3** using energy + hold + attention + gaze/motion + reading direction + technique advice + medium + explicit human locks;
 - page-level layout candidates including scroll-native `cinematic-vertical` behavior;
@@ -21,7 +21,7 @@ The Executable Name path now includes:
 - bounded co-author helpers for Story → Beat/Name proposal, single-panel semantic patching and lock-before-local-re-solve workflows;
 - strict visible-text separation, per-page prompt and manifest-first package;
 - **Structural Evaluator v1** for comparing intended vs observed panel geometry, character position/scale and solved contacts;
-- human/AI shared manga knowledge, public technique guide and filterable expression dictionary;
+- public technique guide plus Core-backed filterable expression dictionary with stable technique IDs;
 - CI regression coverage for deterministic compilation, solver explanation, contact geometry, medium behavior, scene direction, evaluator drift detection and human locks.
 
 This is no longer an architecture bootstrap. The remaining work is chiefly **fidelity, Web convergence, generation adapters and production workflow quality**.
@@ -47,7 +47,7 @@ The established Web product retains stable work/page/container identity, Indexed
 | 4.5 | S-enabler | Advanced Panel Geometry | **Quadrilateral foundation shipped** |
 | 5 | S | Panel-first / Hybrid generation | Planned |
 | 6 | A | Cross-page continuity / Reference Assets | Planned |
-| 7 | A/B | Manga direction expansion | **Knowledge/dictionary foundation shipped; editor integration pending** |
+| 7 | A/B | Manga direction expansion | **Knowledge/dictionary convergence shipped; editor integration pending** |
 
 ## Blueprint Engine task inventory
 
@@ -70,7 +70,7 @@ The established Web product retains stable work/page/container identity, Indexed
 ### P2 — Pose / Prop / Contact Solver v2
 
 - [ ] Add elbow/knee-aware limb solving and bounded IK-style target solving.
-- [ ] Expand props beyond sword: generic held prop, firearm-like neutral placeholder geometry where permitted by project content, staff/spear, shield, phone, bag and furniture anchors.
+- [ ] Expand props beyond sword: generic held prop, neutral prop geometry, staff/spear, shield, phone, bag and furniture anchors.
 - [ ] Model grip/base/tip or equivalent prop anchors independently from character identity.
 - [ ] Support body-to-body, hand-to-object, foot-to-ground and subject-to-environment contacts.
 - [ ] Add collision/penetration diagnostics instead of silently accepting impossible geometry.
@@ -124,12 +124,16 @@ The established Web product retains stable work/page/container identity, Indexed
 
 ### P8 — Knowledge base / dictionary convergence
 
-- [ ] Remove remaining duplicated hand-maintained technique semantics between Markdown, Web dictionary data and `core/manga-knowledge.mjs` by introducing one generated/shared source where practical.
-- [ ] Add stable technique IDs to public dictionary entries.
+- [x] Make `core/manga-knowledge.mjs` the single canonical machine-readable source for technique IDs, categories, effects, semantics, medium requirements, pairs and conflicts.
+- [x] Remove the duplicated hand-maintained `web/dictionary-data.js` knowledge copy.
+- [x] Make public `/dictionary.html` import the canonical Core module directly.
+- [x] Expose stable technique IDs in public dictionary entries.
+- [x] Document Core-first update order and the human-doc vs machine-semantics responsibility boundary.
 - [ ] Add visual examples/mini diagrams for weak / standard / strong use.
-- [ ] Add “good combinations / common conflicts / prerequisites” consistently to human docs and machine records.
+- [ ] Enrich human-facing Japanese labels and long-form explanations for every canonical technique without creating a second semantic source.
+- [ ] Expand `pairs`, `conflicts` and prerequisites across the remaining sparse machine records.
 - [ ] Expand medium coverage only from maintained, verifiable rules rather than stale platform dimensions.
-- [ ] Keep style families decomposed into observable axes; do not encode named living-artist imitation presets.
+- [ ] Add observable visual-style axes/presets to the canonical module while avoiding named living-artist imitation presets.
 
 ### P9 — Established Web roadmap
 
@@ -168,16 +172,17 @@ Human story / explicit manga direction
         ↓
 AI co-author: Beat + semantic proposal
         ↓
-Shared Manga Knowledge / Dictionary
-        ↓
-Technique Composer + Direction Advisor
-        ↓
-Scene Director + Layout Solver
-        ↓
-Pose / Prop / Contact Solver
-        ↓
-Canonical manga-blueprint project
-        ↓
+Canonical Manga Knowledge
+        ├→ Public Dictionary
+        ├→ Human Docs
+        └→ Technique Composer + Direction Advisor
+                    ↓
+          Scene Director + Layout Solver
+                    ↓
+          Pose / Prop / Contact Solver
+                    ↓
+          Canonical manga-blueprint project
+                    ↓
 Clean spatial contract + Annotated review + Prompt + References
         ↓
 Provider adapter
