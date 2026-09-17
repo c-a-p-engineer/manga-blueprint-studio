@@ -94,6 +94,24 @@ The Web editor continues to support:
 - manga-specific camera/background/text/effect semantics;
 - selected-page AI generation/review packages.
 
+### Manga-first editor shell
+
+The current Web navigation shell remains a **Manga-first editor shell**. The active work opens through **Work Explorer / 作品エクスプローラー**, visible page codes use `P001` style formatting, and **Page settings / ページ設定** owns manuscript/layout/current-page configuration rather than primary work navigation.
+
+On narrow screens the application header continues to use **two explicit rows** so app actions do not wrap inside individual buttons.
+
+### Panel shape
+
+The Web editor's current **Panel shape** model remains rectangle plus optional convex quadrilateral `Panel.shape`. Existing diagonal/trapezoid presets and direct corner editing remain valid and independent from the headless compiler preview.
+
+### Story Template presentation
+
+Story Template discovery remains card-first and includes **presentation quick filters**. Compound filters such as **2人表示 + 集中線** remain part of the current Web product behavior. Smart Manga remains a separate bounded proposal system.
+
+### Web export scope
+
+The established Web generation/review handoff remains **selected-page scoped**. The Blueprint Engine may compile multiple Name pages into project state and per-page assets, but that does not silently change Web export scope.
+
 ### Persistence and identity
 
 Web project persistence uses IndexedDB. `meta.workId`, page/container/panel IDs, placed-character instance IDs, and balloon IDs are stable identity. Save and activation remain separate operations. Import/duplicate behavior must retain the established conflict/remapping semantics.
