@@ -4,7 +4,9 @@ Manga Blueprint Studio is becoming an **AI/human co-authoring system for manga p
 
 **The human remains the director.** AI may draft or revise beats, layout intent, camera, cast, text, and effects, but the resulting blueprint stays inspectable and editable.
 
-## Current prototype: 0.19.0 + Blueprint Engine preview
+## Current prototype: 0.19.0
+
+Blueprint Engine is an experimental preview track layered on the current prototype.
 
 - canonical project format: `manga-blueprint/0.2`
 - existing Web export manifest: `manga-blueprint-export-manifest/3`
@@ -20,6 +22,9 @@ Manga Blueprint Studio is becoming an **AI/human co-authoring system for manga p
 - **Full user guide:** https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
 - **Canonical schema:** https://c-a-p-engineer.github.io/manga-blueprint-studio/schema/manga-blueprint.schema.json
 - **AI Name DSL:** [`core/name-schema.md`](core/name-schema.md)
+- **Blueprint Engine guide:** [`docs/BLUEPRINT-ENGINE.md`](docs/BLUEPRINT-ENGINE.md)
+
+The root GitHub Pages URL remains the **public product landing page**. The dedicated Web editor remains available as an optional visual client.
 
 ## AI-first workflow
 
@@ -136,12 +141,16 @@ npm run validate
 
 Blueprint compiler regression coverage is included in the main CI validator.
 
+For the current Web workflow, see [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md).
+
 ## Documentation map
 
+- [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) — current Web editor workflow.
 - [`docs/PRODUCT.md`](docs/PRODUCT.md) — canonical user-visible product behavior.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — runtime/state/ownership.
 - [`docs/PROMPT_HANDOFF.md`](docs/PROMPT_HANDOFF.md) — AI handoff authority split.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — delivery/status authority.
+- [`docs/BLUEPRINT-ENGINE.md`](docs/BLUEPRINT-ENGINE.md) — headless compiler workflow.
 - [`schema/manga-blueprint.schema.json`](schema/manga-blueprint.schema.json) — canonical serialized data contract.
 - [`core/name-schema.md`](core/name-schema.md) — AI/human Name DSL.
 
