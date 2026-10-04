@@ -30,6 +30,8 @@ For each page the compiler generates bounded deterministic candidates such as ba
 
 Panel importance is a layout weight, not a direct `importance = large panel` rule.
 
+When the winning layout changes panel geometry, derived character, balloon and reserved-region anchors are reprojected into the solved rectangle before pose/contact solving. Insets apply the same reflow rule, so generated spatial references do not retain stale coordinates from bootstrap geometry.
+
 ## Pose / contact solver
 
 `core/pose-contact-solver.mjs` converts semantic pose IDs into deterministic 2D render geometry. The derived `renderPose` contains a skeleton, facing/lean state and inferred props. The solver currently recognizes action/guard/recoil/airborne families and sword/slash poses.
