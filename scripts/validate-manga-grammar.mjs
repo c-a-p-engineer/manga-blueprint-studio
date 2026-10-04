@@ -23,4 +23,13 @@ assert.equal(p4.inset.parentPanelId,p3.id);
 assert.equal(p4.inset.anchor,'top-left');
 assert.equal(p4.inset.size,'small');
 assert.equal(p4.style.border,'inset');
+assert.equal(p2.actionIntent,'少女が相手の肩へ手を伸ばす');
+assert.ok(!p2.actionIntent.includes('ポーズ:'),'advanced semantic fields must not leak into action intent');
+for(const panel of a.pages[0].panels){
+  for(const character of panel.characters){
+    assert.ok(character.x>=panel.rect.x&&character.x<=panel.rect.x+panel.rect.w,`character ${character.name} x must follow solved panel geometry`);
+    assert.ok(character.y>=panel.rect.y&&character.y<=panel.rect.y+panel.rect.h,`character ${character.name} y must follow solved panel geometry`);
+  }
+}
+assert.ok(p4.characters[0].scale<girl2.scale,'inset character scale should reflow with the inset geometry');
 console.log('Manga expression grammar validation passed.');
