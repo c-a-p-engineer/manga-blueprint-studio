@@ -61,7 +61,7 @@ canonical semantics
 
 ### Annotated
 
-`Pxxx.blueprint.svg` adds flow/camera/energy guidance and explicit contact markers over the exact same art layer. It is for human/agent review, not the default image-generation input.
+`Pxxx.blueprint.svg` adds a human-review layer over the exact same art geometry. The review layer may show compact beat summaries, character labels, primary/secondary attention markers, gaze guides, contact labels, camera/energy information and diagnostics. These annotations exist to make authored intent reviewable without reconstructing meaning from canonical JSON. They are never part of the generation-facing spatial contract and must not leak into `Pxxx.clean.svg`.
 
 ## Raster output
 

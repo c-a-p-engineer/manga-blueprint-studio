@@ -4,6 +4,8 @@
 
 Manga Blueprint Studio 0.20.0 is a human-directed, AI-assisted manga planning system. Story/Name intent becomes an **Executable Name** containing panel layout, attention, reading flow, camera, articulated pose, prop/contact geometry, lettering reservations and scene rhythm.
 
+Current prototype: 0.20.0
+
 ## Surfaces
 - Product: https://c-a-p-engineer.github.io/manga-blueprint-studio/
 - Web editor: https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
@@ -38,7 +40,9 @@ Story / Name DSL
 ```
 
 ## Web production workflow
-The editor retains IndexedDB multi-work/multi-page authoring and adds backup, restore, selected-page export and bounded direction patches. Public LP, editor, technique guide, operation guide and dictionary remain separate surfaces.
+The editor retains IndexedDB multi-work/multi-page authoring and adds backup, restore, selected-page export and bounded direction patches. Panel geometry supports rectangle and convex-quadrilateral shapes. Public LP, editor, technique guide, operation guide and dictionary remain separate surfaces.
+
+See `docs/USER-GUIDE.md` for the maintained user workflow.
 
 ## Development
 ```bash
