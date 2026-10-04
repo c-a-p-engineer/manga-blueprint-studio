@@ -72,7 +72,7 @@ The compiler package follows the same conceptual boundary as the Web export pipe
 
 - `work.manga.json` — semantic project authority;
 - `Pxxx.clean.svg` — spatial reference with no dialogue/SFX/action labels;
-- `Pxxx.blueprint.svg` — annotated review reference;
+- `Pxxx.blueprint.svg` — human-review reference with compact beat, character, attention, gaze and contact guidance over the same solved geometry as Clean;
 - `Pxxx.prompt.md` — generation instructions and exact visible-text allowlist;
 - `manifest.json` — read-first package index.
 
