@@ -8,7 +8,7 @@ if(pkg.version!==version)throw new Error(`package.json version ${pkg.version} do
 
 const checks=[
   ['README.md',`Current prototype: ${version}`],
-  ['docs/ROADMAP.md',`Shipped through Prototype ${version}`],
+  ['docs/ROADMAP.md',`Production baseline — ${version}`],
   [`docs/PROTOTYPE-${version}.md`,`Prototype ${version}`],
   ['web/src/main.ts',`appVersion:'${version}'`],
   ['web/runtime/handoff/producer-provenance.js',`appVersion:'${version}'`]
