@@ -80,10 +80,10 @@ rejectPhrase('docs/PRODUCT.md','The Page tab must support:');
 for(const phrase of ['ui/editor-shell.js','P001','web/guide.html','selected-page scoped','authoring/panel-geometry.js','ui/mobile-header.js','Panel.shape']) requirePhrase('docs/ARCHITECTURE.md',phrase);
 for(const phrase of ['selected-page','manga-blueprint-export-manifest/3','TEXT TO RENDER','AI generation ZIP','quadrilateral']) requirePhrase('docs/PROMPT_HANDOFF.md',phrase);
 
-requirePhrase('docs/ROADMAP.md',`Shipped through Prototype ${version}`);
-requirePhrase('docs/ROADMAP.md','Phase 3 — Backup / Restore — Next');
-requirePhrase('docs/ROADMAP.md','only current status authority');
-requirePhrase('docs/ROADMAP.md','Advanced Panel Geometry');
+requirePhrase('docs/ROADMAP.md',`Production baseline — ${version}`);
+requirePhrase('docs/ROADMAP.md','This file is the delivery/status authority.');
+requirePhrase('docs/ROADMAP.md','## Post-backlog roadmap');
+requirePhrase('docs/ROADMAP.md','### 0.21 — Web/Core convergence hardening');
 
 requirePhrase('docs/PROJECT-MULTI-PAGE-ROADMAP.md','manga-blueprint/0.2');
 requirePhrase('docs/PROJECT-MULTI-PAGE-ROADMAP.md','ROADMAP.md');
