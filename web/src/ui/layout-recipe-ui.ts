@@ -51,5 +51,9 @@ export function installLayoutRecipeUi(){
     const notice=host.querySelector<HTMLElement>('#layoutRecipeDeepLinkNotice'),apply=host.querySelector<HTMLButtonElement>('#layoutRecipeApply');
     if(notice){notice.hidden=false;notice.textContent=initial.language==='en'?'Catalog settings loaded. Review the preview, then apply when ready.':'カタログの設定を読み込みました。プレビューを確認し、「このコマ割りを使う」で適用してください。';}
     if(apply)apply.textContent=initial.language==='en'?'Apply catalog layout':'カタログ設定を適用';
+    // A catalog handoff is an explicit request to inspect layout settings, not
+    // permission to mutate the page. Reveal the Manual layout tab so the
+    // prefilled Recipe Bank controls and notice are immediately visible.
+    document.getElementById<HTMLButtonElement>('phase1PageModeLayout')?.click();
   }
 }
