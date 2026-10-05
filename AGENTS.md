@@ -203,6 +203,17 @@ Documentation is shipped product contract.
 
 When changing public UI/workflow, update the relevant public guidance and verify the deployed artifact. CI success alone is not visual usability evidence.
 
+## GitHub Actions usage policy
+
+GitHub Actions is **not a default execution, build, validation, Blueprint-generation, or artifact-production path** for agents working in this repository.
+
+- Do not create, dispatch, re-run, or intentionally trigger GitHub Actions workflows without the human director's explicit approval for that specific use.
+- Do not use GitHub Actions merely because direct execution inside the current agent/ChatGPT runtime is inconvenient. Prefer the repository CLI/core directly in the available runtime, using the GitHub connector to retrieve the current authoritative files when needed.
+- Do not use workflow artifacts as a substitute for direct CLI execution when the CLI can run in the current environment.
+- Before any repository write that would automatically trigger a workflow (for example, a push to `master` while a workflow listens to `push`), stop and obtain explicit approval unless the human already approved that Actions run.
+- Reading the state/logs of an already-existing workflow run is read-only observation; starting or re-running a workflow remains permission-gated.
+- If Actions is genuinely required, explain why the non-Actions paths are insufficient and obtain approval before triggering it.
+
 ## Runtime and implementation rules
 
 The app is a Vite-built static GitHub Pages application. `web/app.js` is a thin entry shim into `web/src/main.ts`; TypeScript owns bootstrap/new UI composition. Ordered classic-script chunks under `web/runtime/` remain a temporary compatibility/reference layer.
