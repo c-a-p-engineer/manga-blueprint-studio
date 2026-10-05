@@ -16,7 +16,7 @@ human natural language
   -> deterministic 2D skeleton + prop/contact anchors
   -> manga-blueprint/0.2
   -> layered executable-name renderer
-  -> clean visual + annotated visual + executable prompt + manifest
+  -> clean visual + human-readable name preview + annotated visual + executable prompt + manifest
   -> optional local SVG -> PNG rasterization
 ```
 
@@ -52,24 +52,30 @@ are resolved to a shared spatial anchor. For sword-vs-sword contact, both blade 
 
 ## Executable Name renderer
 
-One solved geometry source produces both views:
+One solved geometry source produces three presentation views:
 
 ```text
 canonical semantics
       -> solved layout / pose / contact
              |
-             +-- art layer --------> P001.clean.svg
+             +-- art layer ----------> P001.clean.svg
              |
-             +-- annotation layer -> P001.blueprint.svg
+             +-- lettering layer ----> P001.name.svg
+             |
+             +-- annotation layer ---> P001.blueprint.svg
 ```
 
 ### Clean
 
 `Pxxx.clean.svg` is the generation-facing black spatial contract. It contains panel boundaries, articulated coarse skeletons, inferred weapon lines and balloon regions. It contains no authoring labels, names, action notes, energy values, contact labels, colored markers or annotation-only SVG definitions.
 
+### Name preview
+
+`Pxxx.name.svg` renders the canonical dialogue/SFX into a readable manga-name preview without changing canonical state. It uses balloon `type` (`speech | thought | shout | whisper | narration | offscreen`), `speakerId` for tail direction when the speaker is visible, the page/balloon writing mode, and a visible overflow warning when the current balloon reservation cannot comfortably contain the text. Offscreen dialogue points toward the panel edge and does not auto-cast its speaker. This preview is for human story/lettering review and is not the generation-facing spatial authority.
+
 ### Annotated
 
-`Pxxx.blueprint.svg` adds a human-review layer over the exact same art geometry. The review layer may show compact beat summaries, character labels, primary/secondary attention markers, gaze guides, contact labels, camera/energy information and diagnostics. These annotations exist to make authored intent reviewable without reconstructing meaning from canonical JSON. They are never part of the generation-facing spatial contract and must not leak into `Pxxx.clean.svg`.
+`Pxxx.blueprint.svg` adds a technical human-review layer over the exact same art geometry. The review layer may show compact beat summaries, character labels, primary/secondary attention markers, gaze guides, contact labels, camera/energy information and diagnostics. These annotations exist to make authored intent reviewable without reconstructing meaning from canonical JSON. They are never part of the generation-facing spatial contract and must not leak into `Pxxx.clean.svg`.
 
 ## Raster output
 
@@ -86,6 +92,8 @@ manifest.json
 work.manga.json
 P001.clean.svg
 P001.clean.png       # when a rasterizer is available
+P001.name.svg
+P001.name.png        # when a rasterizer is available
 P001.blueprint.svg
 P001.blueprint.png   # when a rasterizer is available
 P001.prompt.md
@@ -100,7 +108,7 @@ The manifest records renderer, pose solver, rasterization status and authority r
 human story / direction
   -> ChatGPT or coding agent creates AI Name DSL
   -> CLI compiles Executable Name
-  -> human/agent reviews annotated view
+  -> human/agent reads name preview and reviews annotated view
   -> agent edits semantic source if needed
   -> recompile
   -> clean visual + executable prompt + canonical state
