@@ -18,7 +18,8 @@ async function copyText(text:string){
 }
 export function installLayoutRecipeUi(){
   const api=runtime.MANGA_BLUEPRINT_LAYOUT_API,anchor=document.getElementById('layoutHelp');if(!api||!anchor||document.getElementById('layoutRecipeUi'))return;
-  const initial=api.currentCanvas(),params=new URLSearchParams(location.search);
+  const layoutApi=api;
+  const initial=layoutApi.currentCanvas(),params=new URLSearchParams(location.search);
   const host=document.createElement('section');host.id='layoutRecipeUi';host.className='layout-recipe-ui';
   host.innerHTML=`
     <div class="layout-recipe-title"><strong>Recipe Bank</strong><a id="layoutRecipeCatalogLink" href="./layout-catalog.html" target="_blank" rel="noopener">コマ割りカタログ ↗</a></div>
@@ -42,13 +43,13 @@ export function installLayoutRecipeUi(){
     refreshPreview();
   }
   function refreshPreview(){
-    const canvas=api.currentCanvas(),count=Number(panelCount.value)||4,recipe=getLayoutRecipe(select.value);if(!recipe)return;
+    const canvas=layoutApi.currentCanvas(),count=Number(panelCount.value)||4,recipe=getLayoutRecipe(select.value);if(!recipe)return;
     const mutationValue=Number(mutation.value)||0,built=buildLayoutRecipe(recipe.id,{width:canvas.width,height:canvas.height,panelCount:count,seed:seed.value,mutation:mutationValue});out.value=mutationValue.toFixed(2);description.textContent=initial.language==='en'?recipe.helpEn:recipe.helpJa;preview.innerHTML=previewSvg(built.rects,canvas.width,canvas.height);
     const q=new URLSearchParams({panels:String(count),recipe:recipe.id,seed:seed.value,mutation:mutationValue.toFixed(2)});catalog.href=`./layout-catalog.html?${q}`;
   }
   panelCount.addEventListener('change',()=>refreshRecipes(select.value));select.addEventListener('change',refreshPreview);seed.addEventListener('input',refreshPreview);mutation.addEventListener('input',refreshPreview);
   host.querySelector('#layoutRecipeReroll')?.addEventListener('click',()=>{seed.value=String(Math.floor(Math.random()*1_000_000));refreshPreview();});
   host.querySelector('#layoutRecipeCopy')?.addEventListener('click',async()=>{const count=Number(panelCount.value)||4;await copyText(layoutSettingsSnippet({recipeId:select.value,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0})+`\n# CLI: --layout ${select.value} --seed ${seed.value} --mutation ${Number(mutation.value).toFixed(2)}`);});
-  host.querySelector('#layoutRecipeApply')?.addEventListener('click',()=>{const canvas=api.currentCanvas(),count=Number(panelCount.value)||4,built=buildLayoutRecipe(select.value,{width:canvas.width,height:canvas.height,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0});api.applyLayoutRecipe({recipeId:select.value,seed:seed.value,mutation:Number(mutation.value)||0,rects:built.rects,ask:true});});
+  host.querySelector('#layoutRecipeApply')?.addEventListener('click',()=>{const canvas=layoutApi.currentCanvas(),count=Number(panelCount.value)||4,built=buildLayoutRecipe(select.value,{width:canvas.width,height:canvas.height,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0});layoutApi.applyLayoutRecipe({recipeId:select.value,seed:seed.value,mutation:Number(mutation.value)||0,rects:built.rects,ask:true});});
   refreshRecipes(params.get('layoutRecipe')||params.get('recipe'));
 }
