@@ -23,7 +23,7 @@ assert.equal(context.selectedPanelId,'panel-1');assert.equal(context.selectedCha
 const manifest=JSON.parse(fs.readFileSync('web/runtime/manifest.json','utf8'));const entry=manifest.find(x=>x.key==='layoutRecipeApi');
 assert.equal(entry?.path,'runtime/integration/layout-recipe-api.js');
 const uiSource=fs.readFileSync('web/src/ui/layout-recipe-ui.ts','utf8');
-for(const token of ['layoutRecipeDeepLinkNotice','カタログの設定を読み込みました','カタログ設定を適用']){
+for(const token of ['layoutRecipeDeepLinkNotice','カタログの設定を読み込みました','カタログ設定を適用',"phase1PageModeLayout')]){
   assert.ok(uiSource.includes(token),`catalog-to-editor handoff UI missing ${token}`);
 }
 assert.ok(!uiSource.includes('queueMicrotask(()=>{applyCurrentRecipe'),'catalog deep link must not auto-apply over authored content');
