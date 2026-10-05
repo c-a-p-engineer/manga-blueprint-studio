@@ -2,6 +2,8 @@ import assert from'node:assert/strict';
 import{buildLayoutRecipe,listLayoutRecipes,layoutRecipeCount}from'../core/layout-recipes.mjs';
 import{solveLayout}from'../core/layout-solver.mjs';
 import{compileMangaName}from'../core/manga-grammar.mjs';
+import{buildExecutablePrompt}from'../core/generation-brief.mjs';
+import{renderExecutableNameSvg}from'../core/blueprint-renderer.mjs';
 
 const W=1200,H=1697;
 assert.ok(layoutRecipeCount()>=50,'recipe bank should expose at least 50 recipe×panel-count bases');
@@ -63,5 +65,9 @@ assert.equal(projectA.pages[0].layoutDecision.recipeId,'dialogue-stagger');
 assert.ok(Number.isInteger(projectA.pages[0].layoutDecision.signals.seed)&&projectA.pages[0].layoutDecision.signals.seed>0,'string seed must normalize to a deterministic integer');
 assert.equal(projectA.pages[0].panels[1].style.bleed,'bottom');
 assert.equal(projectA.pages[0].panels[2].style.breakout,'character');
+const prompt=buildExecutablePrompt(projectA,0),annotated=renderExecutableNameSvg(projectA,0,{annotated:true}),clean=renderExecutableNameSvg(projectA,0,{annotated:false});
+assert.match(prompt,/FRAME DIRECTION: bleed=bottom/);assert.match(prompt,/FRAME DIRECTION: breakout=character/);
+assert.match(annotated,/data-review="frame-modifier"/);assert.match(annotated,/断ち切り: bottom/);assert.match(annotated,/ブチ抜き: character/);
+assert.doesNotMatch(clean,/断ち切り:|ブチ抜き:|data-review="frame-modifier"/);
 assert.equal(projectA.meta.compiler.layoutSolver,'recipe-bank-v1');
 console.log('Layout Recipe Bank: shared recipes, deterministic mutation, inset separation, and panel modifiers passed.');
