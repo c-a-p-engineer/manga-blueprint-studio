@@ -25,6 +25,7 @@ Public pages:
 - Editor: https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
 - User guide: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
 - Manga techniques: https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html
+- Layout catalog: https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html
 
 `docs/USER-GUIDE.md` and `web/guide.html` remain semantically aligned for the Web workflow. `docs/MANGA-TECHNIQUES.md` and `web/techniques.html` remain semantically aligned for manga-direction education.
 
@@ -61,6 +62,7 @@ A change is not documentation-complete until affected authority and user-facing 
 - **Executable Name** — compiled semantic + spatial representation used to create Clean/Annotated/handoff assets.
 - **Clean** — generation-facing spatial contract with no authoring annotations.
 - **Annotated** — human-review view over the same geometry.
+- **Layout Recipe Bank** — shared Core source for reusable base panel layouts; Recipe + seed + mutation can be reused across CLI/Web/catalog.
 
 Do not introduce “Scene Template” as another product feature name.
 
