@@ -2,8 +2,14 @@ import type {BuildInfo} from '../legacy-runtime';
 
 export const EDITOR_RENDERED_EVENT='manga-blueprint:editor-rendered' as const;
 
+export type LayoutRecipeApi={
+  currentCanvas:()=>{width:number;height:number;panelCount:number;language:string};
+  applyLayoutRecipe:(config:{recipeId:string;seed:string|number;mutation:number;rects:Array<{x:number;y:number;w:number;h:number}>;ask?:boolean})=>boolean;
+};
+
 export type LegacyRuntimeApi=typeof globalThis&{
   MANGA_BLUEPRINT_BUILD_INFO?:Readonly<BuildInfo>;
+  MANGA_BLUEPRINT_LAYOUT_API?:LayoutRecipeApi;
   initializeEditorState?:()=>Promise<void>;
   renderHierarchy16?:()=>void;
   applySelectedTemplateWithCast36?:()=>unknown;
@@ -34,4 +40,8 @@ export function applySelectedStoryTemplate(){
     :runtime.applyTemplatePresentation34;
   if(typeof runner!=='function')throw new Error('Template apply logic is unavailable.');
   return runner();
+}
+
+export function getLayoutRecipeApi(){
+  return runtime.MANGA_BLUEPRINT_LAYOUT_API??null;
 }
