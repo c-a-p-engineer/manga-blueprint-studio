@@ -15,7 +15,7 @@ export const LAYOUT_RECIPES=Object.freeze([
   {id:'wide-middle',ja:'中央ワイド',en:'Wide middle',family:'transition',minPanels:3,maxPanels:5,tags:['transition','establishing','action'],helpJa:'中央の横長コマを橋にして前後の意味をつなぐ。',helpEn:'A wide middle beat bridges setup and reaction.'},
   {id:'ladder',ja:'階段リズム',en:'Ladder rhythm',family:'action',minPanels:4,maxPanels:6,tags:['action','tempo','asymmetry'],helpJa:'段ごとに左右比率を反転させ、視線を階段状に送る。',helpEn:'Alternating row splits create a stepped reading rhythm.'},
   {id:'three-band',ja:'三段構成',en:'Three-band composition',family:'standard',minPanels:3,maxPanels:6,tags:['story','balanced','rhythm'],helpJa:'上・中・下の三段に役割を分ける汎用構成。',helpEn:'A flexible three-band page for setup, development, and landing.'},
-  {id:'cinematic-stack',ja:'シネマ縦積み',en:'Cinematic stack',family:'cinematic',minPanels:3,maxPanels:6,tags:['cinematic','emotion','vertical'],helpJa:'高さに強弱を付けた全幅コマで映画的に呼吸させる。',helpEn:'Full-width bands with varied heights for cinematic pacing.'}
+  {id:'cinematic-stack',ja:'シネマ縦積み',en:'Cinematic stack',family:'cinematic',minPanels:2,maxPanels:6,tags:['cinematic','emotion','vertical'],helpJa:'高さに強弱を付けた全幅コマで映画的に呼吸させる。',helpEn:'Full-width bands with varied heights for cinematic pacing.'}
 ]);
 
 const byId=new Map(LAYOUT_RECIPES.map(recipe=>[recipe.id,recipe]));
