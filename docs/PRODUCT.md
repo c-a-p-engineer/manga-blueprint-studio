@@ -30,7 +30,7 @@ The current headless compiler accepts a lightweight Markdown Name DSL and derive
 - expression assignment;
 - dialogue and exact SFX;
 - manga line-effect hints;
-- clean and annotated blueprint visuals;
+- clean, human-readable name-preview, and annotated blueprint visuals;
 - page prompts with explicit `TEXT TO RENDER` allowlist;
 - a read-first compilation manifest.
 
@@ -72,7 +72,8 @@ The compiler package follows the same conceptual boundary as the Web export pipe
 
 - `work.manga.json` — semantic project authority;
 - `Pxxx.clean.svg` — spatial reference with no dialogue/SFX/action labels;
-- `Pxxx.blueprint.svg` — human-review reference with compact beat, character, attention, gaze and contact guidance over the same solved geometry as Clean;
+- `Pxxx.name.svg` — human-readable manga-name preview using canonical dialogue, writing direction, balloon type/tail and SFX over the solved geometry; it is a presentation aid, not semantic or spatial authority;
+- `Pxxx.blueprint.svg` — technical human-review reference with compact beat, character, attention, gaze and contact guidance over the same solved geometry as Clean;
 - `Pxxx.prompt.md` — generation instructions and exact visible-text allowlist;
 - `manifest.json` — read-first package index.
 
