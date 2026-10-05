@@ -54,6 +54,6 @@ export function installLayoutRecipeUi(){
     // A catalog handoff is an explicit request to inspect layout settings, not
     // permission to mutate the page. Reveal the Manual layout tab so the
     // prefilled Recipe Bank controls and notice are immediately visible.
-    document.getElementById<HTMLButtonElement>('phase1PageModeLayout')?.click();
+    (document.getElementById('phase1PageModeLayout') as HTMLButtonElement|null)?.click();
   }
 }
