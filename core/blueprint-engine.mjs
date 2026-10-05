@@ -172,7 +172,7 @@ export function compileName(text, options = {}) {
       id: id('page', `${workId}:${pi}`), pageNumber: pi + 1, order: pi + 1, title: src.title,
       panels: src.beats.map((b, i) => {
         const rect = rects[i];
-        const cast = b.cast.length ? b.cast : [...new Set(b.dialogue.map((d) => d.speaker).filter(Boolean))].map((token) => ({ token, slot: 'center' }));
+        const cast = b.cast.length ? b.cast : [...new Set(b.dialogue.filter((d) => d.type !== 'offscreen').map((d) => d.speaker).filter(Boolean))].map((token) => ({ token, slot: 'center' }));
         const characters = cast.map((entry, ci) => {
           const base = charByToken.get(entry.token);
           const pos = slotPosition(entry.slot, rect, ci, cast.length);
