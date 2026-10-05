@@ -24,7 +24,7 @@ export function installLayoutRecipeUi(){
       <label>seed<input id="layoutRecipeSeed" type="text" inputmode="numeric" value="0"/></label>
       <label>変異度 <output id="layoutRecipeMutationOut">0.20</output><input id="layoutRecipeMutation" type="range" min="0" max="1" step="0.05" value="0.20"/></label>
     </div>
-    <div id="layoutRecipeDescription" class="layout-recipe-description"></div>
+    <div id="layoutRecipeDeepLinkNotice" class="layout-recipe-deeplink" role="status" aria-live="polite" hidden></div>\n    <div id="layoutRecipeDescription" class="layout-recipe-description"></div>
     <div id="layoutRecipePreview" class="layout-recipe-preview"></div>
     <div class="layout-recipe-actions"><button id="layoutRecipeApply" class="primary" type="button">このコマ割りを使う</button><button id="layoutRecipeReroll" type="button">seedを変える</button><button id="layoutRecipeCopy" type="button">設定をコピー</button></div>
   `;
@@ -45,5 +45,11 @@ export function installLayoutRecipeUi(){
   host.querySelector('#layoutRecipeReroll')?.addEventListener('click',()=>{seed.value=String(Math.floor(Math.random()*1_000_000));refreshPreview();});
   host.querySelector('#layoutRecipeCopy')?.addEventListener('click',async()=>{const count=Number(panelCount.value)||4;await copyText(layoutSettingsSnippet({recipeId:select.value,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0})+`\n# CLI: --layout ${select.value} --seed ${seed.value} --mutation ${Number(mutation.value).toFixed(2)}`);});
   host.querySelector('#layoutRecipeApply')?.addEventListener('click',()=>{const canvas=layoutApi.currentCanvas(),count=Number(panelCount.value)||4,built=buildLayoutRecipe(select.value,{width:canvas.width,height:canvas.height,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0});layoutApi.applyLayoutRecipe({recipeId:select.value,seed:seed.value,mutation:Number(mutation.value)||0,rects:built.rects,ask:true});});
-  refreshRecipes(params.get('layoutRecipe')||params.get('recipe'));
+  const deepLinkedRecipe=params.get('layoutRecipe');
+  refreshRecipes(deepLinkedRecipe||params.get('recipe'));
+  if(deepLinkedRecipe){
+    const notice=host.querySelector<HTMLElement>('#layoutRecipeDeepLinkNotice'),apply=host.querySelector<HTMLButtonElement>('#layoutRecipeApply');
+    if(notice){notice.hidden=false;notice.textContent=initial.language==='en'?'Catalog settings loaded. Review the preview, then apply when ready.':'カタログの設定を読み込みました。プレビューを確認し、「このコマ割りを使う」で適用してください。';}
+    if(apply)apply.textContent=initial.language==='en'?'Apply catalog layout':'カタログ設定を適用';
+  }
 }
