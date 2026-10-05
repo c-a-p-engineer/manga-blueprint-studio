@@ -5,7 +5,7 @@ export function buildExecutablePrompt(project,pageIndex=0){
   for(const p of page.panels){
     lines.push(`## Panel ${p.order}`,`ACTION: ${p.actionIntent}`,`CAMERA: ${p.camera.distance}, ${p.camera.angle}, ${p.camera.viewpoint}`,`BACKGROUND: ${p.background.location||'(unspecified)'} ${p.background.timeOfDay||''}`.trim(),`ENERGY: ${Number(p.importance?.energy??.5).toFixed(2)}`);
     if(p.attention?.primary)lines.push(`PRIMARY ATTENTION: ${p.attention.primary}`);
-    if(p.flow?.entry||p.flow?.exit)lines.push(`READING FLOW: ${p.flow?.entry||'auto'} -> ${p.flow?.exit||'auto'}`);
+    if(p.flow?.entry||p.flow?.exit)lines.push(`READING FLOW: ${p.flow?.entry||'auto'} -> ${p.flow?.exit||'auto'}`);const frame=[];if(p.shape?.preset)frame.push(`shape=${p.shape.preset}`);if(p.inset?.kind)frame.push(`inset=${p.inset.kind}:${p.inset.anchor||'auto'}:${p.inset.size||'auto'}`);if(p.style?.bleed&&p.style.bleed!=='none')frame.push(`bleed=${p.style.bleed}`);if(p.style?.breakout&&p.style.breakout!=='none')frame.push(`breakout=${p.style.breakout}`);if(frame.length)lines.push(`FRAME DIRECTION: ${frame.join('; ')}`);
     lines.push(`CAST: ${p.characters.map(c=>`${c.name} [pose=${c.poseId}; expression=${c.expression.type}; gaze=${c.gaze?.target||'auto'}; support=${c.supportState}; motion=${c.motionPhase}; depth=${c.depthOrder??0}]`).join(', ')||'(none)'}`);
     for(const x of p.interactions||[])lines.push(`CONTACT: ${x.intent||`${x.source?.character}.${x.source?.part} > ${x.target?.character}.${x.target?.part}`}`);
     lines.push(`EFFECT: ${p.effects.lineEffect}${p.effects.sfxText?`; SFX ${q(p.effects.sfxText)}`:''}`,'');
