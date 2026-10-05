@@ -23,7 +23,7 @@ npm run blueprint -- examples/combat-1p.md blueprint-out
 node cli/manga-blueprint.mjs --list-layouts 4
 node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
 ```
-Output includes `work.manga.json`, per-page Clean/Annotated SVG, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only.
+Output includes `work.manga.json`, per-page Clean/Name/Annotated SVG, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Name is a readable lettered storyboard; Annotated is technical human-review only.
 
 ## Pipeline
 ```text
@@ -34,7 +34,7 @@ Story / Name DSL
  → Layout Recipe Bank + Solver v4
  → Pose / Prop / Contact Solver v2
  → Canonical manga-blueprint/0.2
- → Clean + Prompt + References
+ → Clean + Name Preview + Prompt + References
  → Portable Generation Package
  → external provider adapter
  → Generated image
