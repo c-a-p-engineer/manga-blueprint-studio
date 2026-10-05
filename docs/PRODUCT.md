@@ -108,7 +108,7 @@ The Web editor's current **Panel shape** model remains rectangle plus optional c
 
 ### Layout Recipe Bank
 
-`core/layout-recipes.mjs` is the shared source for base-layout recipes used by the Blueprint Engine, CLI-facing Name settings, Web Recipe controls, and the public Layout Catalog. Recipe selection determines base panel topology/ratios; `seed` and `mutation` produce reproducible nearby variants. Diagonal frames, inset children, bleed, breakout and other expressive techniques are applied after base selection and must not be baked into a second recipe authority.
+`core/layout-recipes.mjs` is the shared source for base-layout recipes used by the Blueprint Engine, CLI-facing Name settings, Web Recipe controls, and the public Layout Catalog. Recipe selection determines base panel topology/ratios; `seed` and `mutation` produce reproducible nearby variants. Diagonal frames, inset children, bleed, breakout and other expressive techniques are applied after base selection and must not be baked into a second recipe authority. Catalog deep links may prefill Recipe controls and reveal the Manual layout surface, but they remain non-mutating until the user explicitly applies the selected Recipe.
 
 ### Story Template presentation
 
