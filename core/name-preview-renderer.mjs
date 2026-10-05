@@ -16,6 +16,12 @@ function balloonMetrics(balloon){
   const size=Number(balloon.size)||80;
   return {rx:Math.max(40,size*.62),ry:Math.max(52,size*.84),fontSize:clamp(size*.18,18,28)};
 }
+function previewBalloon(panel,balloon,m){
+  const r=panel.rect,pad=12,maxRx=Math.max(24,(r.w-pad*2)/2),maxRy=Math.max(32,(r.h-pad*2)/2),scale=Math.min(1,maxRx/m.rx,maxRy/m.ry);
+  const metrics={...m,rx:m.rx*scale,ry:m.ry*scale};
+  const minX=r.x+metrics.rx+pad,maxX=r.x+r.w-metrics.rx-pad,minY=r.y+metrics.ry+pad,maxY=r.y+r.h-metrics.ry-pad;
+  return {balloon:{...balloon,x:minX<=maxX?clamp(balloon.x,minX,maxX):r.x+r.w/2,y:minY<=maxY?clamp(balloon.y,minY,maxY):r.y+r.h/2},metrics};
+}
 function speakerPoint(panel,balloon){
   const speaker=(panel.characters||[]).find(c=>c.characterId===balloon.speakerId);
   return speaker?.renderPose?.joints?.head||speaker?.renderPose?.joints?.chest||(speaker?{x:speaker.x,y:speaker.y-90*(speaker.scale||1)}:null);
@@ -65,8 +71,8 @@ function horizontalText(project,balloon,m){
   const startY=balloon.y-(lines.length-1)*lineH/2+m.fontSize*.36,body=lines.map((lineText,i)=>`<text x="${balloon.x}" y="${startY+i*lineH}" text-anchor="middle" font-size="${m.fontSize}" font-family="sans-serif">${esc(lineText)}</text>`).join('');
   return {body,overflow:chars.length>capacity};
 }
-function letteredBalloon(project,panel,balloon){
-  const m=balloonMetrics(balloon),mode=balloon.writingMode&&balloon.writingMode!=='inherit'?balloon.writingMode:(project.meta.defaultWritingMode||'vertical-rl'),text=mode==='horizontal-tb'?horizontalText(project,balloon,m):verticalText(project,balloon,m),warn=text.overflow?`<g data-name-warning="balloon-overflow"><rect x="${balloon.x-m.rx}" y="${balloon.y+m.ry-20}" width="${m.rx*2}" height="20" fill="#fff4f4" stroke="#dc2626" stroke-width="1"/><text x="${balloon.x}" y="${balloon.y+m.ry-6}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#dc2626">文字量超過</text></g>`:'';
+function letteredBalloon(project,panel,sourceBalloon){
+  const fitted=previewBalloon(panel,sourceBalloon,balloonMetrics(sourceBalloon)),balloon=fitted.balloon,m=fitted.metrics,mode=balloon.writingMode&&balloon.writingMode!=='inherit'?balloon.writingMode:(project.meta.defaultWritingMode||'vertical-rl'),text=mode==='horizontal-tb'?horizontalText(project,balloon,m):verticalText(project,balloon,m),warn=text.overflow?`<g data-name-warning="balloon-overflow"><rect x="${balloon.x-m.rx}" y="${balloon.y+m.ry-20}" width="${m.rx*2}" height="20" fill="#fff4f4" stroke="#dc2626" stroke-width="1"/><text x="${balloon.x}" y="${balloon.y+m.ry-6}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#dc2626">文字量超過</text></g>`:'';
   return `<g data-name-balloon="${esc(balloon.type||'speech')}">${outline(panel,balloon,m)}${text.body}${warn}</g>`;
 }
 function sfx(panel){
