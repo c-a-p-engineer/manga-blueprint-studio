@@ -29,7 +29,17 @@ The AI describes **manga intent**. It should not calculate IDs, joint coordinate
 @time: day
 ```
 
-`@layout` is a bounded hint, not raw geometry. `auto` lets the compiler choose from the current grammar.
+`@layout` is a bounded hint, not raw geometry. `auto` lets the compiler choose from the shared Layout Recipe Bank. A Recipe ID such as `hero-bottom`, `dialogue-stagger`, or `action-step` may also be supplied directly.
+
+Deterministic nearby variants can be shared with:
+
+```md
+@layout: hero-bottom
+@layout-seed: 42
+@layout-mutation: 0.25
+```
+
+`@layout-seed` accepts a number or string. `@layout-mutation` is clamped to `0..1`; `0` keeps the recipe baseline while larger values vary bounded row/split ratios. These values select base geometry only. Panel-level expressive techniques remain separate modifiers.
 
 ## Panel syntax
 
@@ -74,6 +84,8 @@ Supported semantic fields:
 - `コマサイズ:` / `size:` — `auto | small | medium | large | dominant | hero`; explicit human/AI override when size itself is authored intent.
 - `境界:` / `shape:` / `コマ形:` — `rectangle | diagonal-left | diagonal-right | trapezoid-left | trapezoid-right`.
 - `インセット:` / `inset:` — parent panel plus anchor/size, e.g. `parent panel 1 top-left small`.
+- `断ち切り:` / `bleed:` — page-edge relation: `none | top | right | bottom | left | all`.
+- `ブチ抜き:` / `breakout:` — frame breakout intent: `none | character | foreground | cross-panel`.
 - `登場:` / `cast:` — comma-separated `token@slot`; coarse slots are `left | center | right | foreground | background`.
 - `ポーズ:` / `pose:` — `token> semantic-pose`. Prefer short visual/action semantics, not joint coordinates.
 - `表情:` / `expression:` — `token> description`.
@@ -127,8 +139,10 @@ story beats
   → importance / hold
   → attention targets
   → gaze + motion + reading flow
-  → layout candidates
-  → candidate scoring
+  → Layout Recipe retrieval
+  → recipe candidate scoring
+  → deterministic seed/mutation
+  → expressive modifiers (diagonal / inset / bleed / breakout)
   → canonical panel geometry
 ```
 
