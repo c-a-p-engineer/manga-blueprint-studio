@@ -14,6 +14,10 @@ Manga Blueprint Studio now has two authoring surfaces over one canonical project
 ```text
 Name DSL / AI / human beats
           ↓
+core/manga-grammar.mjs
+          ↓
+core/layout-recipes.mjs + layout-solver.mjs
+          ↓
 core/blueprint-engine.mjs
           ↓
 canonical manga-blueprint/0.2
@@ -37,7 +41,7 @@ The architectural rule is **Core first, clients second**. A client may add trans
 
 - parsing the lightweight AI Name DSL;
 - deterministic work/page/panel/placed-character/balloon identity;
-- bounded manga-layout selection from panel count, emphasis, and optional layout hint;
+- bounded manga-layout retrieval/scoring from the shared `core/layout-recipes.mjs` Recipe Bank, with deterministic seed/mutation and optional explicit recipe hint;
 - initial camera inference from explicit camera terms plus beat semantics;
 - reusable character placeholders from semantic character tokens;
 - initial stick-figure placement from coarse `left | center | right | foreground | background` slots;
@@ -59,6 +63,8 @@ A future explicit source-sync feature would require its own conflict semantics; 
 ## Existing Web production bootstrap
 
 The Web editor remains a static GitHub Pages application built with Vite.
+
+The Layout Recipe Bank crosses the Core/client boundary without duplicating recipe definitions. `web/src/ui/layout-recipe-ui.ts` imports the Core ESM recipe module through Vite. `web/runtime/integration/layout-recipe-api.js` is a narrow bridge that applies already-derived rectangles to the legacy editor state. `web/layout-catalog.html` is a separate public browsing/share surface over the same Core recipes; it does not own another layout registry.
 
 ```text
 web/app.js

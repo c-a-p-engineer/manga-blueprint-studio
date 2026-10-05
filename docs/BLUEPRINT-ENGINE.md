@@ -9,8 +9,10 @@ human natural language
   -> AI Name DSL
   -> semantic grammar
   -> panel energy + attention + reading flow
-  -> candidate layout solver
-  -> pose/contact/inset/shape resolution
+  -> Layout Recipe retrieval + candidate scoring
+  -> deterministic seed/mutation
+  -> diagonal/inset/bleed/breakout modifiers
+  -> pose/contact/shape resolution
   -> deterministic 2D skeleton + prop/contact anchors
   -> manga-blueprint/0.2
   -> layered executable-name renderer
@@ -18,7 +20,7 @@ human natural language
   -> optional local SVG -> PNG rasterization
 ```
 
-The Web editor remains optional. Its role is visual refinement of the same canonical project state, not ownership of the automation path.
+The Web editor remains optional. Its role is visual refinement of the same canonical project state, not ownership of the automation path. The public `/layout-catalog.html` and editor Recipe controls use the same `core/layout-recipes.mjs` definitions as the CLI/solver.
 
 ## Input
 
@@ -26,7 +28,11 @@ See [`../core/name-schema.md`](../core/name-schema.md). The AI-facing DSL expres
 
 ## Layout solver
 
-For each page the compiler generates bounded deterministic candidates such as balanced grid, vertical rhythm, hero-top, hero-bottom, action-diagonal and inset-focus. Candidates are scored against panel energy, hold, explicit size intent, inset needs, reading direction and flow hints. The winning decision and candidate scores are stored as `layoutDecision`.
+The compiler now retrieves candidate **Base Recipes** from `core/layout-recipes.mjs`. Recipe families include balanced/vertical rhythms, hero top/bottom/right, dialogue stagger, action step, detail payoff, quiet build, wide-middle, ladder, three-band, and cinematic stack. Recipes are parameterized by panel count rather than stored as thousands of static images.
+
+For a fixed Recipe + panel count + seed + mutation value, geometry is deterministic. `seed` chooses the reproducible nearby variant and `mutation` controls bounded ratio variation. Candidates are then scored against panel energy, hold, explicit size intent, reading direction, flow hints, and Direction Advisor signals. The winning recipe, candidate scores, seed, mutation, and base/inset counts are stored in `layoutDecision`.
+
+Base-layout selection and manga expression are separate stages. Diagonal frames are applied after a Base Recipe through geometry modifiers; panel-in-panel children do not consume a Base Recipe slot; bleed and breakout remain panel-level direction. This prevents a technique such as `斜めコマ` from becoming the layout topology itself.
 
 Panel importance is a layout weight, not a direct `importance = large panel` rule.
 

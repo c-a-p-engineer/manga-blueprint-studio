@@ -29,6 +29,7 @@
       <a href="#page-settings">ページ設定</a>
       <a href="#panel-shape">斜めコマ・四隅編集</a>
       <a href="#panel-layout-grammar">コマ割り文法</a>
+      <a href="#layout-recipes">Recipe Bank / カタログ</a>
       <a href="#story-tools">Story Template / Smart Manga</a>
       <a href="#character">キャラクター</a>
       <a href="#direction">読み方向・文字方向</a>
@@ -139,6 +140,22 @@
           <div class="feature-row" role="row"><strong>文字</strong><span>吹き出し、話者、セリフ、縦書き/横書き</span></div>
           <div class="feature-row" role="row"><strong>演出</strong><span>集中線・スピード線・衝撃表現、SFX</span></div>
           <div class="feature-row" role="row"><strong>出力</strong><span>現在ページをAI生成用または確認用パッケージとして出力</span></div>
+        </div>
+      </section>
+
+      <section id="layout-recipes">
+        <h2>Recipe Bank とコマ割りカタログ</h2>
+        <p><strong>Recipe Bank</strong> は、斜め・断ち切り等の演出を付ける前のBaseコマ割りを選ぶ機能です。コマ数に合うRecipeから始め、seedと変異度で再現可能な近傍案を作れます。</p>
+        <ol class="steps">
+          <li><strong>コマ数とBase Recipeを選ぶ</strong><span>均整グリッド、下段大ゴマ、会話段違い、アクション段階などからページの骨格を決めます。</span></li>
+          <li><strong>seed / 変異度を調整</strong><span>seedは同じ案の再現用。変異度は段・左右比率をRecipeの範囲内で変化させます。</span></li>
+          <li><strong>明示的に適用</strong><span>「このコマ割りを使う」を押したときだけ現在ページへ反映します。</span></li>
+          <li><strong>後から漫画演出</strong><span>斜めコマ、差し込みコマ、断ち切り、ブチ抜き等を必要なコマへ追加します。</span></li>
+        </ol>
+        <div class="callout"><strong>差し込みコマはBaseのコマ数に数えません。</strong> たとえば「3つの本コマ＋目アップ小窓」は3コマRecipeへ小窓を後から重ねる構造です。</div>
+        <div class="compare">
+          <article><h3>一覧で探す</h3><p><a href="./layout-catalog.html">コマ割りカタログ</a>では、同じRecipe Bankを大きなサムネイルで比較できます。URLへコマ数・seed・変異度を保持できます。</p></article>
+          <article><h3>設定を共有する</h3><p><code>@layout</code> / <code>@layout-seed</code> / <code>@layout-mutation</code> をコピーすればCLIや別セッションへそのまま渡せます。「Editorで使う」は値を引き継ぐだけで、既存ページを自動上書きしません。</p></article>
         </div>
       </section>
 

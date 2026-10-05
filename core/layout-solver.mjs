@@ -1,18 +1,70 @@
-// Candidate-based manga layout solver v3. Human locks are hard constraints; authored semantics + advisory techniques score candidates.
-const PAGE_W=1200,PAGE_H=1697,M=54,G=24;const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));const area=r=>r.w*r.h;const normArea=r=>area(r)/((PAGE_W-M*2)*(PAGE_H-M*2));
-function grid(count){const x=M,y=M,w=PAGE_W-M*2,h=PAGE_H-M*2,rows=Math.ceil(count/2),cw=(w-G)/2,ch=(h-G*(rows-1))/rows;return Array.from({length:count},(_,i)=>{const row=Math.floor(i/2),right=i%2===0;return{x:right?x+cw+G:x,y:y+row*(ch+G),w:cw,h:ch};});}
-function vertical(count){const x=M,y=M,w=PAGE_W-M*2,h=PAGE_H-M*2,ch=(h-G*(count-1))/count;return Array.from({length:count},(_,i)=>({x,y:y+i*(ch+G),w,h:ch}));}
-function heroBottom(count,hero){if(count<2)return grid(count);const x=M,y=M,w=PAGE_W-M*2,h=PAGE_H-M*2,heroH=h*.48,topH=h-heroH-G,rows=Math.ceil((count-1)/2);const others=Array.from({length:count-1},(_,i)=>({x:x+(i%2?0:w/2+G/2),y:y+Math.floor(i/2)*(topH/rows),w:w/2-G/2,h:topH/rows-G/2}));const hr={x,y:y+h-heroH,w,h:heroH},out=[];let oi=0;for(let i=0;i<count;i++)out.push(i===hero?hr:others[oi++]);return out;}
-function heroTop(count,hero){if(count<2)return grid(count);const x=M,y=M,w=PAGE_W-M*2,h=PAGE_H-M*2,heroH=h*.46,bottomH=h-heroH-G,rows=Math.ceil((count-1)/2);const others=Array.from({length:count-1},(_,i)=>({x:x+(i%2?0:w/2+G/2),y:y+heroH+G+Math.floor(i/2)*(bottomH/rows),w:w/2-G/2,h:bottomH/rows-G/2}));const hr={x,y,w,h:heroH},out=[];let oi=0;for(let i=0;i<count;i++)out.push(i===hero?hr:others[oi++]);return out;}
-function actionDiagonal(count){return grid(count).map((r,i)=>({...r,skew:i%2===0?'diagonal-right':'diagonal-left'}));}
-function cinematicVertical(count,hero){const rs=vertical(count),h=rs[hero];if(h){h.h*=1.28;for(let i=hero+1;i<rs.length;i++)rs[i].y+=h.h*.22;}return rs;}
-function explicitHint(hint,count,hero){if(hint==='vertical')return vertical(count);if(hint==='hero-top')return heroTop(count,hero);if(hint==='hero-bottom')return heroBottom(count,hero);return null;}
-const targetArea=s=>.10+s*.22;const dir=v=>{const s=String(v||'').toLowerCase();if(/left|左/.test(s))return'left';if(/right|右/.test(s))return'right';if(/down|下/.test(s))return'down';if(/up|上/.test(s))return'up';return'';};
+// Recipe-bank manga layout solver v4. Base geometry is selected first; expressive modifiers are applied afterwards.
+import{listLayoutRecipes,buildLayoutRecipe,getLayoutRecipe}from'./layout-recipes.mjs';
+import{applyGeometryModifiers}from'./layout-modifiers.mjs';
+import{normalizeLayoutSeed}from'./layout-mutator.mjs';
+
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));const area=r=>r.w*r.h;
+const targetArea=s=>.10+s*.22;
+const dir=v=>{const s=String(v||'').toLowerCase();if(/left|左/.test(s))return'left';if(/right|右/.test(s))return'right';if(/down|下/.test(s))return'down';if(/up|上/.test(s))return'up';return'';};
 function directionalSignal(s){const vals=[s.flow?.entry,s.flow?.exit,s.motionDirection,...Object.values(s.gaze||{}),...Object.values(s.motion||{})];return vals.map(dir).filter(Boolean);}
 function applyLocks(rects,semantic){return rects.map((r,i)=>{const lock=semantic[i]?.layoutLock;if(!lock)return r;return{x:Number(lock.x),y:Number(lock.y),w:Number(lock.w),h:Number(lock.h),skew:lock.skew||r.skew,locked:true};});}
-const has=(tech,id)=>tech?.has(id);function techniqueSignals(advice=[]){return advice.map(x=>new Set(x?.techniques||[]));}
-function scoreCandidate(candidate,semantic,readingDirection='rtl',techniques=[]){let score=0;const energies=semantic.map(s=>s?.importance?.energy??.5),max=Math.max(...energies,.5);for(let i=0;i<candidate.rects.length;i++){const r=candidate.rects[i],s=semantic[i]||{},e=energies[i]??.5,t=techniques[i]||new Set();score-=Math.abs(normArea(r)-targetArea(e))*3;if(e===max)score+=normArea(r)*2.2;if((s.timing?.hold??.5)>.75)score+=Math.min(r.w,r.h)/PAGE_W*.45;if(/dominant|hero|large|大|climax/i.test(s.size||''))score+=normArea(r)*1.2;if(s.inset)score+=candidate.name==='inset-focus'?.9:0;const ds=directionalSignal(s);if(ds.length){score+=candidate.name==='action-diagonal'?.22*ds.length:.04*ds.length;if(readingDirection==='rtl'&&ds.includes('left'))score+=.12;if(readingDirection==='ltr'&&ds.includes('right'))score+=.12;}if(s.attention?.primary)score+=.08;if(s.layoutLock)score+=.5;
-// Technique-aware scoring: advisory knowledge influences geometry but never overrides locks.
-if(has(t,'hero-panel'))score+=normArea(r)*1.45;if(has(t,'small-panel'))score+=(1-normArea(r))*.16;if(has(t,'diagonal-panel'))score+=candidate.name==='action-diagonal'?.75:0;if(has(t,'detail-inset'))score+=candidate.name==='inset-focus'?.65:0;if(has(t,'pause')||has(t,'negative-space'))score+=(r.h/PAGE_H)*.32;if(has(t,'wide-shot'))score+=(r.w/PAGE_W)*.24;if(has(t,'page-turn-reveal')&&i===semantic.length-1)score+=candidate.name==='hero-bottom'?.38:0;if(has(t,'scroll-delay')||has(t,'viewport-reveal'))score+=candidate.name==='cinematic-vertical'?.58:candidate.name==='vertical-rhythm'?.28:0;if(has(t,'motion-lines')||has(t,'foreshortening')||has(t,'contact-focus'))score+=candidate.name==='action-diagonal'?.22:0;}
-if(readingDirection==='rtl'&&candidate.name==='action-diagonal')score+=.18;if(candidate.hintMatch)score+=1.3;return score;}
-export function solveLayout(semanticPanels,{hint='auto',readingDirection='rtl',directionAdvice=[],medium='print-page'}={}){const count=semanticPanels.length;if(!count)return{name:'empty',rects:[],score:0,candidates:[],signals:{}};const energies=semanticPanels.map(s=>s?.importance?.energy??.5);let hero=0;for(let i=1;i<count;i++)if(energies[i]>energies[hero])hero=i;const raw=[{name:'balanced-grid',rects:grid(count)},{name:'vertical-rhythm',rects:vertical(count)},{name:'hero-bottom',rects:heroBottom(count,hero)},{name:'hero-top',rects:heroTop(count,hero)},{name:'action-diagonal',rects:actionDiagonal(count)}];if(semanticPanels.some(s=>s.inset)||directionAdvice.some(a=>a.techniques?.includes('detail-inset')))raw.push({name:'inset-focus',rects:heroBottom(count,hero)});if(medium==='vertical-scroll')raw.push({name:'cinematic-vertical',rects:cinematicVertical(count,hero)});const hinted=explicitHint(hint,count,hero);if(hinted)raw.push({name:`hint-${hint}`,rects:hinted,hintMatch:true});const tech=techniqueSignals(directionAdvice);for(const c of raw){c.rects=applyLocks(c.rects,semanticPanels);c.score=scoreCandidate(c,semanticPanels,readingDirection,tech);}raw.sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));const winner=raw[0];return{name:winner.name,rects:winner.rects.map(r=>({x:clamp(r.x,M,PAGE_W-M),y:clamp(r.y,M,PAGE_H-M),w:r.w,h:r.h,skew:r.skew,locked:!!r.locked})),score:winner.score,candidates:raw.map(c=>({name:c.name,score:c.score})),signals:{heroPanel:hero+1,medium,techniques:directionAdvice.map(a=>({panel:a.panel,techniques:a.techniques||[]}))}};}
+const has=(set,id)=>set?.has(id);function techniqueSignals(advice=[]){return advice.map(x=>new Set(x?.techniques||[]));}
+function normalizedHint(hint='auto'){
+  const raw=String(hint||'auto').trim().toLowerCase();
+  const aliases={grid:'balanced-grid',balanced:'balanced-grid',vertical:'vertical-rhythm','hero-bottom':'hero-bottom','hero-top':'hero-top',conversation:'dialogue-stagger',action:'action-step',climax:'hero-bottom'};
+  return aliases[raw]||raw;
+}
+function candidateAffinity(candidate,semantic,heroIndex,techniques,readingDirection){
+  let score=0;const recipe=candidate.recipe,tags=new Set(recipe.tags||[]),workingArea=candidate.workingArea;
+  const energies=semantic.map(s=>s?.importance?.energy??.5),max=Math.max(...energies,.5);
+  for(let i=0;i<candidate.rects.length;i++){
+    const r=candidate.rects[i],s=semantic[i]||{},e=energies[i]??.5,t=techniques[i]||new Set(),normArea=area(r)/workingArea;
+    score-=Math.abs(normArea-targetArea(e))*3;
+    if(e===max)score+=normArea*2.15;
+    if((s.timing?.hold??.5)>.75)score+=Math.min(r.w,r.h)/Math.sqrt(workingArea)*.42;
+    if(/dominant|hero|large|大|climax/i.test(s.size||''))score+=normArea*1.15;
+    const ds=directionalSignal(s);if(ds.length){score+=.04*ds.length;if(readingDirection==='rtl'&&ds.includes('left'))score+=.12;if(readingDirection==='ltr'&&ds.includes('right'))score+=.12;}
+    if(s.attention?.primary)score+=.08;if(s.layoutLock)score+=.5;
+    if(has(t,'hero-panel')&&(tags.has('climax')||tags.has('payoff')||tags.has('entrance')))score+=normArea*.8;
+    if(has(t,'small-panel')&&tags.has('detail'))score+=.16;
+    if(has(t,'detail-inset')&&tags.has('detail'))score+=.28;
+    if((has(t,'pause')||has(t,'negative-space'))&&(tags.has('quiet')||tags.has('emotion')))score+=.24;
+    if(has(t,'wide-shot')&&(tags.has('establishing')||tags.has('cinematic')))score+=.2;
+    if(has(t,'page-turn-reveal')&&i===semantic.length-1&&(tags.has('reveal')||tags.has('payoff')))score+=.34;
+    if((has(t,'scroll-delay')||has(t,'viewport-reveal'))&&(tags.has('cinematic')||tags.has('vertical')))score+=.58;
+    if((has(t,'motion-lines')||has(t,'foreshortening')||has(t,'contact-focus'))&&tags.has('action'))score+=.24;
+  }
+  if(recipe.heroPosition==='last')score+=heroIndex===semantic.length-1?.72:-.18;
+  if(recipe.heroPosition==='first')score+=heroIndex===0?.72:-.18;
+  if(tags.has('conversation')&&semantic.some(s=>(s.timing?.hold??.5)>.65))score+=.12;
+  return score;
+}
+function scoreCandidate(candidate,semantic,heroIndex,readingDirection,techniques,hint){
+  let score=candidateAffinity(candidate,semantic,heroIndex,techniques,readingDirection);
+  if(hint!=='auto'&&candidate.recipe.id===hint)score+=2.4;
+  else if(hint!=='auto'&&candidate.recipe.family===hint)score+=.65;
+  return score;
+}
+export function solveLayout(semanticPanels,{hint='auto',readingDirection='rtl',directionAdvice=[],medium='print-page',width=1200,height=1697,seed=0,mutation=0}={}){
+  if(!semanticPanels.length)return{name:'empty',recipeId:null,rects:[],score:0,candidates:[],signals:{}};
+  const baseIndices=semanticPanels.map((panel,index)=>({panel,index})).filter(({panel})=>!panel?.inset).map(x=>x.index),baseSemantic=baseIndices.map(index=>semanticPanels[index]),count=baseSemantic.length||semanticPanels.length;
+  const energies=baseSemantic.map(s=>s?.importance?.energy??.5);let hero=0;for(let i=1;i<count;i++)if(energies[i]>energies[hero])hero=i;
+  const normalized=normalizedHint(hint),exact=getLayoutRecipe(normalized),available=listLayoutRecipes({panelCount:count});
+  const recipes=exact&&count>=exact.minPanels&&count<=exact.maxPanels?[exact,...available.filter(r=>r.id!==exact.id)]:available;
+  const workingArea=Math.max(1,(Number(width)-Math.min(width,height)*.09)*(Number(height)-Math.min(width,height)*.09)),baseSeed=normalizeLayoutSeed(seed);
+  const raw=recipes.map((recipe,index)=>{
+    const candidateSeed=(baseSeed+index*101)>>>0;
+    const built=buildLayoutRecipe(recipe.id,{width,height,panelCount:count,seed:candidateSeed,mutation});
+    return{name:recipe.id,recipe,recipeId:recipe.id,rects:applyLocks(built.rects,baseSemantic),workingArea,seed:candidateSeed,mutation:Number(mutation)||0};
+  });
+  const baseAdvice=baseIndices.map(index=>directionAdvice[index]||{}),baseTech=techniqueSignals(baseAdvice);for(const candidate of raw)candidate.score=scoreCandidate(candidate,baseSemantic,hero,readingDirection,baseTech,normalized);
+  raw.sort((a,b)=>b.score-a.score||a.recipeId.localeCompare(b.recipeId));
+  const winner=raw[0];
+  const expanded=[];let baseCursor=0;for(let i=0;i<semanticPanels.length;i++){if(!semanticPanels[i]?.inset){expanded[i]=winner.rects[baseCursor++];continue;}const raw=String(semanticPanels[i].inset||''),m=raw.match(/(?:parent|親)?\s*(?:panel|p|コマ)?\s*(\d+)/i),parentIndex=m?Math.max(0,Number(m[1])-1):Math.max(0,i-1);expanded[i]={...(expanded[parentIndex]||winner.rects[Math.max(0,baseCursor-1)]||winner.rects[0])};}
+  const modified=applyGeometryModifiers(expanded,semanticPanels,{directionAdvice,readingDirection}).map(r=>({x:clamp(r.x,0,width),y:clamp(r.y,0,height),w:r.w,h:r.h,skew:r.skew,locked:!!r.locked}));
+  return{
+    name:winner.recipeId,recipeId:winner.recipeId,rects:modified,score:winner.score,
+    candidates:raw.map(c=>({name:c.recipeId,recipeId:c.recipeId,family:c.recipe.family,score:c.score})),
+    signals:{heroPanel:(baseIndices[hero]??hero)+1,basePanelCount:count,insetCount:semanticPanels.length-count,medium,recipeId:winner.recipeId,seed:baseSeed,mutation:Number(mutation)||0,techniques:directionAdvice.map(a=>({panel:a.panel,techniques:a.techniques||[]}))}
+  };
+}

@@ -20,7 +20,8 @@ export default defineConfig({
         app:resolve(webRoot,'editor.html'),
         guide:resolve(webRoot,'guide.html'),
         techniques:resolve(webRoot,'techniques.html'),
-        dictionary:resolve(webRoot,'dictionary.html')
+        dictionary:resolve(webRoot,'dictionary.html'),
+        layouts:resolve(webRoot,'layout-catalog.html')
       }
     }
   },

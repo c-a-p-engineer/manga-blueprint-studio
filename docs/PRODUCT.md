@@ -22,7 +22,7 @@ The Name DSL is source material and authoring convenience, not a competing persi
 The current headless compiler accepts a lightweight Markdown Name DSL and derives:
 
 - deterministic work/page/panel/character/placement/balloon identity;
-- page layout from beat count, emphasis, and optional coarse layout hint;
+- page layout from beat count, emphasis, and the shared Layout Recipe Bank, with optional explicit recipe/seed/mutation settings;
 - initial camera from explicit terms and beat semantics;
 - reusable character placeholders from semantic tokens;
 - initial character placement from coarse slots such as left/center/right/foreground/background;
@@ -89,6 +89,8 @@ The Web editor continues to support:
 - page/panel authoring;
 - rectangle or convex-quadrilateral panel geometry;
 - direct four-corner editing and irregular layout presets;
+- shared Layout Recipe controls with panel-count, seed and bounded mutation;
+- a public shareable Layout Catalog whose settings can be copied into Name DSL/CLI or opened in the Web editor;
 - reusable character identity;
 - Story Template Studio and Smart Manga;
 - manga-specific camera/background/text/effect semantics;
@@ -103,6 +105,10 @@ On narrow screens the application header continues to use **two explicit rows** 
 ### Panel shape
 
 The Web editor's current **Panel shape** model remains rectangle plus optional convex quadrilateral `Panel.shape`. Existing diagonal/trapezoid presets and direct corner editing remain valid and independent from the headless compiler preview.
+
+### Layout Recipe Bank
+
+`core/layout-recipes.mjs` is the shared source for base-layout recipes used by the Blueprint Engine, CLI-facing Name settings, Web Recipe controls, and the public Layout Catalog. Recipe selection determines base panel topology/ratios; `seed` and `mutation` produce reproducible nearby variants. Diagonal frames, inset children, bleed, breakout and other expressive techniques are applied after base selection and must not be baked into a second recipe authority.
 
 ### Story Template presentation
 

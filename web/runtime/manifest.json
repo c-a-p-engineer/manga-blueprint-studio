@@ -42,6 +42,7 @@
   { "key": "templateDiscoveryPresentation", "id": "templates/discovery-presentation", "path": "runtime/templates/discovery-presentation.js" },
   { "key": "panelLayoutGrammar", "id": "templates/panel-layout-grammar", "path": "runtime/templates/panel-layout-grammar.js" },
   { "key": "templateCharacterCast", "id": "integration/template-character-cast", "path": "runtime/integration/template-character-cast.js" },
+  { "key": "layoutRecipeApi", "id": "integration/layout-recipe-api", "path": "runtime/integration/layout-recipe-api.js" },
   { "key": "producerProvenance", "id": "handoff/producer-provenance", "path": "runtime/handoff/producer-provenance.js" },
   { "key": "mobileHeader", "id": "ui/mobile-header", "path": "runtime/ui/mobile-header.js" },
   { "key": "editorShell", "id": "ui/editor-shell", "path": "runtime/ui/editor-shell.js" }

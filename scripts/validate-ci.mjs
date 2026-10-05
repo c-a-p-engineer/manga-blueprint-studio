@@ -20,7 +20,7 @@ function walk(root,predicate){
 }
 
 function assertArtifact(){
-  for(const file of ['dist/index.html','dist/editor.html','dist/guide.html','dist/runtime/core/foundation.js']){
+  for(const file of ['dist/index.html','dist/editor.html','dist/guide.html','dist/layout-catalog.html','dist/runtime/core/foundation.js']){
     if(!fs.existsSync(file))throw new Error(`Missing production artifact: ${file}`);
   }
   const index=fs.readFileSync('dist/index.html','utf8');
@@ -29,6 +29,8 @@ function assertArtifact(){
   if(!index.includes('./editor.html')&&!index.includes('/manga-blueprint-studio/editor.html'))throw new Error('Built landing does not link to editor.html');
   if(index.includes('id="blueprintSvg"'))throw new Error('Built landing unexpectedly contains editor DOM');
   if(!editor.includes('id="blueprintSvg"'))throw new Error('Built editor is missing editor DOM');
+  const layouts=fs.readFileSync('dist/layout-catalog.html','utf8');
+  if(!layouts.includes('id="catalogGrid"'))throw new Error('Built layout catalog is missing catalog grid');
   console.log('\n==> Production artifact shape passed');
 }
 
@@ -40,7 +42,7 @@ const syntaxTargets=['web/app.js',...walk('scripts',file=>file.endsWith('.mjs'))
 for(const file of [...new Set(syntaxTargets)]) run(process.execPath,['--check',file],{label:`Syntax ${file}`});
 
 const validators=[
-  'scripts/validate-blueprint-engine.mjs','scripts/validate-manga-grammar.mjs','scripts/validate-executable-name.mjs','scripts/validate-public-entry.mjs','scripts/validate-phase1-toolchain.mjs','scripts/validate-runtime-layout.mjs','scripts/validate-editor-architecture.mjs','scripts/validate-editor-command-behavior.mjs','scripts/validate-editor-persistence-behavior.mjs','scripts/validate.mjs','scripts/validate-project-storage-foundation.mjs','scripts/validate-multi-page-core.mjs','scripts/validate-work-library-hierarchy.mjs','scripts/validate-editor-shell.mjs','scripts/validate-panel-peek.mjs','scripts/validate-template-studio.mjs','scripts/validate-writing-direction.mjs','scripts/validate-reading-order.mjs','scripts/validate-lettering-reading-integration.mjs','scripts/validate-art-direction-spatial.mjs','scripts/validate-cross-model-handoff.mjs','scripts/validate-template-quality.mjs','scripts/validate-scene-contract.mjs','scripts/validate-desktop-layout.mjs','scripts/validate-authoring-clarity.mjs','scripts/validate-template-cast-meaning.mjs','scripts/validate-two-visible-filters.mjs','scripts/validate-panel-cast-flow.mjs','scripts/validate-generation-contract.mjs','scripts/validate-render-brief.mjs','scripts/validate-work-brief.mjs','scripts/validate-panel-geometry.mjs','scripts/validate-panel-layout-grammar.mjs','scripts/validate-inset-panels.mjs','scripts/validate-editor-disclosure.mjs','scripts/validate-story-template-presentation.mjs','scripts/validate-template-discovery-presentation.mjs','scripts/validate-template-character-cast.mjs','scripts/validate-producer-provenance.mjs','scripts/validate-documentation-sync.mjs','scripts/validate-version-sync.mjs','scripts/validate-production-v20.mjs'
+  'scripts/validate-blueprint-engine.mjs','scripts/validate-manga-grammar.mjs','scripts/validate-layout-recipes.mjs','scripts/validate-layout-cli.mjs','scripts/validate-layout-recipe-web.mjs','scripts/validate-executable-name.mjs','scripts/validate-public-entry.mjs','scripts/validate-phase1-toolchain.mjs','scripts/validate-runtime-layout.mjs','scripts/validate-editor-architecture.mjs','scripts/validate-editor-command-behavior.mjs','scripts/validate-editor-persistence-behavior.mjs','scripts/validate.mjs','scripts/validate-project-storage-foundation.mjs','scripts/validate-multi-page-core.mjs','scripts/validate-work-library-hierarchy.mjs','scripts/validate-editor-shell.mjs','scripts/validate-panel-peek.mjs','scripts/validate-template-studio.mjs','scripts/validate-writing-direction.mjs','scripts/validate-reading-order.mjs','scripts/validate-lettering-reading-integration.mjs','scripts/validate-art-direction-spatial.mjs','scripts/validate-cross-model-handoff.mjs','scripts/validate-template-quality.mjs','scripts/validate-scene-contract.mjs','scripts/validate-desktop-layout.mjs','scripts/validate-authoring-clarity.mjs','scripts/validate-template-cast-meaning.mjs','scripts/validate-two-visible-filters.mjs','scripts/validate-panel-cast-flow.mjs','scripts/validate-generation-contract.mjs','scripts/validate-render-brief.mjs','scripts/validate-work-brief.mjs','scripts/validate-panel-geometry.mjs','scripts/validate-panel-layout-grammar.mjs','scripts/validate-inset-panels.mjs','scripts/validate-editor-disclosure.mjs','scripts/validate-story-template-presentation.mjs','scripts/validate-template-discovery-presentation.mjs','scripts/validate-template-character-cast.mjs','scripts/validate-producer-provenance.mjs','scripts/validate-documentation-sync.mjs','scripts/validate-version-sync.mjs','scripts/validate-production-v20.mjs'
 ];
 for(const validator of validators) run(process.execPath,[validator],{label:`Contract ${validator}`});
 console.log('\nAll CI validation passed.');

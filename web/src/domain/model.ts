@@ -47,6 +47,9 @@ export type ProjectMeta={
   pageHeight:number;
   canvasPreset?:string;
   layoutPreset?:string;
+  layoutRecipeId?:string|null;
+  layoutSeed?:string;
+  layoutMutation?:number;
   storyTemplate?:string;
   randomPurpose?:string;
   randomSeed?:string;

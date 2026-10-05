@@ -197,6 +197,39 @@ Optional containers are:
 
 A page can remain directly under the work. Deleting a non-empty container does not silently delete its pages.
 
+## Layout Recipe Bank and コマ割りカタログ
+
+**ページ設定 → コマ割り**には、Story Templateとは別に **Recipe Bank** があります。Recipeは「完成した演出」ではなく、まず読みやすいBaseコマ割りを決めるための構造です。
+
+1. **コマ数**を選ぶ。
+2. `均整グリッド`、`下段大ゴマ`、`会話段違い`、`アクション段階`などのBase Recipeを選ぶ。
+3. **seed**を変えると、同じRecipeの再現可能な別案を作れる。
+4. **変異度**を上げると、段や左右比率をRecipeの意味を壊さない範囲で変化させる。
+5. 「このコマ割りを使う」で現在ページへ適用する。
+6. その後、必要なコマだけ **斜めコマ / 差し込みコマ / 断ち切り / ブチ抜き** 等で演出する。
+
+Base Recipeと演出を分離しているため、「斜めコマを選んだからページ全体の構造まで固定される」という扱いにはしません。差し込みコマはBaseのコマ数にも含めず、親コマへ後から重ねる独立した子コマです。
+
+一覧を大きく見たい場合は、公開 **コマ割りカタログ** を使います。
+
+https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html
+
+カタログではコマ数・seed・変異度を変えながら全Recipeをサムネイル比較できます。各カードの **設定をコピー** で次のような共有値を取得できます。
+
+```md
+@layout: hero-bottom
+@layout-seed: 42
+@layout-mutation: 0.25
+```
+
+同じ値はCLIでも使えます。
+
+```bash
+node cli/manga-blueprint.mjs name.md out --layout hero-bottom --seed 42 --mutation 0.25
+```
+
+カタログのURL自体にも `panels / seed / mutation / recipe` を保持でき、「このコマ割り候補を見て」とリンクで共有できます。**Editorで使う**を押した場合は設定値をEditorへ引き継ぎますが、既存ページを勝手に上書きせず、Editor側で明示的に適用します。
+
 ## Story Template vs Smart Manga
 
 ### Story Template
