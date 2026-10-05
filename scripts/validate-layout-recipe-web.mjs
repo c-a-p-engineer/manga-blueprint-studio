@@ -27,4 +27,8 @@ for(const token of ['layoutRecipeDeepLinkNotice','カタログの設定を読み
   assert.ok(uiSource.includes(token),`catalog-to-editor handoff UI missing ${token}`);
 }
 assert.ok(!uiSource.includes('queueMicrotask(()=>{applyCurrentRecipe'),'catalog deep link must not auto-apply over authored content');
+const catalogSource=fs.readFileSync('web/src/layout-catalog.ts','utf8');
+for(const token of ['data-copy-url','candidateUrl(recipeId:string)','currentQuery(recipeId)']){
+  assert.ok(catalogSource.includes(token),`layout catalog sharing missing ${token}`);
+}
 console.log('Layout Recipe Web bridge: shared derived rectangles, metadata, selection reset, and runtime manifest passed.');
