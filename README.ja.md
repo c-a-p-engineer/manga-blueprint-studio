@@ -14,6 +14,7 @@ Manga Blueprint Studio は、ネームの役割を人間とAIの両方が扱え�
 - Webエディタ: https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html
 - 漫画演出ガイド: https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html
 - 操作ガイド: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
+- コマ割りカタログ: https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html
 
 ## 人間とAIが同じ漫画知識を使う
 
@@ -35,7 +36,7 @@ AI Name DSL
   ↓
 Energy / Attention / Reading Flow
   ↓
-Layout Candidate Solver
+Layout Recipe Bank + Solver
   ↓
 Pose / Contact Solver
   ↓
@@ -73,9 +74,11 @@ Markdownベースの軽量Name DSLから、座標を手入力せず漫画ペー�
 ```bash
 npm install
 npm run blueprint -- examples/combat-1p.md blueprint-out
+node cli/manga-blueprint.mjs --list-layouts 4
+node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
 ```
 
-固定入力に対して決定論的に、canonical JSON、Clean/Annotated blueprint、ページPrompt、manifestを生成します。PNGは利用可能なローカルrasterizerがある場合に追加生成します。
+固定入力に対して決定論的に、canonical JSON、Clean/Annotated blueprint、ページPrompt、manifestを生成します。Base RecipeはCLI/Webで共通で、`recipe + seed + mutation` をコピーすれば同じ系統のコマ割りを再現できます。斜めコマ・差し込み・断ち切り・ブチ抜きはBase Recipeを選んだ後の演出として扱います。PNGは利用可能なローカルrasterizerがある場合に追加生成します。
 
 ## 漫画技法を知らなくても使える
 
