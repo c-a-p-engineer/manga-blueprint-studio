@@ -16,6 +16,7 @@ const required = [
   'web/landing.css',
   'web/guide.html',
   'web/guide.css',
+  'web/layout-catalog.html',
   'web/runtime/README.md',
   'web/runtime/authoring/localization-export-hardening.js'
 ];
@@ -40,6 +41,7 @@ requirePhrase('README.md',`Current prototype: ${version}`);
 requirePhrase('README.md','https://c-a-p-engineer.github.io/manga-blueprint-studio/');
 requirePhrase('README.md','https://c-a-p-engineer.github.io/manga-blueprint-studio/editor.html');
 requirePhrase('README.md','https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html');
+requirePhrase('README.md','https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html');
 requirePhrase('README.md','docs/USER-GUIDE.md');
 requirePhrase('README.md','convex-quadrilateral');
 requirePhrase('AGENTS.md','Documentation synchronization contract');
@@ -60,24 +62,26 @@ for(const phrase of ['P001','作品エクスプローラー','ページ設定','
 requirePhrase('docs/USER-GUIDE.md','two rows');
 requirePhrase('web/guide.html','2段ヘッダー');
 requirePhrase('docs/USER-GUIDE.md','Current export is **the selected page only**.');
+for(const phrase of ['Layout Recipe Bank','コマ割りカタログ','@layout-seed','@layout-mutation']) requirePhrase('docs/USER-GUIDE.md',phrase);
+for(const phrase of ['Recipe Bank','コマ割りカタログ','layout-catalog.html']) requirePhrase('web/guide.html',phrase);
 requirePhrase('web/guide.html','選択中の1ページ');
 requirePhrase('web/guide.html','./guide.css');
 requirePhrase('web/guide.html','href="./"');
 requirePhrase('web/guide.html','href="./editor.html"');
 
-for(const phrase of ['漫画の「どう見せたいか」','href="./editor.html"','href="./guide.html"','選択中の1ページ単位']){
+for(const phrase of ['漫画の「どう見せたいか」','href="./editor.html"','href="./guide.html"','href="./layout-catalog.html"','選択中の1ページ単位']){
   requirePhrase('web/index.html',phrase);
 }
 rejectPhrase('web/index.html','id="blueprintSvg"');
 requirePhrase('web/editor.html','id="blueprintSvg"');
 requirePhrase('web/editor.html','src="./app.js"');
 
-for(const phrase of ['Manga-first editor shell','Work Explorer / 作品エクスプローラー','Page settings / ページ設定','P001','selected-page scoped','Panel shape','two explicit rows','presentation quick filters','2人表示 + 集中線']){
+for(const phrase of ['Manga-first editor shell','Work Explorer / 作品エクスプローラー','Page settings / ページ設定','P001','selected-page scoped','Panel shape','Layout Recipe Bank','public shareable Layout Catalog','two explicit rows','presentation quick filters','2人表示 + 集中線']){
   requirePhrase('docs/PRODUCT.md',phrase);
 }
 rejectPhrase('docs/PRODUCT.md','The Page tab must support:');
 
-for(const phrase of ['ui/editor-shell.js','P001','web/guide.html','selected-page scoped','authoring/panel-geometry.js','ui/mobile-header.js','Panel.shape']) requirePhrase('docs/ARCHITECTURE.md',phrase);
+for(const phrase of ['ui/editor-shell.js','P001','web/guide.html','selected-page scoped','authoring/panel-geometry.js','ui/mobile-header.js','Panel.shape','layout-recipe-api.js','layout-catalog.html']) requirePhrase('docs/ARCHITECTURE.md',phrase);
 for(const phrase of ['selected-page','manga-blueprint-export-manifest/3','TEXT TO RENDER','AI generation ZIP','quadrilateral']) requirePhrase('docs/PROMPT_HANDOFF.md',phrase);
 
 requirePhrase('docs/ROADMAP.md',`Production baseline — ${version}`);
@@ -91,8 +95,10 @@ rejectPhrase('docs/PROJECT-MULTI-PAGE-ROADMAP.md','"format": "manga-blueprint/ne
 
 requirePhrase('web/runtime/README.md','ui/editor-shell.js');
 requirePhrase('web/runtime/README.md','web/guide.html');
+requirePhrase('web/runtime/README.md','integration/layout-recipe-api.js');
 requirePhrase('web/runtime/authoring/localization-export-hardening.js','./guide.html');
 requirePhrase('web/runtime/authoring/localization-export-hardening.js','詳しい使い方を別画面で開く');
+for(const phrase of ['コマ割りカタログ','panelCount','mutation','layout-catalog']) requirePhrase('web/layout-catalog.html',phrase);
 
 if(!fs.existsSync(`docs/PROTOTYPE-${version}.md`)) throw new Error(`Missing current release note docs/PROTOTYPE-${version}.md`);
 const release=read(`docs/PROTOTYPE-${version}.md`);
