@@ -12,6 +12,7 @@ Current prototype: 0.20.0
 - Technique guide: https://c-a-p-engineer.github.io/manga-blueprint-studio/techniques.html
 - Expression dictionary: https://c-a-p-engineer.github.io/manga-blueprint-studio/dictionary.html
 - User guide: https://c-a-p-engineer.github.io/manga-blueprint-studio/guide.html
+- Layout catalog: https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html
 
 The Web editor is the human supervision surface. The CLI is the deterministic/agent surface. Both converge on `manga-blueprint/0.2`.
 
@@ -19,6 +20,8 @@ The Web editor is the human supervision surface. The CLI is the deterministic/ag
 ```bash
 npm install
 npm run blueprint -- examples/combat-1p.md blueprint-out
+node cli/manga-blueprint.mjs --list-layouts 4
+node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
 ```
 Output includes `work.manga.json`, per-page Clean/Annotated SVG, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only.
 
@@ -28,7 +31,7 @@ Story / Name DSL
  → Canonical Manga Knowledge
  → Direction Advisor
  → Scene Director v2
- → Layout Solver v3
+ → Layout Recipe Bank + Solver v4
  → Pose / Prop / Contact Solver v2
  → Canonical manga-blueprint/0.2
  → Clean + Prompt + References
@@ -40,7 +43,7 @@ Story / Name DSL
 ```
 
 ## Web production workflow
-The editor retains IndexedDB multi-work/multi-page authoring and adds backup, restore, selected-page export and bounded direction patches. Panel geometry supports rectangle and convex-quadrilateral shapes. Public LP, editor, technique guide, operation guide and dictionary remain separate surfaces.
+The editor retains IndexedDB multi-work/multi-page authoring and adds backup, restore, selected-page export and bounded direction patches. Panel geometry supports rectangle and convex-quadrilateral shapes. The shared Layout Recipe Bank can be selected by panel count and reproduced with seed/mutation in CLI or Web; the public Layout Catalog provides copyable/shareable settings. Public LP, editor, layout catalog, technique guide, operation guide and dictionary remain separate surfaces.
 
 See `docs/USER-GUIDE.md` for the maintained user workflow.
 
