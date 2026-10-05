@@ -137,6 +137,11 @@ Assistance must not silently replace recorded panel layout, action intent, pose,
 
 Narrative/visual/transition importance and `hold` are solver inputs. Do not implement a universal `important = large panel` rule. Relative energy, neighbor contrast, reading flow, attention, gaze, motion, explicit layout intent and hard constraints determine geometry. Keep solver decisions inspectable/explainable.
 
+### Base layout and expression modifiers stay separate
+
+`core/layout-recipes.mjs` is the shared Base Layout Recipe authority for Blueprint Engine candidate generation, explicit CLI/Name selection, Web Recipe controls, and the public catalog. Do not create a second independent Recipe registry in the Web runtime or documentation.
+
+Base Recipes describe readable panel topology and bounded proportions. `seed` and `mutation` create deterministic nearby variants. Diagonal frames, panel-in-panel/insets, bleed, breakout, and similar manga techniques are **post-layout expression modifiers**; do not bake them into the Base Recipe taxonomy merely because a previous example used them together. Explicit human shape/inset/bleed/breakout direction remains authoritative.
 ### Medium, genre and expression knowledge are heuristic, not hidden hard rules
 
 The shared knowledge base and expression catalog may provide starting recommendations for panel density, transition, camera, composition, style or technique choice. Treat these as **candidate biases** only.
