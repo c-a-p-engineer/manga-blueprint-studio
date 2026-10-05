@@ -1,0 +1,28 @@
+name: Blonde Red-Eye Battle Blueprint Trial
+on:
+  push:
+    branches:
+      - 'trial/blonde-red-eye-battle-1p'
+    paths:
+      - 'examples/blonde-red-eye-battle-1p.md'
+      - '.github/workflows/blonde-red-eye-battle-blueprint-trial.yml'
+      - 'core/**'
+      - 'cli/**'
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compile requested 1P battle manga through real CLI
+        run: |
+          mkdir -p trial-out
+          /usr/bin/time -f 'CLI_ELAPSED_SECONDS=%e' node cli/manga-blueprint.mjs examples/blonde-red-eye-battle-1p.md trial-out 2>&1 | tee trial-out/timing.txt
+          ls -lah trial-out
+      - name: Upload actual blueprint package
+        uses: actions/upload-artifact@v4
+        with:
+          name: blonde-red-eye-battle-blueprint
+          path: trial-out/
