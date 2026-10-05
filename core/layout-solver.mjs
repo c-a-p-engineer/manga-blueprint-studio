@@ -31,6 +31,7 @@ function candidateAffinity(candidate,semantic,heroIndex,techniques,readingDirect
     if((has(t,'pause')||has(t,'negative-space'))&&(tags.has('quiet')||tags.has('emotion')))score+=.24;
     if(has(t,'wide-shot')&&(tags.has('establishing')||tags.has('cinematic')))score+=.2;
     if(has(t,'page-turn-reveal')&&i===semantic.length-1&&(tags.has('reveal')||tags.has('payoff')))score+=.34;
+    if((has(t,'scroll-delay')||has(t,'viewport-reveal'))&&(tags.has('cinematic')||tags.has('vertical')))score+=.58;
     if((has(t,'motion-lines')||has(t,'foreshortening')||has(t,'contact-focus'))&&tags.has('action'))score+=.24;
   }
   if(recipe.heroPosition==='last')score+=heroIndex===semantic.length-1?.72:-.18;
