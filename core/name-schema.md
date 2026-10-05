@@ -15,7 +15,7 @@ CLI + Blueprint Engine + manga expression grammar
         ↓
 canonical manga-blueprint/0.2
         ↓
-clean spatial visual + annotated review visual + prompt + manifest
+clean spatial visual + human-readable name preview + annotated review visual + prompt + manifest
 ```
 
 The AI describes **manga intent**. It should not calculate IDs, joint coordinates, polygon points, or exact pixel placement when the compiler can derive them.
@@ -74,6 +74,9 @@ Supported semantic fields:
 
 - `コマN:` / `Panel N:` — story beat / action intent.
 - `セリフ:` / `dialogue:` — exact visible dialogue, optionally `speaker> text`.
+- `思考:` / `thought:`, `叫び:` / `shout:`, `小声:` / `whisper:`, `ナレーション:` / `narration:`, `画面外:` / `offscreen:` — dialogue shorthands that also set the canonical balloon type.
+- `吹き出し:` / `balloon:` — override the most recently authored dialogue balloon type with `speech | thought | shout | whisper | narration | offscreen`.
+- `文字方向:` / `writing-mode:` — override the most recently authored dialogue with `縦書き | 横書き | vertical-rl | horizontal-tb`; otherwise it inherits the project default.
 - `重要度:` / `importance:` — three optional weights: `narrative`, `visual`, `transition`. Each accepts `0..1` or `low | medium | high | climax`. These are **layout/attention weights**, not direct size commands.
 - `間:` / `hold:` / `滞留:` — desired perceptual hold time from `0..1` or qualitative weight. Useful for reaction beats and pauses that are not story-dominant.
 - `主注目:` / `primary attention:` — the first visual target the reader should acquire inside the panel.
