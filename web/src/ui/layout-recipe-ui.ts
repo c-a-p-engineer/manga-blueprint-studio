@@ -1,12 +1,6 @@
 import{buildLayoutRecipe,getLayoutRecipe,listLayoutRecipes,layoutSettingsSnippet}from'../../../core/layout-recipes.mjs';
+import{getLayoutRecipeApi}from'../runtime/legacy-api';
 import'./layout-recipe-ui.css';
-
-type LayoutApi={
-  currentCanvas:()=>{width:number;height:number;panelCount:number;language:string};
-  applyLayoutRecipe:(config:{recipeId:string;seed:string|number;mutation:number;rects:Array<{x:number;y:number;w:number;h:number}>;ask?:boolean})=>boolean;
-};
-type Runtime=typeof globalThis&{MANGA_BLUEPRINT_LAYOUT_API?:LayoutApi};
-const runtime=globalThis as Runtime;
 const escapeHtml=(value:unknown)=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]||char));
 
 function previewSvg(rects:Array<{x:number;y:number;w:number;h:number}>,width:number,height:number){
@@ -17,7 +11,7 @@ async function copyText(text:string){
   const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();document.execCommand('copy');area.remove();
 }
 export function installLayoutRecipeUi(){
-  const api=runtime.MANGA_BLUEPRINT_LAYOUT_API,anchor=document.getElementById('layoutHelp');if(!api||!anchor||document.getElementById('layoutRecipeUi'))return;
+  const api=getLayoutRecipeApi(),anchor=document.getElementById('layoutHelp');if(!api||!anchor||document.getElementById('layoutRecipeUi'))return;
   const layoutApi=api;
   const initial=layoutApi.currentCanvas(),params=new URLSearchParams(location.search);
   const host=document.createElement('section');host.id='layoutRecipeUi';host.className='layout-recipe-ui';
