@@ -214,7 +214,7 @@ Base Recipeと演出を分離しているため、「斜めコマを選んだか
 
 https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html
 
-カタログではコマ数・seed・変異度を変えながら全Recipeをサムネイル比較できます。各カードの **設定をコピー** で次のような共有値を取得できます。
+カタログではコマ数・seed・変異度を変えながら全Recipeをサムネイル比較できます。各カードの **設定をコピー** でName DSL / CLI用の共有値を取得でき、**候補URLをコピー** なら `recipe + panels + seed + mutation` を含むリンクをそのまま共有できます。
 
 ```md
 @layout: hero-bottom
@@ -228,7 +228,7 @@ https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html
 node cli/manga-blueprint.mjs name.md out --layout hero-bottom --seed 42 --mutation 0.25
 ```
 
-カタログのURL自体にも `panels / seed / mutation / recipe` を保持でき、「このコマ割り候補を見て」とリンクで共有できます。**Editorで使う**を押した場合は設定値をEditorへ引き継ぎますが、既存ページを勝手に上書きせず、Editor側で明示的に適用します。
+カタログのURL自体にも `panels / seed / mutation / recipe` を保持でき、「このコマ割り候補を見て」とリンクで共有できます。**Editorで使う**を押した場合は設定値をEditorへ引き継ぎ、**手動コマ割り**タブを開いてRecipe Bankのプレビューと適用ボタンを表示します。既存ページを勝手に上書きせず、Editor側で明示的に適用します。
 
 ## Story Template vs Smart Manga
 
