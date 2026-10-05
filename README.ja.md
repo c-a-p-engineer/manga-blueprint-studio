@@ -42,7 +42,8 @@ Pose / Contact Solver
   ↓
 Executable Name
   ├─ Clean SVG/PNG      → 画像生成用の空間契約
-  ├─ Annotated SVG/PNG  → 人間レビュー用
+  ├─ Name SVG/PNG       → セリフ・吹き出し・SFXを読める画像ネーム
+  ├─ Annotated SVG/PNG  → 技術レビュー用
   ├─ work.manga.json    → 意味の正本
   └─ Prompt             → 生成指示
 ```
@@ -78,7 +79,7 @@ node cli/manga-blueprint.mjs --list-layouts 4
 node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
 ```
 
-固定入力に対して決定論的に、canonical JSON、Clean/Annotated blueprint、ページPrompt、manifestを生成します。Base RecipeはCLI/Webで共通で、`recipe + seed + mutation` をコピーすれば同じ系統のコマ割りを再現できます。斜めコマ・差し込み・断ち切り・ブチ抜きはBase Recipeを選んだ後の演出として扱います。PNGは利用可能なローカルrasterizerがある場合に追加生成します。
+固定入力に対して決定論的に、canonical JSON、Clean/Name/Annotated blueprint、ページPrompt、manifestを生成します。Name Previewはcanonicalなセリフ・書字方向・吹き出し種別・SFXを実際のページ上で読める人間向け画像ネームです。Base RecipeはCLI/Webで共通で、`recipe + seed + mutation` をコピーすれば同じ系統のコマ割りを再現できます。斜めコマ・差し込み・断ち切り・ブチ抜きはBase Recipeを選んだ後の演出として扱います。PNGは利用可能なローカルrasterizerがある場合に追加生成します。
 
 ## 漫画技法を知らなくても使える
 
