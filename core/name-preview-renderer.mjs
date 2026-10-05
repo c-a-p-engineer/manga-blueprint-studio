@@ -14,7 +14,7 @@ function figure(c){
 
 function balloonMetrics(balloon){
   const size=Number(balloon.size)||80;
-  return {rx:Math.max(40,size*.62),ry:Math.max(52,size*.84),fontSize:clamp(size*.18,16,28)};
+  return {rx:Math.max(40,size*.62),ry:Math.max(52,size*.84),fontSize:clamp(size*.18,18,28)};
 }
 function speakerPoint(panel,balloon){
   const speaker=(panel.characters||[]).find(c=>c.characterId===balloon.speakerId);
@@ -44,7 +44,7 @@ function shoutPolygon(balloon,m){
 }
 function outline(panel,balloon,m){
   const type=lower(balloon.type)||'speech';
-  const speaker=speakerPoint(panel,balloon),target=type==='offscreen'?(speaker||panelEdgePoint(panel,balloon)):speaker;
+  const speaker=speakerPoint(panel,balloon),target=type==='offscreen'?panelEdgePoint(panel,balloon):speaker;
   if(type==='narration')return `<rect x="${balloon.x-m.rx}" y="${balloon.y-m.ry}" width="${m.rx*2}" height="${m.ry*2}" rx="8" fill="white" stroke="black" stroke-width="4"/>`;
   if(type==='shout')return `<polygon points="${shoutPolygon(balloon,m)}" fill="white" stroke="black" stroke-width="5" stroke-linejoin="round"/>${speechTail(balloon,target,m)}`;
   if(type==='thought')return `<ellipse cx="${balloon.x}" cy="${balloon.y}" rx="${m.rx}" ry="${m.ry}" fill="white" stroke="black" stroke-width="4"/>${thoughtTail(balloon,target,m)}`;
