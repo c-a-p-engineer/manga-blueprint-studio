@@ -44,6 +44,16 @@ export function installLayoutRecipeUi(){
   panelCount.addEventListener('change',()=>refreshRecipes(select.value));select.addEventListener('change',refreshPreview);seed.addEventListener('input',refreshPreview);mutation.addEventListener('input',refreshPreview);
   host.querySelector('#layoutRecipeReroll')?.addEventListener('click',()=>{seed.value=String(Math.floor(Math.random()*1_000_000));refreshPreview();});
   host.querySelector('#layoutRecipeCopy')?.addEventListener('click',async()=>{const count=Number(panelCount.value)||4;await copyText(layoutSettingsSnippet({recipeId:select.value,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0})+`\n# CLI: --layout ${select.value} --seed ${seed.value} --mutation ${Number(mutation.value).toFixed(2)}`);});
-  host.querySelector('#layoutRecipeApply')?.addEventListener('click',()=>{const canvas=layoutApi.currentCanvas(),count=Number(panelCount.value)||4,built=buildLayoutRecipe(select.value,{width:canvas.width,height:canvas.height,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0});layoutApi.applyLayoutRecipe({recipeId:select.value,seed:seed.value,mutation:Number(mutation.value)||0,rects:built.rects,ask:true});});
-  refreshRecipes(params.get('layoutRecipe')||params.get('recipe'));
+  function applyCurrentRecipe({ask=true}:{ask?:boolean}={}){
+    const canvas=layoutApi.currentCanvas(),count=Number(panelCount.value)||4,built=buildLayoutRecipe(select.value,{width:canvas.width,height:canvas.height,panelCount:count,seed:seed.value,mutation:Number(mutation.value)||0});
+    return layoutApi.applyLayoutRecipe({recipeId:select.value,seed:seed.value,mutation:Number(mutation.value)||0,rects:built.rects,ask});
+  }
+  host.querySelector('#layoutRecipeApply')?.addEventListener('click',()=>{applyCurrentRecipe({ask:true});});
+  const deepLinkedRecipe=params.get('layoutRecipe');
+  refreshRecipes(deepLinkedRecipe||params.get('recipe'));
+  if(deepLinkedRecipe){
+    // "Editorで使う" is an explicit apply action. Existing authored content still
+    // goes through the legacy reset confirmation; empty/default pages apply directly.
+    queueMicrotask(()=>{applyCurrentRecipe({ask:true});});
+  }
 }
