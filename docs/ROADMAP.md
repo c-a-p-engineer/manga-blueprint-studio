@@ -4,7 +4,7 @@ This file is the delivery/status authority.
 
 ## Production baseline — 0.20.0
 
-The planned prototype backlog through P9 has been implemented as a coherent baseline: canonical knowledge, Direction Advisor, Layout Solver v3, Scene Director v2, articulated Pose/Prop/Contact Solver v2, Clean/Annotated renderer v3, Structural Evaluator v2, provider-neutral generation package, reference diagnostics, Web backup/restore/scoped export/local direction patches, multi-page fixtures and CLI generation packages.
+The planned prototype backlog through P9 has been implemented as a coherent baseline: canonical knowledge, Direction Advisor, shared Layout Recipe Bank + Solver v4, Scene Director v2, articulated Pose/Prop/Contact Solver v2, Clean/Annotated renderer v3, Structural Evaluator v2, provider-neutral generation package, reference diagnostics, Web backup/restore/scoped export/local direction patches, multi-page fixtures and CLI generation packages.
 
 ### Completed inventory
 - [x] P0 production integrity code/fixtures/docs; CI is the release gate.
@@ -17,6 +17,7 @@ The planned prototype backlog through P9 has been implemented as a coherent base
 - [x] P7 Web production tools: backup, restore, scoped page export and bounded natural-language panel direction patches.
 - [x] P8 canonical manga knowledge is the single machine-readable source used by solver/agents/public dictionary.
 - [x] P9 established Web roadmap baseline: backup/restore, scoped export and shared canonical-state convergence are present.
+- [x] Shared Layout Recipe Bank: Core/CLI/Web/catalog use one recipe authority; deterministic seed/mutation produces reusable base geometry, while diagonal/inset/bleed/breakout remain post-layout expression.
 
 ## Post-backlog roadmap
 
