@@ -8,6 +8,8 @@ const G = 24;
 const id = (prefix, seed) => `${prefix}-${crypto.createHash('sha1').update(seed).digest('hex').slice(0, 10)}`;
 const esc = (s = '') => String(s).replace(/[&<>\"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const splitList = (value = '') => value.split(/[,、]/).map((v) => v.trim()).filter(Boolean);
+const normalizeBalloonType=(value='speech')=>{const v=String(value).trim().toLowerCase();if(/thought|思考|心の声/.test(v))return'thought';if(/shout|叫び|叫ぶ/.test(v))return'shout';if(/whisper|小声|囁/.test(v))return'whisper';if(/narration|ナレーション|地の文/.test(v))return'narration';if(/offscreen|画面外|オフスクリーン/.test(v))return'offscreen';return'speech';};
+const normalizeWritingMode=(value='inherit')=>/horizontal|横書き/i.test(String(value))?'horizontal-tb':/vertical|縦書き/i.test(String(value))?'vertical-rl':'inherit';
 
 function emptyBeat(action = '') {
   return { action, dialogue: [], emphasis: 'normal', cast: [], expressions: {}, camera: '', background: '', sfx: '', effect: '' };
@@ -34,11 +36,34 @@ export function parseName(text) {
     if (directive) { page.directives[directive[1].toLowerCase()] = directive[2].trim(); continue; }
     const bm = line.match(/^(?:[-*]\s*)?(?:panel|p|コマ)\s*\d+\s*[:：-]\s*(.+)$/i);
     if (bm) { flushBeat(); beat = emptyBeat(bm[1]); continue; }
+    const typedDialogue = line.match(/^(thought|思考|心の声|shout|叫び|whisper|小声|narration|ナレーション|offscreen|画面外)\s*[:：]\s*(.+)$/i);
+    if (typedDialogue) {
+      const b = ensureBeat();
+      const speaker = typedDialogue[2].match(/^([^>＞]+)[>＞]\s*(.+)$/);
+      b.dialogue.push(speaker
+        ? { speaker: speaker[1].trim(), text: speaker[2].trim(), type: normalizeBalloonType(typedDialogue[1]), writingMode: 'inherit' }
+        : { speaker: '', text: typedDialogue[2], type: normalizeBalloonType(typedDialogue[1]), writingMode: 'inherit' });
+      continue;
+    }
     const dm = line.match(/^(?:dialogue|台詞|セリフ)\s*[:：]\s*(.+)$/i);
     if (dm) {
       const b = ensureBeat();
       const speaker = dm[1].match(/^([^>＞]+)[>＞]\s*(.+)$/);
-      b.dialogue.push(speaker ? { speaker: speaker[1].trim(), text: speaker[2].trim() } : { speaker: '', text: dm[1] });
+      b.dialogue.push(speaker
+        ? { speaker: speaker[1].trim(), text: speaker[2].trim(), type: 'speech', writingMode: 'inherit' }
+        : { speaker: '', text: dm[1], type: 'speech', writingMode: 'inherit' });
+      continue;
+    }
+    const balloonType = line.match(/^(?:balloon|吹き出し)\s*[:：]\s*(.+)$/i);
+    if (balloonType) {
+      const b = ensureBeat();
+      if (b.dialogue.length) b.dialogue[b.dialogue.length - 1].type = normalizeBalloonType(balloonType[1]);
+      continue;
+    }
+    const writingMode = line.match(/^(?:writing-mode|文字方向|書字方向)\s*[:：]\s*(.+)$/i);
+    if (writingMode) {
+      const b = ensureBeat();
+      if (b.dialogue.length) b.dialogue[b.dialogue.length - 1].writingMode = normalizeWritingMode(writingMode[1]);
       continue;
     }
     const em = line.match(/^(?:emphasis|強調)\s*[:：]\s*(normal|strong|climax|通常|強|クライマックス)/i);
@@ -170,7 +195,7 @@ export function compileName(text, options = {}) {
           balloons: b.dialogue.map((d, bi) => {
             const speaker = charByToken.get(d.speaker);
             const rightToLeftOffset = bi % 2 === 0 ? .76 : .28;
-            return { id: id('balloon', `${workId}:${pi}:${i}:${bi}`), type: 'speech', speakerId: speaker?.characterId || '', text: d.text, writingMode: 'inherit', x: rect.x + rect.w * rightToLeftOffset, y: rect.y + rect.h * (.14 + bi * .15), size: Math.max(70, Math.min(150, rect.w * .18)) };
+            return { id: id('balloon', `${workId}:${pi}:${i}:${bi}`), type: d.type || 'speech', speakerId: speaker?.characterId || '', text: d.text, writingMode: d.writingMode || 'inherit', x: rect.x + rect.w * rightToLeftOffset, y: rect.y + rect.h * (.14 + bi * .15), size: Math.max(70, Math.min(150, rect.w * .18)) };
           })
         };
       })
@@ -241,6 +266,7 @@ export function buildManifest(project, sourceName = 'name.md') {
       pageNumber: p.pageNumber,
       cleanBlueprint: `P${String(i + 1).padStart(3, '0')}.clean.svg`,
       annotatedBlueprint: `P${String(i + 1).padStart(3, '0')}.blueprint.svg`,
+      namePreview: `P${String(i + 1).padStart(3, '0')}.name.svg`,
       prompt: `P${String(i + 1).padStart(3, '0')}.prompt.md`
     }))
   };
