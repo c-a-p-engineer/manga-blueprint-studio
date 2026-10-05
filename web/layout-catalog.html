@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#111827"/><title>コマ割りカタログ — Manga Blueprint Studio</title></head>
+<body>
+<header class="catalog-header"><div><a href="./">Manga Blueprint Studio</a><h1>コマ割りカタログ</h1><p>Base Recipeを選び、seedと変異度で近い別案を作る。設定はCLI・Name DSL・Web Editorで共有できます。</p></div><a class="editor-link" href="./editor.html">Editorを開く</a></header>
+<main>
+<section class="catalog-controls" aria-label="Layout catalog controls">
+<label>コマ数<select id="panelCount"><option value="1">1コマ</option><option value="2">2コマ</option><option value="3">3コマ</option><option value="4">4コマ</option><option value="5">5コマ</option><option value="6">6コマ</option></select></label>
+<label>seed<input id="seed" type="text" inputmode="numeric" value="0"/></label>
+<label>変異度 <output id="mutationOut">0.20</output><input id="mutation" type="range" min="0" max="1" step="0.05" value="0.20"/></label>
+<button id="reroll" type="button">seedを変える</button><button id="copyUrl" type="button">この条件のURLをコピー</button>
+</section>
+<section class="catalog-summary"><strong id="summary"></strong><span>斜め・差し込み・断ち切り・ブチ抜きはBase Recipe選択後の演出レイヤーとして扱います。</span></section>
+<section id="catalogGrid" class="catalog-grid"></section>
+</main>
+<script type="module" src="./src/layout-catalog.ts"></script>
+</body></html>
