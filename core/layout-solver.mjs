@@ -1,6 +1,7 @@
 // Recipe-bank manga layout solver v4. Base geometry is selected first; expressive modifiers are applied afterwards.
 import{listLayoutRecipes,buildLayoutRecipe,getLayoutRecipe}from'./layout-recipes.mjs';
 import{applyGeometryModifiers}from'./layout-modifiers.mjs';
+import{normalizeLayoutSeed}from'./layout-mutator.mjs';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));const area=r=>r.w*r.h;
 const targetArea=s=>.10+s*.22;
@@ -49,9 +50,9 @@ export function solveLayout(semanticPanels,{hint='auto',readingDirection='rtl',d
   const energies=baseSemantic.map(s=>s?.importance?.energy??.5);let hero=0;for(let i=1;i<count;i++)if(energies[i]>energies[hero])hero=i;
   const normalized=normalizedHint(hint),exact=getLayoutRecipe(normalized),available=listLayoutRecipes({panelCount:count});
   const recipes=exact&&count>=exact.minPanels&&count<=exact.maxPanels?[exact,...available.filter(r=>r.id!==exact.id)]:available;
-  const workingArea=Math.max(1,(Number(width)-Math.min(width,height)*.09)*(Number(height)-Math.min(width,height)*.09));
+  const workingArea=Math.max(1,(Number(width)-Math.min(width,height)*.09)*(Number(height)-Math.min(width,height)*.09)),baseSeed=normalizeLayoutSeed(seed);
   const raw=recipes.map((recipe,index)=>{
-    const candidateSeed=(Number(seed)||0)+index*101;
+    const candidateSeed=(baseSeed+index*101)>>>0;
     const built=buildLayoutRecipe(recipe.id,{width,height,panelCount:count,seed:candidateSeed,mutation});
     return{name:recipe.id,recipe,recipeId:recipe.id,rects:applyLocks(built.rects,baseSemantic),workingArea,seed:candidateSeed,mutation:Number(mutation)||0};
   });
@@ -63,6 +64,6 @@ export function solveLayout(semanticPanels,{hint='auto',readingDirection='rtl',d
   return{
     name:winner.recipeId,recipeId:winner.recipeId,rects:modified,score:winner.score,
     candidates:raw.map(c=>({name:c.recipeId,recipeId:c.recipeId,family:c.recipe.family,score:c.score})),
-    signals:{heroPanel:(baseIndices[hero]??hero)+1,basePanelCount:count,insetCount:semanticPanels.length-count,medium,recipeId:winner.recipeId,seed:Number(seed)||0,mutation:Number(mutation)||0,techniques:directionAdvice.map(a=>({panel:a.panel,techniques:a.techniques||[]}))}
+    signals:{heroPanel:(baseIndices[hero]??hero)+1,basePanelCount:count,insetCount:semanticPanels.length-count,medium,recipeId:winner.recipeId,seed:baseSeed,mutation:Number(mutation)||0,techniques:directionAdvice.map(a=>({panel:a.panel,techniques:a.techniques||[]}))}
   };
 }
