@@ -214,7 +214,7 @@ Base Recipeと演出を分離しているため、「斜めコマを選んだか
 
 https://c-a-p-engineer.github.io/manga-blueprint-studio/layout-catalog.html
 
-カタログではコマ数・seed・変異度を変えながら全Recipeをサムネイル比較できます。各カードの **設定をコピー** で次のような共有値を取得できます。
+カタログではコマ数・seed・変異度を変えながら全Recipeをサムネイル比較できます。各カードの **設定をコピー** でName DSL / CLI用の共有値を取得でき、**候補URLをコピー** なら `recipe + panels + seed + mutation` を含むリンクをそのまま共有できます。
 
 ```md
 @layout: hero-bottom
