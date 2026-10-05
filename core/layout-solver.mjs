@@ -44,24 +44,25 @@ function scoreCandidate(candidate,semantic,heroIndex,readingDirection,techniques
   return score;
 }
 export function solveLayout(semanticPanels,{hint='auto',readingDirection='rtl',directionAdvice=[],medium='print-page',width=1200,height=1697,seed=0,mutation=0}={}){
-  const count=semanticPanels.length;if(!count)return{name:'empty',recipeId:null,rects:[],score:0,candidates:[],signals:{}};
-  const energies=semanticPanels.map(s=>s?.importance?.energy??.5);let hero=0;for(let i=1;i<count;i++)if(energies[i]>energies[hero])hero=i;
+  if(!semanticPanels.length)return{name:'empty',recipeId:null,rects:[],score:0,candidates:[],signals:{}};
+  const baseIndices=semanticPanels.map((panel,index)=>({panel,index})).filter(({panel})=>!panel?.inset).map(x=>x.index),baseSemantic=baseIndices.map(index=>semanticPanels[index]),count=baseSemantic.length||semanticPanels.length;
+  const energies=baseSemantic.map(s=>s?.importance?.energy??.5);let hero=0;for(let i=1;i<count;i++)if(energies[i]>energies[hero])hero=i;
   const normalized=normalizedHint(hint),exact=getLayoutRecipe(normalized),available=listLayoutRecipes({panelCount:count});
   const recipes=exact&&count>=exact.minPanels&&count<=exact.maxPanels?[exact,...available.filter(r=>r.id!==exact.id)]:available;
   const workingArea=Math.max(1,(Number(width)-Math.min(width,height)*.09)*(Number(height)-Math.min(width,height)*.09));
   const raw=recipes.map((recipe,index)=>{
     const candidateSeed=(Number(seed)||0)+index*101;
     const built=buildLayoutRecipe(recipe.id,{width,height,panelCount:count,seed:candidateSeed,mutation});
-    return{name:recipe.id,recipe,recipeId:recipe.id,rects:applyLocks(built.rects,semanticPanels),workingArea,seed:candidateSeed,mutation:Number(mutation)||0};
+    return{name:recipe.id,recipe,recipeId:recipe.id,rects:applyLocks(built.rects,baseSemantic),workingArea,seed:candidateSeed,mutation:Number(mutation)||0};
   });
-  const tech=techniqueSignals(directionAdvice);
-  for(const candidate of raw)candidate.score=scoreCandidate(candidate,semanticPanels,hero,readingDirection,tech,normalized);
+  const baseAdvice=baseIndices.map(index=>directionAdvice[index]||{}),baseTech=techniqueSignals(baseAdvice);for(const candidate of raw)candidate.score=scoreCandidate(candidate,baseSemantic,hero,readingDirection,baseTech,normalized);
   raw.sort((a,b)=>b.score-a.score||a.recipeId.localeCompare(b.recipeId));
   const winner=raw[0];
-  const modified=applyGeometryModifiers(winner.rects,semanticPanels,{directionAdvice,readingDirection}).map(r=>({x:clamp(r.x,0,width),y:clamp(r.y,0,height),w:r.w,h:r.h,skew:r.skew,locked:!!r.locked}));
+  const expanded=[];let baseCursor=0;for(let i=0;i<semanticPanels.length;i++){if(!semanticPanels[i]?.inset){expanded[i]=winner.rects[baseCursor++];continue;}const raw=String(semanticPanels[i].inset||''),m=raw.match(/(?:parent|親)?\s*(?:panel|p|コマ)?\s*(\d+)/i),parentIndex=m?Math.max(0,Number(m[1])-1):Math.max(0,i-1);expanded[i]={...(expanded[parentIndex]||winner.rects[Math.max(0,baseCursor-1)]||winner.rects[0])};}
+  const modified=applyGeometryModifiers(expanded,semanticPanels,{directionAdvice,readingDirection}).map(r=>({x:clamp(r.x,0,width),y:clamp(r.y,0,height),w:r.w,h:r.h,skew:r.skew,locked:!!r.locked}));
   return{
     name:winner.recipeId,recipeId:winner.recipeId,rects:modified,score:winner.score,
     candidates:raw.map(c=>({name:c.recipeId,recipeId:c.recipeId,family:c.recipe.family,score:c.score})),
-    signals:{heroPanel:hero+1,medium,recipeId:winner.recipeId,seed:Number(seed)||0,mutation:Number(mutation)||0,techniques:directionAdvice.map(a=>({panel:a.panel,techniques:a.techniques||[]}))}
+    signals:{heroPanel:(baseIndices[hero]??hero)+1,basePanelCount:count,insetCount:semanticPanels.length-count,medium,recipeId:winner.recipeId,seed:Number(seed)||0,mutation:Number(mutation)||0,techniques:directionAdvice.map(a=>({panel:a.panel,techniques:a.techniques||[]}))}
   };
 }
