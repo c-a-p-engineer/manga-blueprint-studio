@@ -20,7 +20,7 @@ function walk(root,predicate){
 }
 
 function assertArtifact(){
-  for(const file of ['dist/index.html','dist/editor.html','dist/guide.html','dist/runtime/core/foundation.js']){
+  for(const file of ['dist/index.html','dist/editor.html','dist/guide.html','dist/layout-catalog.html','dist/runtime/core/foundation.js']){
     if(!fs.existsSync(file))throw new Error(`Missing production artifact: ${file}`);
   }
   const index=fs.readFileSync('dist/index.html','utf8');
@@ -29,6 +29,8 @@ function assertArtifact(){
   if(!index.includes('./editor.html')&&!index.includes('/manga-blueprint-studio/editor.html'))throw new Error('Built landing does not link to editor.html');
   if(index.includes('id="blueprintSvg"'))throw new Error('Built landing unexpectedly contains editor DOM');
   if(!editor.includes('id="blueprintSvg"'))throw new Error('Built editor is missing editor DOM');
+  const layouts=fs.readFileSync('dist/layout-catalog.html','utf8');
+  if(!layouts.includes('id="catalogGrid"'))throw new Error('Built layout catalog is missing catalog grid');
   console.log('\n==> Production artifact shape passed');
 }
 
