@@ -90,6 +90,9 @@ Owns one-level panel-in-panel relation while reusing the ordinary Panel model.
 ### `integration/template-character-cast.js`
 Owns explicit reusable-character choice before Story Template apply and the starter-character integration.
 
+### `integration/layout-recipe-api.js`
+Owns the narrow bridge from typed/Vite UI code to legacy editor mutation for shared Core Layout Recipes. It accepts already-derived rectangles and must not duplicate or redefine `core/layout-recipes.mjs`.
+
 ### `templates/panel-layout-grammar.js`
 Owns shared-seam diagonal/asymmetric/buildup panel-layout families and their Story Template mapping.
 
