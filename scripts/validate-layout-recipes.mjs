@@ -60,7 +60,7 @@ const source=`# Page 1: recipe
 const projectA=compileMangaName(source,{title:'recipe'}),projectB=compileMangaName(source,{title:'recipe'});
 assert.deepEqual(projectA,projectB,'recipe compilation must stay deterministic');
 assert.equal(projectA.pages[0].layoutDecision.recipeId,'dialogue-stagger');
-assert.equal(projectA.pages[0].layoutDecision.signals.seed,0,'string seed normalizes internally but signal remains numeric fallback until manifest-level hashing');
+assert.ok(Number.isInteger(projectA.pages[0].layoutDecision.signals.seed)&&projectA.pages[0].layoutDecision.signals.seed>0,'string seed must normalize to a deterministic integer');
 assert.equal(projectA.pages[0].panels[1].style.bleed,'bottom');
 assert.equal(projectA.pages[0].panels[2].style.breakout,'character');
 assert.equal(projectA.meta.compiler.layoutSolver,'recipe-bank-v1');
