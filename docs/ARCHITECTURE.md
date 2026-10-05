@@ -23,6 +23,7 @@ core/blueprint-engine.mjs
 canonical manga-blueprint/0.2
           ├──────────────→ CLI package builder
           │                 ├ clean spatial visual
+          │                 ├ human-readable name preview
           │                 ├ annotated review visual
           │                 ├ page prompt
           │                 └ manifest
@@ -122,7 +123,8 @@ The same authority split is used across headless and Web workflows:
 
 - canonical `.manga.json` — semantic project state;
 - clean visual — spatial composition only;
-- annotated visual — human review aid;
+- name preview — human-readable lettering/balloon/SFX presentation over canonical geometry; not authority;
+- annotated visual — technical human review aid;
 - prompt — generation instructions and explicit visible-text allowlist;
 - manifest — read-first package/file-role index.
 
