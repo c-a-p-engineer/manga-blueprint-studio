@@ -26,8 +26,10 @@ These are enhancements, not unfinished 0.20 backlog.
 ### 0.21 — Web/Core convergence hardening
 Replace remaining legacy-runtime bridges with typed adapters, expose full solver alternatives/reasons in the editor, and add browser-level regression tests.
 
-### 0.22 — Observation extraction
-Add optional vision/manual adapters that turn a generated image into observed structural regions before Evaluator v2. The evaluator itself stays provider-independent.
+### 0.22 — Observation extraction (foundation shipped)
+Provider-neutral observation request/normalization/evaluation contracts and manual/structured observation are now present in Core. They support panel geometry, character occupancy, optional pose/contact evidence, reading/writing direction and visible-text drift diagnostics while keeping observations outside canonical project state.
+
+Remaining 0.22 work is the actual image/vision adapter that turns rendered pixels into those structural regions. Provider credentials/model IDs stay outside canonical state.
 
 ### 0.23 — Production provider plugins
 Ship opt-in provider plugins outside canonical state. Each plugin must map the portable generation package to a provider API without leaking provider IDs into manga-blueprint/0.2.
