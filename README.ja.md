@@ -4,7 +4,7 @@
 
 **漫画の「どう見せるか」を、画像生成の前に決めるための人間＋AI共同設計ツール。**
 
-Manga Blueprint Studio は、ネームの役割を人間とAIの両方が扱える **Executable Name（実行可能なネーム）** として再設計します。物語の意図からコマ割り、重要度、視線、カメラ、ポーズ、接触、文字領域までを構造化し、画像生成モデルへ渡せる空間設計とプロンプトを生成します。
+Manga Blueprint Studio 0.25.0 は、ネームの役割を人間とAIの両方が扱える **Executable Name（実行可能なネーム）** として再設計します。物語の意図からコマ割り、重要度、視線、カメラ、ポーズ、接触、文字領域までを構造化し、画像生成モデルへ渡せる空間設計とプロンプトを生成します。
 
 > **人が監督。AIは補助。** AIの提案やSolverの結果は検査・編集でき、人間が指定した意図を黙って置き換えません。
 
@@ -38,13 +38,18 @@ Energy / Attention / Reading Flow
   ↓
 Layout Recipe Bank + Solver
   ↓
-Pose / Contact Solver
+Spatial Intelligence v3 + コマ内構図Solver
+  ↓
+Continuity Graph
   ↓
 Executable Name
   ├─ Clean SVG/PNG      → 画像生成用の空間契約
   ├─ Annotated SVG/PNG  → 人間レビュー用
+  ├─ Lettering SVG/JSON → 正確な縦書き・台詞/SFX
   ├─ work.manga.json    → 意味の正本
   └─ Prompt             → 生成指示
+  ↓
+生成画像 → Observation → Evaluator → 人間承認Repair
 ```
 
 ## Blueprint Engine
@@ -78,7 +83,7 @@ node cli/manga-blueprint.mjs --list-layouts 4
 node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
 ```
 
-固定入力に対して決定論的に、canonical JSON、Clean/Annotated blueprint、ページPrompt、manifestを生成します。Base RecipeはCLI/Webで共通で、`recipe + seed + mutation` をコピーすれば同じ系統のコマ割りを再現できます。斜めコマ・差し込み・断ち切り・ブチ抜きはBase Recipeを選んだ後の演出として扱います。PNGは利用可能なローカルrasterizerがある場合に追加生成します。
+固定入力に対して決定論的に、canonical JSON、Clean/Annotated blueprint、ページPrompt、正確な文字用Lettering SVG/JSON、manifestを生成します。生成画像はObservation Adapterで構造化し、設計との差分を検出して人間承認のRepairへ接続できます。Base RecipeはCLI/Webで共通で、`recipe + seed + mutation` をコピーすれば同じ系統のコマ割りを再現できます。斜めコマ・差し込み・断ち切り・ブチ抜きはBase Recipeを選んだ後の演出として扱います。PNGは利用可能なローカルrasterizerがある場合に追加生成します。
 
 ## 漫画技法を知らなくても使える
 
