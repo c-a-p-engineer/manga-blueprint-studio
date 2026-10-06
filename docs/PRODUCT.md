@@ -25,6 +25,7 @@ The current headless compiler accepts a lightweight Markdown Name DSL and derive
 - page layout from beat count, emphasis, and the shared Layout Recipe Bank, with optional explicit recipe/seed/mutation settings;
 - initial camera from explicit terms and beat semantics;
 - reusable character placeholders from semantic tokens;
+- explicit placed-character role/detail hints for main/support/mob hierarchy;
 - initial character placement from coarse slots such as left/center/right/foreground/background;
 - page/panel background intent;
 - expression assignment;
@@ -135,7 +136,8 @@ Assistance must not silently replace recorded layout, action intent, pose, chara
 
 Panel reading direction and lettering direction remain separate contracts.
 
-- `meta.readingDirection = rtl | ltr`; Japanese RTL is default.
+- `meta.readingDirection = rtl | ltr`; Japanese RTL is default. Generation handoff spells the selected physical order out; RTL means right-to-left, then top-to-bottom, and must not be silently mirrored to LTR.
+- Annotated Blueprint shows the selected reading direction as a review cue while Clean stays annotation-free.
 - `meta.defaultWritingMode = vertical-rl | horizontal-tb`; vertical Japanese is default.
 - changing writing direction must not change panel reading order.
 
@@ -150,6 +152,8 @@ Identity modes:
 - `free` — downstream model may choose a simple consistent appearance.
 
 Blueprint Engine character tokens initially compile to `description` placeholders. When appearance guidance is empty, the package must surface that refinement is still needed rather than pretending identity is fully specified.
+
+Placed characters may additionally carry `characterRole = main | support | mob` and `renderDetail = standard | simplified | silhouette`. The Name DSL `モブ:` field compiles the named panel instances to `mob + simplified`. That reduces facial/detail information without removing the figure, changing its placement/pose, or weakening the identity contract for non-mob appearances.
 
 Stick figures communicate body relation, pose, placement, and approximate scale. They do not define finished appearance or clothing.
 
