@@ -234,7 +234,8 @@ export function buildManifest(project, sourceName = 'name.md') {
       semantic: 'work.manga.json',
       spatial: 'Pxxx.clean.svg',
       generationInstructions: 'Pxxx.prompt.md',
-      visibleText: 'TEXT TO RENDER section in each page prompt'
+      visibleText: 'TEXT TO RENDER section in each page prompt',
+      lettering: 'Pxxx.lettering.svg + Pxxx.lettering.json'
     },
     characters: project.characterLibrary.map((c) => ({ characterId: c.characterId, token: c.name, identityMode: c.identityMode, needsRefinement: !c.appearance?.summary })),
     pages: project.pages.map((p, i) => ({
@@ -242,7 +243,9 @@ export function buildManifest(project, sourceName = 'name.md') {
       pageNumber: p.pageNumber,
       cleanBlueprint: `P${String(i + 1).padStart(3, '0')}.clean.svg`,
       annotatedBlueprint: `P${String(i + 1).padStart(3, '0')}.blueprint.svg`,
-      prompt: `P${String(i + 1).padStart(3, '0')}.prompt.md`
+      prompt: `P${String(i + 1).padStart(3, '0')}.prompt.md`,
+      letteringOverlay: `P${String(i + 1).padStart(3, '0')}.lettering.svg`,
+      letteringPlan: `P${String(i + 1).padStart(3, '0')}.lettering.json`
     }))
   };
 }
