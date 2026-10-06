@@ -94,6 +94,10 @@ Supported semantic fields:
 - `支持:` / `support:` — `token> grounded | airborne | supported | unknown`.
 - `動作段階:` / `motion:` — `token> still | anticipation | approach | launch | airborne | impact | recovery`.
 - `接触:` / `contact:` — body/prop relation. Preferred form: `source.part > target.part`.
+- `情報量:` / `detail:` — per-panel salience/detail budget. Example: `hero=high, mob=silhouette, crowd=low, background=low`.
+- `モブ情報量:` / `crowd detail:` — shorthand for crowd/extra simplification.
+- `連続性:` / `continuity:` — mark an intentional continuity break/cut when screen-side/state changes should not be diagnosed as accidental.
+- `状態:` / `state:` — character continuity state, e.g. `hero> outfit=uniform; condition=injured`.
 - `カメラ:` / `camera:` — semantic distance/angle/viewpoint keywords.
 - `背景:` / `background:` — panel-local background override.
 - `効果音:` / `sfx:` — exact renderable SFX.
