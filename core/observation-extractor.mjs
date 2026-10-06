@@ -4,7 +4,7 @@ export const OBSERVATION_REQUEST_SCHEMA='manga-blueprint-observation-request/1';
 export const OBSERVATION_SCHEMA='manga-blueprint-observation/1';
 export const OBSERVATION_EVALUATION_SCHEMA='manga-blueprint-observation-evaluation/1';
 export const DEFAULT_OBSERVABLES=['panel-geometry','character-occupancy','pose-joints','contacts','reading-direction','writing-mode','visible-text'];
-const finite=n=>Number.isFinite(Number(n)),clamp=n=>Math.max(0,Math.min(1,n)),text=v=>String(v??'').trim();
+const finite=n=>n!==null&&n!==''&&Number.isFinite(Number(n)),clamp=n=>Math.max(0,Math.min(1,n)),text=v=>String(v??'').trim();
 
 function targetPage(project,pageIndex=0){
   const page=project.pages?.[pageIndex];
@@ -23,7 +23,7 @@ function mapper(project,raw){
   }else if(space!=='project')throw new Error(`Unsupported observation coordinateSpace: ${space}`);
   return{
     point:p=>p&&finite(p.x)&&finite(p.y)?{x:Number(p.x)*sx,y:Number(p.y)*sy}:null,
-    rect:r=>r&&finite(r.x)&&finite(r.y)&&finite(r.w)&&finite(r.h)?{x:Number(r.x)*sx,y:Number(r.y)*sy,w:Number(r.w)*sx,h:Number(r.h)*sy}:null
+    rect:r=>r&&finite(r.x)&&finite(r.y)&&finite(r.w)&&finite(r.h)&&Number(r.w)>0&&Number(r.h)>0?{x:Number(r.x)*sx,y:Number(r.y)*sy,w:Number(r.w)*sx,h:Number(r.h)*sy}:null
   };
 }
 
@@ -34,25 +34,15 @@ function matchPanel(page,rawPanel,index){
     ||null;
 }
 
-function matchCharacter(panel,rawCharacter,index){
-  const list=panel?.characters||[];
-  return list.find(c=>rawCharacter.id&&c.id===rawCharacter.id)
-    ||list.find(c=>rawCharacter.characterId&&c.characterId===rawCharacter.characterId)
-    ||list.find(c=>rawCharacter.referenceKey&&c.referenceKey===rawCharacter.referenceKey)
-    ||list.find(c=>rawCharacter.name&&c.name===rawCharacter.name)
-    ||list[index]
-    ||null;
-}
-
-function normalizeCharacter(expected,rawCharacter,index,map){
+function normalizeCharacter(rawCharacter,index,map){
   const occupancy=map.rect(rawCharacter.occupancy||rawCharacter.rect),anchor=map.point(rawCharacter.anchor);
   const joints=Object.fromEntries(Object.entries(rawCharacter.joints||{}).map(([k,v])=>[k,map.point(v)]).filter(([,v])=>v));
   const x=anchor?.x??(occupancy?occupancy.x+occupancy.w/2:undefined),y=anchor?.y??(occupancy?occupancy.y+occupancy.h/2:undefined);
   const out={
-    id:rawCharacter.id||expected?.id||`observed-character-${index+1}`,
-    characterId:rawCharacter.characterId||expected?.characterId||'',
-    name:rawCharacter.name||expected?.name||'',
-    referenceKey:rawCharacter.referenceKey||expected?.referenceKey||'',
+    id:rawCharacter.id||`observed-character-${index+1}`,
+    characterId:rawCharacter.characterId||'',
+    name:rawCharacter.name||'',
+    referenceKey:rawCharacter.referenceKey||'',
     observedOccupancy:occupancy||undefined,
     observedAnchor:anchor||undefined
   };
@@ -66,7 +56,7 @@ function normalizeCharacter(expected,rawCharacter,index,map){
 function normalizePanel(page,rawPanel,index,map){
   const expected=matchPanel(page,rawPanel,index),rect=map.rect(rawPanel.rect);
   if(!rect)throw new Error(`Observation panel ${index+1} is missing a valid rect`);
-  const characters=(rawPanel.characters||[]).map((c,ci)=>normalizeCharacter(matchCharacter(expected,c,ci),c,ci,map));
+  const characters=(rawPanel.characters||[]).map((c,ci)=>normalizeCharacter(c,ci,map));
   const renderContacts=(rawPanel.contacts||[]).map(c=>map.point(c.point||c)).filter(Boolean);
   const reservedRegions=(rawPanel.reservedRegions||[]).map(map.rect).filter(Boolean);
   const lettering=(rawPanel.lettering||[]).map((entry,li)=>({
@@ -77,8 +67,8 @@ function normalizePanel(page,rawPanel,index,map){
     index:li
   }));
   return{
-    id:rawPanel.panelId||rawPanel.id||expected?.id||`observed-panel-${index+1}`,
-    order:Number(rawPanel.order||expected?.order||index+1),
+    id:rawPanel.panelId||rawPanel.id||`observed-panel-${index+1}`,
+    order:Number(rawPanel.order||index+1),
     rect,
     characters,
     renderContacts,
@@ -120,12 +110,31 @@ function observedTextEntries(observedPage){
 
 function ratio(observed,expected){return expected>0?clamp(observed/expected):null;}
 
+function sameCharacter(expected,observed){
+  return observed&&(
+    observed.id===expected.id
+    ||observed.characterId&&observed.characterId===expected.characterId
+    ||expected.referenceKey&&observed.referenceKey===expected.referenceKey
+    ||expected.name&&observed.name===expected.name
+  );
+}
+
 function computeCoverage(project,page,observedPage,raw,observables){
   const expectedPanels=page.panels?.length||0,observedPanels=observedPage.panels?.length||0;
   const expectedCharacters=(page.panels||[]).reduce((n,p)=>n+(p.characters?.length||0),0);
-  const observedCharacters=(observedPage.panels||[]).reduce((n,p)=>n+(p.characters?.length||0),0);
-  const expectedPose=(page.panels||[]).reduce((n,p)=>n+(p.characters||[]).filter(c=>c.renderPose?.joints).length,0);
-  const observedPose=(observedPage.panels||[]).reduce((n,p)=>n+(p.characters||[]).filter(c=>c.renderPose?.joints&&Object.keys(c.renderPose.joints).length).length,0);
+  let observedCharacters=0,expectedPose=0,observedPose=0;
+  for(const expectedPanel of page.panels||[]){
+    const observedPanel=(observedPage.panels||[]).find(p=>p.id===expectedPanel.id)
+      ||(observedPage.panels||[]).find(p=>p.order===expectedPanel.order);
+    for(const expectedCharacter of expectedPanel.characters||[]){
+      const observedCharacter=(observedPanel?.characters||[]).find(c=>sameCharacter(expectedCharacter,c));
+      if(observedCharacter)observedCharacters++;
+      if(expectedCharacter.renderPose?.joints){
+        expectedPose++;
+        if(observedCharacter?.renderPose?.joints&&Object.keys(observedCharacter.renderPose.joints).length)observedPose++;
+      }
+    }
+  }
   const expectedContacts=(page.panels||[]).reduce((n,p)=>n+(p.renderContacts?.length||0),0);
   const observedContacts=(observedPage.panels||[]).reduce((n,p)=>n+(p.renderContacts?.length||0),0);
   const expectedText=expectedTextEntries(project,page).length,observedText=observedTextEntries(observedPage).filter(x=>x.text).length;
@@ -143,7 +152,13 @@ function computeCoverage(project,page,observedPage,raw,observables){
     requested:[...observables],
     byObservable,
     overall:active.length?active.reduce((a,b)=>a+b,0)/active.length:0,
-    counts:{expectedPanels,observedPanels,expectedCharacters,observedCharacters,expectedPose,observedPose,expectedContacts,observedContacts,expectedText,observedText}
+    counts:{
+      expectedPanels,observedPanels,
+      expectedCharacters,observedCharacters,
+      expectedPose,observedPose,
+      expectedContacts,observedContacts,
+      expectedText,observedText
+    }
   };
 }
 
