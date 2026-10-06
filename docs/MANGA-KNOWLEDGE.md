@@ -26,7 +26,7 @@ work / episode
           → camera / pose / gaze / motion / lettering
 ```
 
-For Japanese page manga, default reading flow is right-to-left and top-to-bottom. Do not assume that every medium uses this: vertical-scroll comics primarily use top-to-bottom progression.
+For Japanese page manga, default reading flow is **right-to-left and top-to-bottom**. Treat this as a composition constraint, not just metadata: panel sequence, eye flow, balloon placement, and downstream generation prompts must not silently mirror the page into LTR. Do not assume that every medium uses this: vertical-scroll comics primarily use top-to-bottom progression.
 
 ### Panel is a timing device
 
@@ -192,6 +192,21 @@ AI rule: infer **purpose first**, genre second. A romance fight scene may need a
 - **vertical writing / 縦書き** — common Japanese manga lettering direction.
 
 Visible-text rule for AI generation: only explicitly authored dialogue/narration/SFX should be rendered. Never render IDs, camera notes, contact labels or solver annotations.
+
+### Main cast vs mob information density
+
+Not every visible person needs equal facial information. Background crowds and mobs should usually communicate **number, direction, posture, clothing mass, and scene function** before individual identity.
+
+When a figure is explicitly marked as a mob:
+
+- keep the silhouette and pose readable;
+- preserve broad hair/clothing/color blocks when useful;
+- reduce high-frequency facial detail;
+- normally omit individually drawn eyes, nose, and mouth at ordinary/background scale;
+- avoid distinctive accessories or rendering polish that pulls attention away from main characters;
+- restore facial detail only when the story beat explicitly promotes that person as an attention target.
+
+This is a visual-hierarchy rule, not a rule that every distant character is automatically a mob.
 
 ## 9. Human → AI direction pattern
 
