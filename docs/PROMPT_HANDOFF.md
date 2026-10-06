@@ -126,6 +126,20 @@ Controls color/render style, line, shading, detail, background finish, palette/t
 
 Only exact strings allowlisted in the generated prompt's renderable-text section may become visible manga lettering.
 
+### Deterministic lettering overlay — exact production text
+
+Headless 0.25 packages may additionally include:
+
+```text
+Pxxx.lettering.json
+Pxxx.lettering.svg
+```
+
+The JSON is the deterministic glyph-position plan; the SVG is the transparent lettering overlay. When present, the overlay is the preferred production authority for final dialogue/SFX glyphs. It does not replace semantic text authority: source strings still come from canonical balloon/SFX fields and the exact visible-text allowlist.
+
+`overlay-only` means the image model should leave lettering regions clear and must not draw text. `overlay-preferred` permits model text for preview but allows the deterministic overlay to replace it.
+
+
 ## Panel geometry contract
 
 Prototype 0.16.0 supports two current panel-boundary forms:
