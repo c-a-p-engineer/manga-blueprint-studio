@@ -26,3 +26,9 @@ Prototype 0.25.0 closes the roadmap through post-generation observation, spatial
 ## Verification
 
 The 0.25 contract is covered by `scripts/validate-quality-loop-v25.mjs` plus existing build, schema, CLI, renderer, Web bridge and production validators.
+
+## Documentation
+
+- Maintained workflow: `docs/USER-GUIDE.md`
+- Public guide: `/guide.html`
+- Delivery status: `docs/ROADMAP.md`
