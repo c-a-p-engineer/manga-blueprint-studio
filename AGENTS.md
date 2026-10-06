@@ -157,7 +157,8 @@ The shared knowledge base and expression catalog may provide starting recommenda
 
 Panel reading direction and lettering direction are separate.
 
-- `meta.readingDirection`: `rtl | ltr`; Japanese RTL is default.
+- `meta.readingDirection`: `rtl | ltr`; Japanese RTL is default. For page manga, generated handoff text must state the physical order explicitly (RTL = right-to-left, then top-to-bottom) so downstream renderers do not silently mirror the page.
+- Annotated review output should expose the selected reading direction; Clean remains free of authoring labels.
 - `meta.defaultWritingMode`: `vertical-rl | horizontal-tb`; vertical Japanese is default.
 - balloon/SFX writing mode may override or inherit project default.
 - changing writing direction must not change panel reading order.
@@ -166,6 +167,8 @@ Panel reading direction and lettering direction are separate.
 ### Character identity boundary
 
 Reusable base-character identity and placed pose instances are separate. `sheet`, `description`, and `free` identity modes remain distinct. Solved skeleton/mannequin geometry communicates body relationship, pose, placement, scale, direction and contact; it does **not** define character appearance.
+
+Placed characters may explicitly be marked `characterRole=mob` with reduced `renderDetail`. Mob simplification is a visual-hierarchy instruction: preserve occupancy, silhouette, pose and broad clothing/hair cues while normally omitting high-frequency facial detail such as individually drawn eyes, nose and mouth. Do not infer mob status for named/main characters without authored or derived semantic evidence.
 
 ### AI-safe visual/text boundary
 
