@@ -45,7 +45,8 @@ Deterministic nearby variants can be shared with:
 
 ```md
 コマ1: 少女が相手へ踏み込む
-登場: girl@right, boy@left
+登場: girl@right, crowd@left
+モブ: crowd
 重要度: narrative=0.7, visual=0.9, transition=0.5
 間: 0.3
 主注目: girl.right-hand
@@ -87,6 +88,7 @@ Supported semantic fields:
 - `断ち切り:` / `bleed:` — page-edge relation: `none | top | right | bottom | left | all`.
 - `ブチ抜き:` / `breakout:` — frame breakout intent: `none | character | foreground | cross-panel`.
 - `登場:` / `cast:` — comma-separated `token@slot`; coarse slots are `left | center | right | foreground | background`.
+- `モブ:` / `mob:` / `mobs:` — comma-separated cast tokens that should be treated as low-information background/support figures in that panel. Compilation emits `characterRole=mob` and `renderDetail=simplified`. Downstream rendering should preserve silhouette, pose, hair/clothing blocks and scene function while normally omitting detailed eyes, nose and mouth so mobs do not compete with main characters.
 - `ポーズ:` / `pose:` — `token> semantic-pose`. Prefer short visual/action semantics, not joint coordinates.
 - `表情:` / `expression:` — `token> description`.
 - `視線:` / `gaze:` — `token> target`, e.g. `girl> boy.face`.
@@ -172,6 +174,8 @@ The compiler preserves this as structured interaction metadata in canonical proj
 ## Character tokens
 
 Character tokens are semantic handles, not finished display names. The compiler creates reusable characters in `description` mode when first encountered. Identity/appearance/reference binding can be refined independently from panel choreography.
+
+Mob status is an instance-level presentation role, not a weaker identity model. Mark a token with `モブ:` only when the panel should intentionally reduce that figure's facial/detail information. Do not infer mob status merely from distance or from the absence of dialogue.
 
 ## Authority
 
