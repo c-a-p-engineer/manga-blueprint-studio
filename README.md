@@ -2,9 +2,9 @@
 
 **Design how a manga should read before asking an image model to draw it.**
 
-Manga Blueprint Studio 0.20.0 is a human-directed, AI-assisted manga planning system. Story/Name intent becomes an **Executable Name** containing panel layout, attention, reading flow, camera, articulated pose, prop/contact geometry, lettering reservations and scene rhythm.
+Manga Blueprint Studio 0.25.0 is a human-directed, AI-assisted manga planning system. Story/Name intent becomes an **Executable Name** containing panel layout, attention, reading flow, camera, articulated pose, prop/contact geometry, lettering reservations and scene rhythm.
 
-Current prototype: 0.20.0
+Current prototype: 0.25.0
 
 ## Surfaces
 - Product: https://c-a-p-engineer.github.io/manga-blueprint-studio/
@@ -23,7 +23,7 @@ npm run blueprint -- examples/combat-1p.md blueprint-out
 node cli/manga-blueprint.mjs --list-layouts 4
 node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
 ```
-Output includes `work.manga.json`, per-page Clean/Annotated SVG, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only.
+Output includes `work.manga.json`, per-page Clean/Annotated SVG, deterministic lettering SVG/JSON, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only.
 
 ## Pipeline
 ```text
@@ -32,14 +32,15 @@ Story / Name DSL
  → Direction Advisor
  → Scene Director v2
  → Layout Recipe Bank + Solver v4
- → Pose / Prop / Contact Solver v2
+ → Spatial Intelligence v3 + In-panel Composition
+ → Continuity Graph v1
  → Canonical manga-blueprint/0.2
- → Clean + Prompt + References
+ → Clean + Prompt + References + deterministic lettering
  → Portable Generation Package
- → external provider adapter
- → Generated image
- → Structural Evaluator v2
- → human review / bounded correction
+ → external provider / generated image
+ → Image Observation + Structural Evaluator v2
+ → Human-approved Repair Context
+ → bounded regeneration / deterministic lettering overlay
 ```
 
 ## Web production workflow
