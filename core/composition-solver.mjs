@@ -24,12 +24,12 @@ function xBand(panel,hint='center'){
 }
 
 function targetDetail(panel,c){
-  const explicit=c.detailLevel||panel.detailBudget?.characters?.[c.name]||panel.detailBudget?.characters?.[c.referenceKey];
-  if(explicit)return explicit;
+  const authored=panel.detailBudget?.characters?.[c.name]||panel.detailBudget?.characters?.[c.referenceKey];
+  if(authored)return authored;
   if(/mob|crowd|extra|モブ|群衆|観客/i.test(c.name||c.referenceKey||''))return panel.detailBudget?.crowd||'low';
   const primary=lower(panel.attention?.primary);
   if(primary&&(primary.startsWith(lower(c.name))||primary.startsWith(lower(c.referenceKey))))return'high';
-  return'medium';
+  return c.detailLevel||'medium';
 }
 
 function negativeSpace(panel,chars,reservedRegions,readingDirection){
