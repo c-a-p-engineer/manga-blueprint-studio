@@ -154,6 +154,7 @@ export function compileName(text, options = {}) {
           return {
             id: id('placed', `${workId}:${pi}:${i}:${entry.token}:${ci}`), characterId: base.characterId, name: base.name, referenceKey: base.referenceKey,
             x: pos.x, y: pos.y, scale: pos.scale, rotation: 0, poseId: 'standing-neutral', supportState: 'grounded', motionPhase: 'still',
+            placementHint: entry.slot || 'center', placementLocked: false, detailLevel: 'medium',
             expression: { type: b.expressions[entry.token] || 'neutral', intensity: b.expressions[entry.token] ? .75 : .3, notes: '' },
             gaze: { target: '', notes: '' }
           };
@@ -176,7 +177,7 @@ export function compileName(text, options = {}) {
       })
     };
   });
-  return { format: 'manga-blueprint/0.2', meta: { workId, title, readingDirection: options.readingDirection || 'rtl', defaultWritingMode: 'vertical-rl', pageWidth: PAGE_W, pageHeight: PAGE_H, canvasPreset: 'B5-ish', layoutPreset: 'ai-name-compiler', workBrief: { purpose: 'AI/human co-authored manga name compilation', sourceNotes: 'Compiled from AI Name DSL.' } }, containers: [], characterLibrary, pages };
+  return { format: 'manga-blueprint/0.2', meta: { workId, title, readingDirection: options.readingDirection || 'rtl', defaultWritingMode: 'vertical-rl', letteringStrategy: 'overlay-preferred', pageWidth: PAGE_W, pageHeight: PAGE_H, canvasPreset: 'B5-ish', layoutPreset: 'ai-name-compiler', workBrief: { purpose: 'AI/human co-authored manga name compilation', sourceNotes: 'Compiled from AI Name DSL.' } }, containers: [], characterLibrary, pages };
 }
 
 export function renderBlueprintSvg(project, pageIndex = 0, { clean = false } = {}) {
