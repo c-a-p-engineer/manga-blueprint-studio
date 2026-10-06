@@ -24,7 +24,7 @@ The Web editor remains optional. Its role is visual refinement of the same canon
 
 ## Input
 
-See [`../core/name-schema.md`](../core/name-schema.md). The AI-facing DSL expresses story beats and manga intent rather than coordinates. Current semantics include importance/hold, attention, reading flow, cast, pose, gaze, depth, support, motion phase, body/prop contact, camera, background, visible text/effects, irregular panel boundaries and one-level insets.
+See [`../core/name-schema.md`](../core/name-schema.md). The AI-facing DSL expresses story beats and manga intent rather than coordinates. Current semantics include importance/hold, attention, reading flow, cast, explicit mob/detail role, pose, gaze, depth, support, motion phase, body/prop contact, camera, background, visible text/effects, irregular panel boundaries and one-level insets.
 
 ## Layout solver
 
@@ -69,7 +69,7 @@ canonical semantics
 
 ### Annotated
 
-`Pxxx.blueprint.svg` adds a human-review layer over the exact same art geometry. The review layer may show compact beat summaries, character labels, primary/secondary attention markers, gaze guides, contact labels, camera/energy information and diagnostics. These annotations exist to make authored intent reviewable without reconstructing meaning from canonical JSON. They are never part of the generation-facing spatial contract and must not leak into `Pxxx.clean.svg`.
+`Pxxx.blueprint.svg` adds a human-review layer over the exact same art geometry. The review layer may show compact beat summaries, character labels, primary/secondary attention markers, gaze guides, contact labels, camera/energy information, diagnostics, and an explicit reading-direction cue such as `RTL 右→左`. Mob instances may be visually de-emphasized and labeled as mob for review while preserving their solved occupancy and pose. These annotations exist to make authored intent reviewable without reconstructing meaning from canonical JSON. They are never part of the generation-facing spatial contract and must not leak into `Pxxx.clean.svg`.
 
 ## Raster output
 
@@ -77,7 +77,7 @@ The CLI always emits canonical SVG. It also attempts PNG output using an install
 
 ## Generation brief
 
-`Pxxx.prompt.md` is now an executable semantic brief. In addition to action/camera/background/text, it carries panel energy, primary attention, reading flow, pose, expression, gaze, support, motion, depth and structured contacts. The clean image is the spatial authority; `work.manga.json` remains semantic authority.
+`Pxxx.prompt.md` is now an executable semantic brief. In addition to action/camera/background/text, it carries panel energy, primary attention, reading flow, pose, expression, gaze, support, motion, depth, structured contacts, explicit physical reading order, and placed-character role/detail hints. For Japanese RTL work it states right-to-left then top-to-bottom and explicitly prohibits silent mirroring to LTR. Mob/detail hints tell downstream rendering to preserve silhouette/pose while reducing facial information. The clean image is the spatial authority; `work.manga.json` remains semantic authority.
 
 ## Package
 
