@@ -337,6 +337,19 @@ No Character Sheet is required. The downstream model may choose a simple appeara
 
 Generated prompt wording must never universally claim that visual identity comes only from Character Sheets.
 
+### Mob / low-information figures
+
+Placed characters may carry:
+
+```json
+{
+  "characterRole": "mob",
+  "renderDetail": "simplified"
+}
+```
+
+These are intentional visual-hierarchy hints, not permission to remove the character or change their pose/placement. For `mob + simplified`, downstream rendering should prioritize readable silhouette, pose, hairstyle/clothing blocks, and scene function while normally omitting detailed eyes, nose, mouth, skin rendering, and other high-frequency facial information. A mob should not attract more facial/detail attention than the authored main cast unless the beat explicitly promotes that character.
+
 ## Story action intent
 
 `Panel.actionIntent` is semantic direction, for example:
@@ -363,7 +376,7 @@ The **斜め3コマ / 斜め4コマ 2×2** choices introduced with panel geometr
 
 `meta.readingDirection` is authoritative:
 
-- `rtl` — Japanese manga right-to-left;
+- `rtl` — Japanese manga right-to-left; this is the default for page manga;
 - `ltr` — left-to-right.
 
 Committed render paths synchronize panel order from geometry + selected direction before handoff. For current convex quadrilateral panels, the synchronized compatibility `rect` bounding box is used for deterministic row/order calculation while the exact polygon remains the rendering boundary.
@@ -379,6 +392,8 @@ The same order should therefore be reflected by:
 - exported semantics.
 
 Changing text writing direction does not change panel reading order.
+
+Generation instructions must spell the selected reading direction out in observable terms. For `rtl`, downstream rendering is told **right-to-left, then top-to-bottom**, and must not mirror or reinterpret the supplied page as LTR. Annotated Blueprint output should also expose the current reading direction as a review cue; Clean remains free of authoring labels.
 
 ## Balloon lettering direction
 
