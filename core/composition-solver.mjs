@@ -46,7 +46,7 @@ function negativeSpace(panel,chars,reservedRegions,readingDirection){
 }
 
 function attentionPoint(panel,token=''){
-  const m=String(token).match(/^(.+).([^.]+)$/);
+  const m=String(token).match(/^(.+)\.([^.]+)$/);
   if(!m)return null;
   const key=lower(m[1]),part=lower(m[2]).replace(/[-_ ]/g,'');
   const c=(panel.characters||[]).find(x=>lower(x.name)===key||lower(x.referenceKey)===key);
