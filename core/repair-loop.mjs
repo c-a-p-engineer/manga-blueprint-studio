@@ -10,7 +10,7 @@ function actionFor(diagnostic,index){
   if(code==='visible-text-mismatch'||code==='visible-text-missing'||code==='visible-text-unexpected')return{...base,kind:'lettering',change:{strategy:'deterministic-overlay'},reason:'Replace unreliable generated lettering with exact authored text.'};
   if(code==='panel-count-mismatch')return{...base,kind:'render-constraint',change:{preservePanelGeometry:true},reason:'Regenerate while preserving exact panel topology.'};
   if(code==='character-missing')return{...base,kind:'render-constraint',change:{preserveCast:true,character:diagnostic.evidence?.character||''},reason:'Restore authored cast without rewriting other panels.'};
-  if(code==='pose-balance'||code==='joint-range'||code==='panel-overflow'||code==='heavy-overlap')return{...base,kind:'semantic-review',change:{target:'pose-or-composition'},reason:'Review only the affected pose/composition before bounded re-solve.'};
+  if(code==='pose-balance'||code==='excessive-backward-lean'||code==='joint-range'||code==='panel-overflow'||code==='heavy-overlap')return{...base,kind:'semantic-review',change:{target:'pose-or-composition'},reason:'Review only the affected pose/composition before bounded re-solve.'};
   return{...base,kind:'review',change:{target:'diagnostic-subject'},reason:'No safe automatic semantic mutation is defined for this diagnostic.'};
 }
 
