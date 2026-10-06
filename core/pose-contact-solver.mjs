@@ -148,6 +148,21 @@ function moveAnchor(plan,part,target){
   a.x=target.x;a.y=target.y;
 }
 
+function refreshDerived(plan,support,scale=1){
+  const j=plan.joints,s=Number(scale)||1;
+  plan.body=bodyMetrics(plan,support);
+  plan.jointAngles={
+    leftElbow:angle(j.leftShoulder,j.leftElbow,j.leftHand),
+    rightElbow:angle(j.rightShoulder,j.rightElbow,j.rightHand),
+    leftKnee:angle(j.hip,j.leftKnee,j.leftFoot),
+    rightKnee:angle(j.hip,j.rightKnee,j.rightFoot)
+  };
+  const points=[...Object.values(j),...(plan.props||[]).flatMap(p=>[p.base,p.tip,p.grip].filter(Boolean))].filter(Boolean);
+  const xs=points.map(p=>p.x),ys=points.map(p=>p.y);
+  plan.occupancy={x:Math.min(...xs)-26*s,y:Math.min(...ys)-30*s,w:Math.max(...xs)-Math.min(...xs)+52*s,h:Math.max(...ys)-Math.min(...ys)+42*s};
+  return plan;
+}
+
 function diagnostics(panel){
   const out=[];
   for(const c of panel.characters){
@@ -183,7 +198,7 @@ export function solvePanelPoses(panel){
     if(target)moveAnchor(target.renderPose,interaction.target.part,contact);
     contacts.push({x:contact.x,y:contact.y,source:interaction.source,target:interaction.target});
   }
-  for(const c of panel.characters)c.renderPose.body=bodyMetrics(c.renderPose,c.renderPose.airborne?'airborne':lower(c.supportState));
+  for(const c of panel.characters)refreshDerived(c.renderPose,c.renderPose.airborne?'airborne':lower(c.supportState),c.scale);
   panel.renderContacts=contacts;
   panel.renderDiagnostics=diagnostics(panel);
   return panel;
