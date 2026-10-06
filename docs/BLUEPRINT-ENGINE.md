@@ -94,6 +94,22 @@ P001.prompt.md
 
 The manifest records renderer, pose solver, rasterization status and authority roles.
 
+## Observation extraction foundation
+
+The first post-generation observation layer is provider-neutral and non-mutating.
+
+`core/observation-extractor.mjs` exposes:
+
+- `manga-blueprint-observation-request/1` — tells an external vision/manual adapter what page and observable classes to inspect without supplying expected geometry to copy;
+- `manga-blueprint-observation/1` — normalized structural evidence in project coordinate space;
+- `manga-blueprint-observation-evaluation/1` — scoped Structural Evaluator output plus observation coverage and explicit diagnostics.
+
+Supported observation classes currently include panel geometry, character occupancy, optional pose joints/contact points, reading direction, writing mode and visible text. Normalized observations can use normalized, pixel or project coordinates.
+
+The Core module does **not** inspect raster pixels itself and does not depend on a particular vision provider. A later provider plugin may turn a generated image into the portable observation contract. Manual/structured observation is already usable for tests, review tooling and adapter development.
+
+Missing observation fields are treated as missing evidence rather than copied from authored state. This prevents a partially observed image from receiving a misleading perfect structural score.
+
 ## AI co-authoring loop
 
 ```text
