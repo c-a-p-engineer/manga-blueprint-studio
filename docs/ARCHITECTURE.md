@@ -167,6 +167,25 @@ The headless compiler preview uses a distinct `manga-blueprint-name-package/2` m
 
 Do not silently claim byte-level or schema-level compatibility between the two manifest formats.
 
+## Observation extraction boundary
+
+Post-generation observation is deliberately outside canonical project state. Core now owns a provider-neutral observation boundary:
+
+```text
+generated page image
+  -> vision/manual observation adapter
+  -> manga-blueprint-observation/1
+  -> coordinate normalization
+  -> scoped Structural Evaluator v2
+  -> non-mutating diagnostics
+```
+
+`core/observation-extractor.mjs` defines the request, normalized observation and evaluation package contracts. Adapters should report only what they can actually observe: panel geometry, character occupancy, pose joints, contacts, reading/writing direction and visible text. Missing observation fields reduce coverage instead of being silently copied from the expected Blueprint.
+
+Core does not own provider credentials or a specific computer-vision model. A provider plugin or human/manual adapter may inspect rendered pixels and emit the portable observation contract. The normalized observation is transient evidence and must not become a second canonical manga project.
+
+Diagnostics may identify panel-count, cast, reading-direction, writing-mode and visible-text drift. They are advisory evidence for a later human-approved repair loop; observation does not silently mutate authored state.
+
 ## Verification
 
 Main CI must cover:
