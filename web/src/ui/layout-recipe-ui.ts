@@ -26,20 +26,29 @@ export function installLayoutRecipeUi(){
     </div>
     <div id="layoutRecipeDeepLinkNotice" class="layout-recipe-deeplink" role="status" aria-live="polite" hidden></div>\n    <div id="layoutRecipeDescription" class="layout-recipe-description"></div>
     <div id="layoutRecipePreview" class="layout-recipe-preview"></div>
+    <details id="layoutSolverInspector" class="layout-solver-inspector"><summary>Solver decision / 判断理由</summary><div id="layoutSolverDecision"></div></details>
     <div class="layout-recipe-actions"><button id="layoutRecipeApply" class="primary" type="button">このコマ割りを使う</button><button id="layoutRecipeReroll" type="button">seedを変える</button><button id="layoutRecipeCopy" type="button">設定をコピー</button></div>
   `;
   anchor.insertAdjacentElement('afterend',host);
-  const panelCount=host.querySelector<HTMLSelectElement>('#layoutRecipePanelCount')!,select=host.querySelector<HTMLSelectElement>('#layoutRecipeSelect')!,seed=host.querySelector<HTMLInputElement>('#layoutRecipeSeed')!,mutation=host.querySelector<HTMLInputElement>('#layoutRecipeMutation')!,out=host.querySelector<HTMLOutputElement>('#layoutRecipeMutationOut')!,preview=host.querySelector<HTMLElement>('#layoutRecipePreview')!,description=host.querySelector<HTMLElement>('#layoutRecipeDescription')!,catalog=host.querySelector<HTMLAnchorElement>('#layoutRecipeCatalogLink')!;
+  const panelCount=host.querySelector<HTMLSelectElement>('#layoutRecipePanelCount')!,select=host.querySelector<HTMLSelectElement>('#layoutRecipeSelect')!,seed=host.querySelector<HTMLInputElement>('#layoutRecipeSeed')!,mutation=host.querySelector<HTMLInputElement>('#layoutRecipeMutation')!,out=host.querySelector<HTMLOutputElement>('#layoutRecipeMutationOut')!,preview=host.querySelector<HTMLElement>('#layoutRecipePreview')!,description=host.querySelector<HTMLElement>('#layoutRecipeDescription')!,catalog=host.querySelector<HTMLAnchorElement>('#layoutRecipeCatalogLink')!,solverDecision=host.querySelector<HTMLElement>('#layoutSolverDecision')!;
   panelCount.value=params.get('layoutPanels')||String(Math.max(1,Math.min(6,initial.panelCount||4)));seed.value=params.get('layoutSeed')||'0';mutation.value=params.get('layoutMutation')||'.20';
   function refreshRecipes(preferred=params.get('layoutRecipe')){
     const count=Number(panelCount.value)||4,recipes=listLayoutRecipes({panelCount:count});select.innerHTML=recipes.map((recipe:any)=>`<option value="${escapeHtml(recipe.id)}">${escapeHtml(initial.language==='en'?recipe.en:recipe.ja)} — ${escapeHtml(recipe.id)}</option>`).join('');
     if(preferred&&recipes.some((recipe:any)=>recipe.id===preferred))select.value=preferred;
     refreshPreview();
   }
+  function refreshSolverDecision(){
+    const decision=layoutApi.currentSolverDecision(),candidates=(decision.candidates||[]).slice(0,5),rationale=decision.directionRationale||[];
+    const winner=decision.recipeId||decision.winner||'manual';
+    const score=typeof decision.score==='number'?decision.score.toFixed(3):'—';
+    const candidateText=candidates.length?candidates.map((c:any)=>`${c.recipeId||c.name||'?'}: ${typeof c.score==='number'?c.score.toFixed(3):'—'}`).join(' / '):'候補スコアなし';
+    const reasonText=rationale.flatMap((entry:any)=>(entry.reasons||[]).map((r:any)=>`P${entry.panel||'?'} ${r.technique}: ${r.reason}`)).slice(0,6).join(' / ');
+    solverDecision.textContent=`winner=${winner} / score=${score} / ${candidateText}${reasonText?` / ${reasonText}`:''}`;
+  }
   function refreshPreview(){
     const canvas=layoutApi.currentCanvas(),count=Number(panelCount.value)||4,recipe=getLayoutRecipe(select.value);if(!recipe)return;
     const mutationValue=Number(mutation.value)||0,built=buildLayoutRecipe(recipe.id,{width:canvas.width,height:canvas.height,panelCount:count,seed:seed.value,mutation:mutationValue});out.value=mutationValue.toFixed(2);description.textContent=initial.language==='en'?recipe.helpEn:recipe.helpJa;preview.innerHTML=previewSvg(built.rects,canvas.width,canvas.height);
-    const q=new URLSearchParams({panels:String(count),recipe:recipe.id,seed:seed.value,mutation:mutationValue.toFixed(2)});catalog.href=`./layout-catalog.html?${q}`;
+    const q=new URLSearchParams({panels:String(count),recipe:recipe.id,seed:seed.value,mutation:mutationValue.toFixed(2)});catalog.href=`./layout-catalog.html?${q}`;refreshSolverDecision();
   }
   panelCount.addEventListener('change',()=>refreshRecipes(select.value));select.addEventListener('change',refreshPreview);seed.addEventListener('input',refreshPreview);mutation.addEventListener('input',refreshPreview);
   host.querySelector('#layoutRecipeReroll')?.addEventListener('click',()=>{seed.value=String(Math.floor(Math.random()*1_000_000));refreshPreview();});
