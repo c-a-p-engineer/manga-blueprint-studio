@@ -4,7 +4,7 @@ export const OBSERVATION_REQUEST_SCHEMA='manga-blueprint-observation-request/1';
 export const OBSERVATION_SCHEMA='manga-blueprint-observation/1';
 export const OBSERVATION_EVALUATION_SCHEMA='manga-blueprint-observation-evaluation/1';
 export const DEFAULT_OBSERVABLES=['panel-geometry','character-occupancy','pose-joints','contacts','reading-direction','writing-mode','visible-text'];
-const finite=n=>n!==null&&n!==''&&Number.isFinite(Number(n)),clamp=n=>Math.max(0,Math.min(1,n)),text=v=>String(v??'').trim();
+const finite=n=>n!==null&&n!==''&&Number.isFinite(Number(n)),clamp=n=>Math.max(0,Math.min(1,n)),text=v=>String(v??'').trim(),confidence=v=>finite(v)?clamp(Number(v)):null;
 
 function targetPage(project,pageIndex=0){
   const page=project.pages?.[pageIndex];
@@ -44,7 +44,8 @@ function normalizeCharacter(rawCharacter,index,map){
     name:rawCharacter.name||'',
     referenceKey:rawCharacter.referenceKey||'',
     observedOccupancy:occupancy||undefined,
-    observedAnchor:anchor||undefined
+    observedAnchor:anchor||undefined,
+    observationConfidence:confidence(rawCharacter.confidence)
   };
   if(Number.isFinite(x))out.x=x;
   if(Number.isFinite(y))out.y=y;
@@ -57,13 +58,14 @@ function normalizePanel(page,rawPanel,index,map){
   const expected=matchPanel(page,rawPanel,index),rect=map.rect(rawPanel.rect);
   if(!rect)throw new Error(`Observation panel ${index+1} is missing a valid rect`);
   const characters=(rawPanel.characters||[]).map((c,ci)=>normalizeCharacter(c,ci,map));
-  const renderContacts=(rawPanel.contacts||[]).map(c=>map.point(c.point||c)).filter(Boolean);
+  const renderContacts=(rawPanel.contacts||[]).map(c=>{const point=map.point(c.point||c);return point?{...point,...(confidence(c.confidence)!=null?{confidence:confidence(c.confidence)}:{})}:null}).filter(Boolean);
   const reservedRegions=(rawPanel.reservedRegions||[]).map(map.rect).filter(Boolean);
   const lettering=(rawPanel.lettering||[]).map((entry,li)=>({
     kind:entry.kind||'unknown',
     text:text(entry.text),
     writingMode:entry.writingMode||null,
     rect:map.rect(entry.rect)||undefined,
+    confidence:confidence(entry.confidence),
     index:li
   }));
   return{
@@ -75,7 +77,8 @@ function normalizePanel(page,rawPanel,index,map){
     reservedRegions,
     attention:rawPanel.attention||undefined,
     flow:rawPanel.flow||undefined,
-    observedLettering:lettering
+    observedLettering:lettering,
+    observationConfidence:confidence(rawPanel.confidence)
   };
 }
 
@@ -109,6 +112,23 @@ function observedTextEntries(observedPage){
 }
 
 function ratio(observed,expected){return expected>0?clamp(observed/expected):null;}
+function confidenceSummary(raw,observedPage){
+  const values=[];
+  const add=v=>{const x=confidence(v);if(x!=null)values.push(x);};
+  add(raw.source?.confidence);
+  for(const panel of observedPage.panels||[]){
+    add(panel.observationConfidence);
+    for(const character of panel.characters||[])add(character.observationConfidence);
+    for(const lettering of panel.observedLettering||[])add(lettering.confidence);
+    for(const contact of panel.renderContacts||[])add(contact.confidence);
+  }
+  return{
+    provided:values.length,
+    mean:values.length?values.reduce((a,b)=>a+b,0)/values.length:null,
+    minimum:values.length?Math.min(...values):null
+  };
+}
+
 
 function sameCharacter(expected,observed){
   return observed&&(
@@ -200,7 +220,8 @@ export function normalizeObservation(project,raw,{pageIndex=0,observables=raw?.o
     source:raw.source||{kind:'manual'},
     coordinateSpace:'project',
     project:observedProject,
-    coverage:computeCoverage(project,page,observedPage,raw,observables)
+    coverage:computeCoverage(project,page,observedPage,raw,observables),
+    confidence:confidenceSummary(raw,observedPage)
   };
 }
 
@@ -209,6 +230,11 @@ function characterKey(c){return c.id||c.characterId||c.referenceKey||c.name||'';
 export function createObservationDiagnostics(project,normalized,{pageIndex=0}={}){
   const page=targetPage(project,pageIndex),observedPage=normalized.project.pages?.[0],diagnostics=[];
   const push=(code,severity,subject,evidence,suggestedAction)=>diagnostics.push({code,severity,subject,evidence,suggestedAction});
+  if(normalized.confidence?.mean!=null&&normalized.confidence.mean<.6)push(
+    'observation-low-confidence','review',`page:${page.id}`,
+    {mean:normalized.confidence.mean,minimum:normalized.confidence.minimum,provided:normalized.confidence.provided},
+    'human-review-observation'
+  );
   if((observedPage?.panels?.length||0)!==(page.panels?.length||0))push(
     'panel-count-mismatch','error',`page:${page.id}`,
     {expected:page.panels?.length||0,observed:observedPage?.panels?.length||0},
@@ -286,6 +312,7 @@ export function evaluateObservedGeneration(project,raw,{pageIndex=0,observables=
     pageId:normalized.pageId,
     source:normalized.source,
     coverage:normalized.coverage,
+    confidence:normalized.confidence,
     diagnostics,
     structural:report,
     verdict
