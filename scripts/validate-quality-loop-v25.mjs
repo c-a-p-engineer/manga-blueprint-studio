@@ -2,7 +2,7 @@ import assert from'node:assert/strict';
 import{compileMangaName}from'../core/manga-grammar.mjs';
 import{buildContinuityGraph}from'../core/continuity-graph.mjs';
 import{buildLetteringPlan,renderLetteringOverlaySvg}from'../core/lettering-renderer.mjs';
-import{createImageObservation,evaluateGeneratedImage}from'../core/image-observation-adapter.mjs';
+import{createImageObservation,evaluateGeneratedImage,runImageObservationAdapter}from'../core/image-observation-adapter.mjs';
 import{createRepairPlan,approveRepairPlan,buildRepairContext,applyApprovedSemanticPatch}from'../core/repair-loop.mjs';
 import{buildPortableGenerationPackage}from'../core/generation-adapter.mjs';
 
@@ -93,6 +93,28 @@ const evaluation=evaluateGeneratedImage(project,observation,{pageIndex:0});
 assert.equal(evaluation.verdict,'good');
 assert.ok(evaluation.structural.result.score>.99);
 assert.ok((evaluation.confidence.mean||0)>.8);
+
+const adapterRun=await runImageObservationAdapter({
+  project,
+  pageIndex:0,
+  asset:'generated-page.png',
+  width:project.meta.pageWidth,
+  height:project.meta.pageHeight,
+  adapter:{
+    name:'fixture-vision',
+    provider:'test',
+    model:'structured-fixture',
+    async observe(task){
+      assert.equal(task.schema,'manga-blueprint-image-observation-task/1');
+      assert.equal(task.observationRequest.constraints.doNotCopyExpectedGeometry,true);
+      assert.ok(!JSON.stringify(task.observationRequest).includes('"rect"'),'vision task must not expose expected geometry');
+      return{panels:observedPanels,readingDirection:'rtl',defaultWritingMode:'vertical-rl',confidence:.93};
+    }
+  }
+});
+assert.equal(adapterRun.schema,'manga-blueprint-image-observation-run/1');
+assert.equal(adapterRun.evaluation.verdict,'good');
+assert.equal(adapterRun.adapter.name,'fixture-vision');
 
 const driftObservation=createImageObservation({
   asset:'generated-page-bad.png',
