@@ -94,7 +94,8 @@ The Web editor continues to support:
 - reusable character identity;
 - Story Template Studio and Smart Manga;
 - manga-specific camera/background/text/effect semantics;
-- selected-page AI generation/review packages.
+- selected-page AI generation/review packages;
+- typed solver-decision inspection for the shared Layout Recipe surface.
 
 ### Manga-first editor shell
 
@@ -159,17 +160,28 @@ Clean visuals communicate spatial composition. `.manga.json` + prompt communicat
 
 Clean outputs must not expose authoring labels such as action notes, character names, IDs, panel numbers, camera labels, or dialogue/SFX glyphs.
 
+## Quality loop through 0.25
+
+The provider-neutral production loop now includes:
+
+- image-facing observation adapters that normalize manual/vision evidence into `manga-blueprint-observation/1`;
+- confidence-aware Structural Evaluator handoff and diagnosable drift;
+- Spatial Intelligence v3 for body orientation, support/balance, pose sanity and contact;
+- In-panel Composition Solver + Detail / Salience Budget;
+- human-approved Repair Plan / Approval / Context contracts;
+- Continuity Graph v1 across panels/pages;
+- deterministic lettering plan + transparent SVG overlay for exact authored dialogue/SFX.
+
+Observation and repair execution state remain outside canonical project state. Optional semantic repair mutation is explicit, whitelist-bounded and approval-gated.
+
 ## Current non-goals / roadmap
 
 The current product does not yet provide:
 
-- full backup/restore;
-- multi-page/range/container/work-wide Web generation export;
-- panel-first generation packages;
-- generalized cross-page reference assets;
 - arbitrary polygon/curved frames;
-- deterministic final post-generation typesetting;
-- bidirectional Name DSL ↔ edited project synchronization.
+- bidirectional Name DSL ↔ edited project synchronization;
+- built-in provider credentials/network execution inside canonical Core;
+- automatic aesthetic ranking or autonomous canonical repair.
 
 These remain roadmap work. In particular, deterministic Name compilation must not be mistaken for a source-control round-trip contract.
 

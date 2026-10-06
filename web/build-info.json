@@ -1,6 +1,6 @@
 {
   "schema": "manga-blueprint-build-info/1",
-  "appVersion": "0.20.0",
+  "appVersion": "0.25.0",
   "gitCommit": null,
   "buildSource": "repository-fallback",
   "deployedAt": null

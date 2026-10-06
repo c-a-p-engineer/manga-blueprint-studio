@@ -38,6 +38,14 @@ Panel importance is a layout weight, not a direct `importance = large panel` rul
 
 When the winning layout changes panel geometry, derived character, balloon and reserved-region anchors are reprojected into the solved rectangle before pose/contact solving. Insets apply the same reflow rule, so generated spatial references do not retain stale coordinates from bootstrap geometry.
 
+## Spatial Intelligence v3
+
+`core/composition-solver.mjs` derives in-panel subject placement constraints, reserved-region avoidance, negative-space planning and detail/salience levels without changing panel boundaries. Explicit placement locks remain authoritative.
+
+`core/pose-contact-solver.mjs` v3 adds deterministic torso/pelvis orientation, center of mass, support polygon, balance state, joint-angle diagnostics, perspective hints and crouched/seated/lying/leaning posture families while preserving structured contact solving.
+
+`core/continuity-graph.mjs` derives cross-panel/page character state edges for screen side, facing, prop hand, outfit/condition and explicit continuity breaks.
+
 ## Pose / contact solver
 
 `core/pose-contact-solver.mjs` converts semantic pose IDs into deterministic 2D render geometry. The derived `renderPose` contains a skeleton, facing/lean state and inferred props. The solver currently recognizes action/guard/recoil/airborne families and sword/slash poses.
@@ -109,6 +117,12 @@ Supported observation classes currently include panel geometry, character occupa
 The Core module does **not** inspect raster pixels itself and does not depend on a particular vision provider. A later provider plugin may turn a generated image into the portable observation contract. Manual/structured observation is already usable for tests, review tooling and adapter development.
 
 Missing observation fields are treated as missing evidence rather than copied from authored state. This prevents a partially observed image from receiving a misleading perfect structural score.
+
+## Human-approved repair and deterministic lettering
+
+Post-generation drift may be converted into `manga-blueprint-repair-plan/1`. No action is applied until the caller creates an explicit approval. Approved render/lettering constraints become a provider-neutral repair context; canonical semantic mutation is a separate whitelist-bounded operation requiring explicit approval.
+
+`core/lettering-renderer.mjs` creates a deterministic glyph-position plan and transparent SVG overlay from the exact authored dialogue/SFX strings. CLI packages emit both `Pxxx.lettering.json` and `Pxxx.lettering.svg`.
 
 ## AI co-authoring loop
 

@@ -2,8 +2,18 @@ import type {BuildInfo} from '../legacy-runtime';
 
 export const EDITOR_RENDERED_EVENT='manga-blueprint:editor-rendered' as const;
 
+export type LayoutSolverDecision={
+  solver:string;
+  winner?:string|null;
+  recipeId?:string|null;
+  score?:number|null;
+  candidates?:Array<{name?:string;recipeId?:string;family?:string;score?:number}>;
+  directionRationale?:Array<{panel?:number;techniques?:string[];reasons?:Array<{technique:string;reason:string}>}>;
+};
+
 export type LayoutRecipeApi={
   currentCanvas:()=>{width:number;height:number;panelCount:number;language:string};
+  currentSolverDecision:()=>LayoutSolverDecision;
   applyLayoutRecipe:(config:{recipeId:string;seed:string|number;mutation:number;rects:Array<{x:number;y:number;w:number;h:number}>;ask?:boolean})=>boolean;
 };
 

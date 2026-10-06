@@ -154,6 +154,7 @@ export function compileName(text, options = {}) {
           return {
             id: id('placed', `${workId}:${pi}:${i}:${entry.token}:${ci}`), characterId: base.characterId, name: base.name, referenceKey: base.referenceKey,
             x: pos.x, y: pos.y, scale: pos.scale, rotation: 0, poseId: 'standing-neutral', supportState: 'grounded', motionPhase: 'still',
+            placementHint: entry.slot || 'center', placementLocked: false, detailLevel: 'medium',
             expression: { type: b.expressions[entry.token] || 'neutral', intensity: b.expressions[entry.token] ? .75 : .3, notes: '' },
             gaze: { target: '', notes: '' }
           };
@@ -176,7 +177,7 @@ export function compileName(text, options = {}) {
       })
     };
   });
-  return { format: 'manga-blueprint/0.2', meta: { workId, title, readingDirection: options.readingDirection || 'rtl', defaultWritingMode: 'vertical-rl', pageWidth: PAGE_W, pageHeight: PAGE_H, canvasPreset: 'B5-ish', layoutPreset: 'ai-name-compiler', workBrief: { purpose: 'AI/human co-authored manga name compilation', sourceNotes: 'Compiled from AI Name DSL.' } }, containers: [], characterLibrary, pages };
+  return { format: 'manga-blueprint/0.2', meta: { workId, title, readingDirection: options.readingDirection || 'rtl', defaultWritingMode: 'vertical-rl', letteringStrategy: 'overlay-preferred', pageWidth: PAGE_W, pageHeight: PAGE_H, canvasPreset: 'B5-ish', layoutPreset: 'ai-name-compiler', workBrief: { purpose: 'AI/human co-authored manga name compilation', sourceNotes: 'Compiled from AI Name DSL.' } }, containers: [], characterLibrary, pages };
 }
 
 export function renderBlueprintSvg(project, pageIndex = 0, { clean = false } = {}) {
@@ -233,7 +234,8 @@ export function buildManifest(project, sourceName = 'name.md') {
       semantic: 'work.manga.json',
       spatial: 'Pxxx.clean.svg',
       generationInstructions: 'Pxxx.prompt.md',
-      visibleText: 'TEXT TO RENDER section in each page prompt'
+      visibleText: 'TEXT TO RENDER section in each page prompt',
+      lettering: 'Pxxx.lettering.svg + Pxxx.lettering.json'
     },
     characters: project.characterLibrary.map((c) => ({ characterId: c.characterId, token: c.name, identityMode: c.identityMode, needsRefinement: !c.appearance?.summary })),
     pages: project.pages.map((p, i) => ({
@@ -241,7 +243,9 @@ export function buildManifest(project, sourceName = 'name.md') {
       pageNumber: p.pageNumber,
       cleanBlueprint: `P${String(i + 1).padStart(3, '0')}.clean.svg`,
       annotatedBlueprint: `P${String(i + 1).padStart(3, '0')}.blueprint.svg`,
-      prompt: `P${String(i + 1).padStart(3, '0')}.prompt.md`
+      prompt: `P${String(i + 1).padStart(3, '0')}.prompt.md`,
+      letteringOverlay: `P${String(i + 1).padStart(3, '0')}.lettering.svg`,
+      letteringPlan: `P${String(i + 1).padStart(3, '0')}.lettering.json`
     }))
   };
 }

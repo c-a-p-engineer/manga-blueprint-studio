@@ -186,6 +186,42 @@ Core does not own provider credentials or a specific computer-vision model. A pr
 
 Diagnostics may identify panel-count, cast, reading-direction, writing-mode and visible-text drift. They are advisory evidence for a later human-approved repair loop; observation does not silently mutate authored state.
 
+## Quality-loop modules — 0.25
+
+The provider-neutral quality loop is split by responsibility:
+
+```text
+generated image + manual/vision evidence
+  -> core/image-observation-adapter.mjs
+  -> core/observation-extractor.mjs
+  -> core/blueprint-evaluator.mjs
+  -> core/repair-loop.mjs
+  -> human approval
+  -> repair context / bounded semantic patch
+```
+
+Spatial derivation is separate:
+
+```text
+canonical panel semantics
+  -> core/composition-solver.mjs
+  -> core/pose-contact-solver.mjs (v3)
+  -> core/continuity-graph.mjs
+```
+
+Exact lettering is also separate from image appearance generation:
+
+```text
+canonical balloon/SFX text
+  -> core/lettering-renderer.mjs
+  -> Pxxx.lettering.json
+  -> Pxxx.lettering.svg
+```
+
+The lettering overlay is a deterministic text-placement artifact, not a second semantic authority. Exact source strings remain canonical in project state.
+
+Web/Core convergence for this phase keeps legacy-global access behind `web/src/runtime/legacy-api.ts`. The Layout Recipe bridge exposes read-only solver-decision inspection; new typed UI does not access compatibility globals directly.
+
 ## Verification
 
 Main CI must cover:
