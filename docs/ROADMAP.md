@@ -2,47 +2,74 @@
 
 This file is the delivery/status authority.
 
-## Production baseline — 0.20.0
+## Production baseline — 0.25.0
 
-The planned prototype backlog through P9 has been implemented as a coherent baseline: canonical knowledge, Direction Advisor, shared Layout Recipe Bank + Solver v4, Scene Director v2, articulated Pose/Prop/Contact Solver v2, Clean/Annotated renderer v3, Structural Evaluator v2, provider-neutral generation package, reference diagnostics, Web backup/restore/scoped export/local direction patches, multi-page fixtures and CLI generation packages.
+Prototype 0.25.0 extends the 0.20 production baseline with a closed quality loop: image-facing observation, Spatial Intelligence v3, human-approved bounded repair, cross-page continuity and deterministic lettering.
 
 ### Completed inventory
-- [x] P0 production integrity code/fixtures/docs; CI is the release gate.
-- [x] P1 Clean fidelity baseline: articulated body mass, clipping, scene/background blocks, reserved regions and focus/motion rendering.
-- [x] P2 Pose/Prop/Contact v2: elbows/knees, held props, sword/staff/shield/phone/bag, ground/body contacts and diagnostics.
-- [x] P3 Scene/Page grammar v2 baseline: energy curve, page/viewport hooks, spread candidates, continuity diagnostics and scroll-distance hints.
-- [x] P4 Structural Evaluator v2: panel, occupancy, normalized joints/pose, contact, reserved regions, attention and reading-flow metrics; reports are non-mutating.
-- [x] P5 provider-independent reference binding and missing-reference diagnostics.
-- [x] P6 provider-neutral GenerationRequest/Result/Package boundary and provenance contract. Network/provider invocation remains deliberately external because credentials/runtime are not canonical project concerns.
-- [x] P7 Web production tools: backup, restore, scoped page export and bounded natural-language panel direction patches.
-- [x] P8 canonical manga knowledge is the single machine-readable source used by solver/agents/public dictionary.
-- [x] P9 established Web roadmap baseline: backup/restore, scoped export and shared canonical-state convergence are present.
-- [x] Shared Layout Recipe Bank: Core/CLI/Web/catalog use one recipe authority; deterministic seed/mutation produces reusable base geometry, while diagonal/inset/bleed/breakout remain post-layout expression.
 
-## Post-backlog roadmap
+- [x] 0.20 production baseline: canonical knowledge, Direction Advisor, shared Layout Recipe Bank + Solver v4, Scene Director v2, Clean/Annotated renderer v3, Structural Evaluator v2, provider-neutral generation package, Web production tools and multi-page CLI packages.
+- [x] Shared Layout Recipe Bank: Core/CLI/Web/catalog use one recipe authority; deterministic seed/mutation produces reusable base geometry while diagonal/inset/bleed/breakout remain post-layout expression.
+- [x] 0.21 Web/Core convergence hardening for active quality-loop surfaces:
+  - typed legacy bridge owns compatibility-global access;
+  - Layout Recipe UI can inspect current solver winner, candidates and rationale without mutating the page;
+  - touched Web/Core surfaces remain covered by build/runtime contract validators and deployed-page verification.
+  - A full legacy-runtime rewrite is deliberately not required; `AGENTS.md` architecture rules remain authoritative.
+- [x] 0.22 Observation extraction:
+  - provider-neutral observation request/normalization/evaluation contracts;
+  - image-facing manual/vision adapter using pixel coordinates;
+  - confidence-aware panel/cast/pose/contact/lettering evidence;
+  - drift diagnostics for panel count, cast, reading direction, writing mode and visible text;
+  - missing/uncertain evidence is never fabricated from the expected Blueprint.
+- [x] 0.23 Spatial Intelligence v3:
+  - torso/pelvis orientation, support polygon, center of mass, balance and joint sanity;
+  - crouched, seated, lying and leaning posture families;
+  - perspective-aware prop/contact derivation;
+  - In-panel Composition Solver v1 with reserved-region avoidance and negative-space planning;
+  - Detail / Salience Budget for primary characters, extras/crowds and background information density.
+- [x] 0.24 Human-approved iterative repair:
+  - diagnostic → Repair Plan → explicit Approval → provider-neutral Repair Context;
+  - local render/lettering constraints do not silently rewrite canonical state;
+  - optional canonical semantic patches are whitelist-bounded and require explicit approval.
+- [x] 0.25 Continuity + production lettering:
+  - Continuity Graph v1 across panels/pages for screen side, facing, prop hand, outfit/condition and intentional breaks;
+  - deterministic lettering plan and transparent SVG overlay for exact dialogue/SFX;
+  - CLI emits per-page lettering SVG/JSON and generation packages reference them.
 
-These are enhancements, not unfinished 0.20 backlog.
+## Next roadmap
 
-### 0.21 — Web/Core convergence hardening
-Replace remaining legacy-runtime bridges with typed adapters, expose full solver alternatives/reasons in the editor, and add browser-level regression tests.
+### 0.26 — Production provider adapters
 
-### 0.22 — Observation extraction (foundation shipped)
-Provider-neutral observation request/normalization/evaluation contracts and manual/structured observation are now present in Core. They support panel geometry, character occupancy, optional pose/contact evidence, reading/writing direction and visible-text drift diagnostics while keeping observations outside canonical project state.
+Ship opt-in provider adapters for generation and observation at the external boundary.
 
-Remaining 0.22 work is the actual image/vision adapter that turns rendered pixels into those structural regions. Provider credentials/model IDs stay outside canonical state.
+Acceptance:
+- at least one generation adapter and one observation adapter work end-to-end;
+- provider request IDs, credentials and model-specific knobs remain outside canonical `manga-blueprint/0.2`;
+- provider failures/provenance remain diagnosable without changing manga semantics.
 
-### 0.23 — Production provider plugins
-Ship opt-in provider plugins outside canonical state. Each plugin must map the portable generation package to a provider API without leaking provider IDs into manga-blueprint/0.2.
+### 0.27 — Real-project hardening
 
-### 0.24 — Iterative generation workflow
-Generation → observation → evaluator report → human-approved semantic patch → bounded re-solve. No automatic aesthetic ranking and no silent overwrite of authored intent.
+Use completed one-page and multi-page manga projects as regression fixtures. Improve false-positive control in continuity/pose diagnostics, lettering typography, and observation confidence calibration from real output.
 
 ### 1.0 — Stability
-Freeze documented contracts, migration policy, accessibility/performance budgets, browser matrix and release fixtures after real-project usage validates the 0.20 architecture.
+
+Freeze documented contracts, migration policy, accessibility/performance budgets, browser matrix and release fixtures after real-project use validates the observation → evaluation → repair loop.
+
+## Explicitly deferred unless real usage proves otherwise
+
+- large-scale expansion of Base Layout Recipes without demonstrated coverage gaps;
+- arbitrary polygon/curved panel frames;
+- bidirectional Name DSL ↔ edited-project synchronization;
+- automatic aesthetic scoring/ranking;
+- provider-specific state inside canonical project JSON.
 
 ## Invariants
+
 - Human direction wins over AI recommendations.
 - Clean is generation-facing; Annotated is review-only.
 - Web and CLI use the same canonical project state.
 - Provider-specific state stays outside canonical project JSON.
 - Evaluator measures authored-intent preservation, not artistic quality.
+- Observation never fabricates evidence from the expected Blueprint.
+- Repair is bounded to diagnosed scope and remains human-approved.
+- Deterministic lettering preserves exact authored text and remains separate from image-model appearance generation.
