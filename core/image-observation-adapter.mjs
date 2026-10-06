@@ -1,6 +1,7 @@
 import{
   OBSERVATION_SCHEMA,
   DEFAULT_OBSERVABLES,
+  createObservationRequest,
   evaluateObservedGeneration
 }from'./observation-extractor.mjs';
 
@@ -111,4 +112,50 @@ export function evaluateGeneratedImage(project,imageObservation,{pageIndex=0,obs
 
 export function manualImageObservation(input={}){
   return createImageObservation({...input,sourceKind:'manual-image'});
+}
+
+
+export function createVisionObservationTask({project,pageIndex=0,asset,width,height,observables=DEFAULT_OBSERVABLES}={}){
+  if(!asset)throw new Error('Vision observation task requires an image asset');
+  if(!(Number(width)>0&&Number(height)>0))throw new Error('Vision observation task requires positive image dimensions');
+  return{
+    schema:'manga-blueprint-image-observation-task/1',
+    asset,
+    canvas:{width:Number(width),height:Number(height)},
+    observationRequest:createObservationRequest({project,pageIndex,generatedAsset:asset,observables})
+  };
+}
+
+export async function runImageObservationAdapter({
+  project,
+  pageIndex=0,
+  asset,
+  width,
+  height,
+  adapter,
+  observables=DEFAULT_OBSERVABLES
+}={}){
+  if(!adapter||typeof adapter.observe!=='function')throw new Error('Image observation adapter must expose observe(task)');
+  const task=createVisionObservationTask({project,pageIndex,asset,width,height,observables});
+  const extracted=await adapter.observe(structuredClone(task));
+  if(!extracted||typeof extracted!=='object')throw new Error('Image observation adapter returned no structured evidence');
+  const observation=createImageObservation({
+    asset,
+    width,
+    height,
+    panels:extracted.panels||[],
+    readingDirection:extracted.readingDirection||null,
+    defaultWritingMode:extracted.defaultWritingMode||null,
+    observables,
+    sourceKind:'vision',
+    confidence:extracted.confidence,
+    notes:extracted.notes||adapter.name||''
+  });
+  return{
+    schema:'manga-blueprint-image-observation-run/1',
+    task,
+    observation,
+    evaluation:evaluateGeneratedImage(project,observation,{pageIndex,observables}),
+    adapter:{name:adapter.name||'external',provider:adapter.provider||null,model:adapter.model||null}
+  };
 }
