@@ -89,4 +89,14 @@ const codes=new Set(drift.diagnostics.map(x=>x.code));
 for(const code of ['reading-direction-drift','writing-mode-drift','visible-text-mismatch','lettering-writing-mode-drift'])if(!codes.has(code))throw Error(`missing diagnostic ${code}`);
 if(drift.verdict!=='drift')throw Error('drift verdict');
 
+const unidentified=evaluateObservedGeneration(expected,{
+  ...raw,
+  panels:[
+    {...raw.panels[0],characters:[{occupancy:{x:.7,y:.2,w:.1,h:.2},joints:{head:{x:.75,y:.22},chest:{x:.75,y:.3}}}]},
+    raw.panels[1]
+  ]
+});
+if(unidentified.coverage.byObservable['character-occupancy']!==0)throw Error('unidentified character must not count as observed identity');
+if(!unidentified.diagnostics.some(x=>x.code==='character-missing')||unidentified.verdict!=='drift')throw Error('unidentified character must remain a cast drift');
+
 console.log('Observation extraction validation passed',ok.structural.result.score.toFixed(3),ok.coverage.overall.toFixed(3));
