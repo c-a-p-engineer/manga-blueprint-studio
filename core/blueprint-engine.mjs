@@ -10,7 +10,7 @@ const esc = (s = '') => String(s).replace(/[&<>\"]/g, (c) => ({ '&': '&amp;', '<
 const splitList = (value = '') => value.split(/[,、]/).map((v) => v.trim()).filter(Boolean);
 
 function emptyBeat(action = '') {
-  return { action, dialogue: [], emphasis: 'normal', cast: [], expressions: {}, camera: '', background: '', sfx: '', effect: '' };
+  return { action, dialogue: [], emphasis: 'normal', cast: [], mobs: [], expressions: {}, camera: '', background: '', sfx: '', effect: '' };
 }
 
 function emptyPage() {
@@ -51,6 +51,8 @@ export function parseName(text) {
       }));
       continue;
     }
+    const mob = line.match(/^(?:mob|mobs|モブ)\s*[:：]\s*(.+)$/i);
+    if (mob) { ensureBeat().mobs.push(...splitList(mob[1])); continue; }
     const expr = line.match(/^(?:expression|表情)\s*[:：]\s*(.+)$/i);
     if (expr) {
       const m = expr[1].match(/^([^>＞]+)[>＞]\s*(.+)$/);
@@ -151,9 +153,11 @@ export function compileName(text, options = {}) {
         const characters = cast.map((entry, ci) => {
           const base = charByToken.get(entry.token);
           const pos = slotPosition(entry.slot, rect, ci, cast.length);
+          const isMob = (b.mobs || []).includes(entry.token);
           return {
             id: id('placed', `${workId}:${pi}:${i}:${entry.token}:${ci}`), characterId: base.characterId, name: base.name, referenceKey: base.referenceKey,
             x: pos.x, y: pos.y, scale: pos.scale, rotation: 0, poseId: 'standing-neutral', supportState: 'grounded', motionPhase: 'still',
+            characterRole: isMob ? 'mob' : 'main', renderDetail: isMob ? 'simplified' : 'standard',
             expression: { type: b.expressions[entry.token] || 'neutral', intensity: b.expressions[entry.token] ? .75 : .3, notes: '' },
             gaze: { target: '', notes: '' }
           };
