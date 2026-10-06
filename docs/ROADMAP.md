@@ -36,6 +36,28 @@ Prototype 0.25.0 extends the 0.20 production baseline with a closed quality loop
   - deterministic lettering plan and transparent SVG overlay for exact dialogue/SFX;
   - CLI emits per-page lettering SVG/JSON and generation packages reference them.
 
+## Post-backlog roadmap
+
+### 0.21 — Web/Core convergence hardening
+
+Completed in the 0.25 baseline for the active quality-loop surfaces: typed compatibility access is centralized, solver winner/candidates/rationale are inspectable in the Web editor, and touched browser/runtime paths remain under regression validation. A wholesale legacy-runtime rewrite is not required by the current architecture contract.
+
+### 0.22 — Observation extraction
+
+Completed in the 0.25 baseline with the provider-neutral observation contract, pixel-coordinate image evidence adapter, confidence propagation and drift diagnostics.
+
+### 0.23 — Spatial Intelligence v3
+
+Completed in the 0.25 baseline with body/support diagnostics, In-panel Composition Solver and Detail / Salience Budget.
+
+### 0.24 — Human-approved iterative repair
+
+Completed in the 0.25 baseline with Repair Plan → Approval → Repair Context and approval-gated bounded semantic patches.
+
+### 0.25 — Continuity + deterministic lettering
+
+Completed in the 0.25 baseline with Continuity Graph v1 and exact-text lettering plan/SVG overlay.
+
 ## Next roadmap
 
 ### 0.26 — Production provider adapters
