@@ -188,12 +188,15 @@ Each cell remains an independent full manga page with its own internal reading d
 Additional outputs:
 
 ```text
-contact-sheet.clean.svg
-contact-sheet.clean.png        # best-effort local rasterization
+contact-sheet.clean.svg       # canonical/fallback spatial sheet
+contact-sheet.clean.png        # best-effort: tiled from emitted Pxxx.clean.png
+contact-sheet.blueprint.png    # best-effort: tiled from emitted Pxxx.blueprint.png
 contact-sheet.prompt.md
 contact-sheet.review.json
 contact-sheet.generation.json
 ```
+
+The PNG Contact Sheets are composed from the already-emitted per-page PNG files rather than re-rendering page content through a separate Contact Sheet renderer. `contact-sheet.clean.png` is the generation/preflight raster surface; `contact-sheet.blueprint.png` is the human-review surface. If page PNG rasterization is unavailable, the canonical `contact-sheet.clean.svg` remains as the fallback spatial asset.
 
 `contact-sheet.prompt.md` includes the global reusable-character contract and the complete per-page executable briefs. Resolved outfit/condition continuity therefore survives the merge instead of being reduced to generic phrases such as "school uniform".
 

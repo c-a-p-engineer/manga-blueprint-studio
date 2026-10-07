@@ -557,11 +557,15 @@ The legacy `border=inset` value means only an **Inset-style border / 小窓風�
 The Blueprint Engine CLI can opt into a provider-neutral batch package:
 
 ```text
-contact-sheet.clean.svg/png
+contact-sheet.clean.svg
+contact-sheet.clean.png
+contact-sheet.blueprint.png
 contact-sheet.prompt.md
 contact-sheet.review.json
 contact-sheet.generation.json
 ```
+
+When local page PNGs are available, `contact-sheet.clean.png` is tiled from the emitted `Pxxx.clean.png` files and `contact-sheet.blueprint.png` is tiled from the emitted `Pxxx.blueprint.png` files. This keeps batch review tied to the exact page raster outputs; the blueprint sheet is review-only and is never the generation-facing spatial authority. If PNG rasterization is unavailable, `contact-sheet.clean.svg` remains the fallback spatial asset.
 
 The Contact Sheet spatial asset keeps compiled pages in explicit Pxxx cells. The merged prompt must preserve:
 

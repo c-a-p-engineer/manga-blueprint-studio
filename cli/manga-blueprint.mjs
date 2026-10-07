@@ -9,7 +9,7 @@ import{buildExecutablePrompt}from'../core/generation-brief.mjs';
 import{buildPortableGenerationPackage}from'../core/generation-adapter.mjs';
 import{buildLetteringPlan,renderLetteringOverlaySvg}from'../core/lettering-renderer.mjs';
 import{listLayoutRecipes,layoutRecipeCount,layoutSettingsSnippet}from'../core/layout-recipes.mjs';
-import{buildContactSheetGenerationPackage,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg}from'../core/contact-sheet.mjs';
+import{buildContactSheetGenerationPackage,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetPngSourceSvg,renderContactSheetSvg}from'../core/contact-sheet.mjs';
 
 const args=process.argv.slice(2);
 if(args[0]==='--list-layouts'){
@@ -63,7 +63,7 @@ const project=compileMangaName(text,compileOptions);
 await fs.mkdir(out,{recursive:true});
 await fs.writeFile(path.join(out,'work.manga.json'),JSON.stringify(project,null,2));
 
-const files=['work.manga.json'],raster=[],pageCleanAssets=[],pagePromptAssets=[];
+const files=['work.manga.json'],raster=[],pageCleanAssets=[],pagePromptAssets=[],pageCleanPngAssets=Array(project.pages.length).fill(null),pageBlueprintPngAssets=Array(project.pages.length).fill(null);
 for(let i=0;i<project.pages.length;i++){
   const n=String(i+1).padStart(3,'0');
   const clean='P'+n+'.clean.svg',annotated='P'+n+'.blueprint.svg',prompt='P'+n+'.prompt.md',lettering='P'+n+'.lettering.svg',letteringJson='P'+n+'.lettering.json';
@@ -78,26 +78,52 @@ for(let i=0;i<project.pages.length;i++){
   files.push(clean,annotated,prompt,lettering,letteringJson,'P'+n+'.generation.json');
   pageCleanAssets.push(clean);
   pagePromptAssets.push(prompt);
-  for(const svg of[clean,annotated]){
+  for(const [role,svg] of[['clean',clean],['blueprint',annotated]]){
     const png=svg.replace(/\.svg$/,'.png'),r=rasterizeSvg(path.join(out,svg),path.join(out,png));
     raster.push({source:svg,output:r.ok?png:null,...r});
-    if(r.ok)files.push(png);
+    if(r.ok){
+      files.push(png);
+      if(role==='clean')pageCleanPngAssets[i]=png;
+      else pageBlueprintPngAssets[i]=png;
+    }
+  }
+}
+
+async function composePngContactSheet(pagePngAssets,outputName,{columns=null}={}){
+  const inputs=pagePngAssets.filter(Boolean);
+  if(inputs.length!==project.pages.length)return{ok:false,engine:'none',inputs,reason:'All page PNGs are required before composing a PNG contact sheet.'};
+  const dataUris=await Promise.all(pagePngAssets.map(async name=>'data:image/png;base64,'+(await fs.readFile(path.join(out,name))).toString('base64')));
+  const sourceSvg=renderContactSheetPngSourceSvg(dataUris,{columns});
+  const tempPath=path.join(out,'.'+outputName+'.source.svg');
+  await fs.writeFile(tempPath,sourceSvg);
+  try{
+    return{...rasterizeSvg(tempPath,path.join(out,outputName)),inputs};
+  }finally{
+    await fs.rm(tempPath,{force:true});
   }
 }
 
 let contactSheetManifest=null;
 if(cliOptions.contactSheet){
-  const sheetClean='contact-sheet.clean.svg',sheetPrompt='contact-sheet.prompt.md',sheetReview='contact-sheet.review.json',sheetGeneration='contact-sheet.generation.json';
+  const sheetClean='contact-sheet.clean.svg',sheetCleanPng='contact-sheet.clean.png',sheetBlueprintPng='contact-sheet.blueprint.png',sheetPrompt='contact-sheet.prompt.md',sheetReview='contact-sheet.review.json',sheetGeneration='contact-sheet.generation.json';
   const cleanSvgs=await Promise.all(pageCleanAssets.map(name=>fs.readFile(path.join(out,name),'utf8')));
   await fs.writeFile(path.join(out,sheetClean),renderContactSheetSvg(cleanSvgs,{columns:cliOptions.contactColumns}));
   await fs.writeFile(path.join(out,sheetPrompt),buildContactSheetPrompt(project,{columns:cliOptions.contactColumns}));
   const review=buildContactSheetReviewRequest(project,{columns:cliOptions.contactColumns});
   await fs.writeFile(path.join(out,sheetReview),JSON.stringify(review,null,2));
+
+  const cleanSheetRaster=await composePngContactSheet(pageCleanPngAssets,sheetCleanPng,{columns:cliOptions.contactColumns});
+  const blueprintSheetRaster=await composePngContactSheet(pageBlueprintPngAssets,sheetBlueprintPng,{columns:cliOptions.contactColumns});
+  raster.push({source:'page-clean-pngs',output:cleanSheetRaster.ok?sheetCleanPng:null,...cleanSheetRaster});
+  raster.push({source:'page-blueprint-pngs',output:blueprintSheetRaster.ok?sheetBlueprintPng:null,...blueprintSheetRaster});
+  if(cleanSheetRaster.ok)files.push(sheetCleanPng);
+  if(blueprintSheetRaster.ok)files.push(sheetBlueprintPng);
+
   const generation=buildContactSheetGenerationPackage({
     project,
-    cleanAssets:pageCleanAssets,
+    cleanAssets:pageCleanPngAssets.every(Boolean)?pageCleanPngAssets:pageCleanAssets,
     promptAssets:pagePromptAssets,
-    contactSheetAsset:sheetClean,
+    contactSheetAsset:cleanSheetRaster.ok?sheetCleanPng:sheetClean,
     promptAsset:sheetPrompt,
     reviewAsset:sheetReview,
     referenceAssets:[],
@@ -105,9 +131,6 @@ if(cliOptions.contactSheet){
   });
   await fs.writeFile(path.join(out,sheetGeneration),JSON.stringify(generation,null,2));
   files.push(sheetClean,sheetPrompt,sheetReview,sheetGeneration);
-  const sheetPng='contact-sheet.clean.png',rr=rasterizeSvg(path.join(out,sheetClean),path.join(out,sheetPng));
-  raster.push({source:sheetClean,output:rr.ok?sheetPng:null,...rr});
-  if(rr.ok)files.push(sheetPng);
   contactSheetManifest={
     schema:'manga-contact-sheet-generation-package/1',
     role:'multi-page-preflight-only',
@@ -115,10 +138,12 @@ if(cliOptions.contactSheet){
     columns:generation.layout.columns,
     rows:generation.layout.rows,
     clean:sheetClean,
+    cleanPng:cleanSheetRaster.ok?sheetCleanPng:null,
+    blueprintPng:blueprintSheetRaster.ok?sheetBlueprintPng:null,
     prompt:sheetPrompt,
     review:sheetReview,
     generation:sheetGeneration,
-    png:rr.ok?sheetPng:null
+    png:cleanSheetRaster.ok?sheetCleanPng:null
   };
 }
 

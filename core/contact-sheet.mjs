@@ -75,6 +75,32 @@ export function renderContactSheetSvg(pageSvgs,{columns=null,...options}={}){
   return chunks.join('');
 }
 
+
+export function renderContactSheetPngSourceSvg(pagePngDataUris,{columns=null,...options}={}){
+  if(!Array.isArray(pagePngDataUris)||pagePngDataUris.length===0)throw new Error('PNG contact sheet requires at least one page PNG');
+  if(pagePngDataUris.some(uri=>!/^data:image\/png;base64,/i.test(String(uri||''))))throw new Error('PNG contact sheet page asset must be a PNG data URI');
+  const layout=buildContactSheetLayout(pagePngDataUris.length,{columns,...options});
+  const chunks=[
+    '<svg xmlns="http://www.w3.org/2000/svg" width="'+layout.sheetWidth+'" height="'+layout.sheetHeight+'" viewBox="0 0 '+layout.sheetWidth+' '+layout.sheetHeight+'">',
+    '<rect width="100%" height="100%" fill="#ececec"/>'
+  ];
+  for(let i=0;i<pagePngDataUris.length;i++){
+    const row=Math.floor(i/layout.columns),column=i%layout.columns;
+    const x=layout.padding+column*(layout.pageWidth+layout.gap);
+    const y=layout.padding+row*(layout.pageHeight+layout.labelHeight+layout.gap);
+    const code=pageCode(i+1),pageY=y+layout.labelHeight;
+    chunks.push(
+      '<g data-contact-sheet-page="'+code+'">',
+      '<text x="'+x+'" y="'+(y+34)+'" font-family="sans-serif" font-size="28" font-weight="700" fill="black">'+esc(code)+'</text>',
+      '<rect x="'+(x-2)+'" y="'+(pageY-2)+'" width="'+(layout.pageWidth+4)+'" height="'+(layout.pageHeight+4)+'" fill="white" stroke="#555" stroke-width="4"/>',
+      '<image x="'+x+'" y="'+pageY+'" width="'+layout.pageWidth+'" height="'+layout.pageHeight+'" preserveAspectRatio="none" href="'+esc(pagePngDataUris[i])+'" data-page-code="'+code+'"/>',
+      '</g>'
+    );
+  }
+  chunks.push('</svg>');
+  return chunks.join('');
+}
+
 function characterContract(character){
   const a=character.appearance||{},parts=[
     a.hair&&'hair='+JSON.stringify(a.hair),

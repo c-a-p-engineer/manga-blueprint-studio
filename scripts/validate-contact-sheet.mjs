@@ -1,7 +1,7 @@
 import {compileMangaName} from '../core/manga-grammar.mjs';
 import {renderExecutableNameSvg} from '../core/blueprint-renderer.mjs';
 import {generationIdentityAuthority} from '../core/generation-adapter.mjs';
-import {autoContactSheetPreset,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg} from '../core/contact-sheet.mjs';
+import {autoContactSheetPreset,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetPngSourceSvg,renderContactSheetSvg} from '../core/contact-sheet.mjs';
 
 const source=[
   '# Page 1: start',
@@ -44,6 +44,18 @@ const sheet=renderContactSheetSvg(clean);
 if(!sheet.includes('data-page-code="P001"')||!sheet.includes('data-page-code="P003"'))throw new Error('contact sheet page cells missing');
 if(sheet.includes('data-review='))throw new Error('contact sheet clean contains annotated review layer');
 
+const pngSource=renderContactSheetPngSourceSvg([
+  'data:image/png;base64,UE5HMQ==',
+  'data:image/png;base64,UE5HMg==',
+  'data:image/png;base64,UE5HMw=='
+]);
+if((pngSource.match(/<image /g)||[]).length!==3||!pngSource.includes('data-page-code="P003"'))throw new Error('PNG contact sheet source must tile every page PNG in order');
+if(!pngSource.includes('data:image/png;base64,UE5HMQ=='))throw new Error('PNG contact sheet source must embed the actual page PNG bytes');
+if(pngSource.includes('data-review='))throw new Error('PNG contact sheet source must not synthesize review annotations');
+let rejectedNonPng=false;
+try{renderContactSheetPngSourceSvg(['data:image/jpeg;base64,AA==']);}catch{rejectedNonPng=true;}
+if(!rejectedNonPng)throw new Error('PNG contact sheet source must reject non-PNG page assets');
+
 const prompt=buildContactSheetPrompt(project);
 if(!prompt.includes('ONE contact-sheet image')||!prompt.includes('# ===== P003 ====='))throw new Error('contact sheet prompt missing batch contract/page brief');
 if(!prompt.includes('OUTFIT CONTINUITY: heroine'))throw new Error('resolved outfit continuity missing from contact sheet prompt');
@@ -55,10 +67,12 @@ if(review.finalAcceptance!==false)throw new Error('contact sheet must not be fin
 
 const pkg=buildContactSheetGenerationPackage({
   project,
-  cleanAssets:['P001.clean.svg','P002.clean.svg','P003.clean.svg'],
-  promptAssets:['P001.prompt.md','P002.prompt.md','P003.prompt.md']
+  cleanAssets:['P001.clean.png','P002.clean.png','P003.clean.png'],
+  promptAssets:['P001.prompt.md','P002.prompt.md','P003.prompt.md'],
+  contactSheetAsset:'contact-sheet.clean.png'
 });
 if(!pkg.ready||pkg.layout.rows!==2||pkg.constraints.finalAcceptance!==false)throw new Error('contact sheet generation package invalid');
+if(pkg.inputs.contactSheetAsset!=='contact-sheet.clean.png'||pkg.inputs.pageCleanAssets.some(name=>!name.endsWith('.png')))throw new Error('contact sheet package must accept page PNG inputs and PNG sheet authority');
 if(generationIdentityAuthority(project)!=='project-character-guidance')throw new Error('description identity authority must come from project guidance');
 
 const sheetProject=structuredClone(project);
