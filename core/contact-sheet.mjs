@@ -2,11 +2,22 @@ import{buildExecutablePrompt}from'./generation-brief.mjs';
 import{generationIdentityAuthority,validateReferenceBindings}from'./generation-adapter.mjs';
 
 const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const clampColumns=(value,pageCount)=>Math.max(1,Math.min(Math.max(1,pageCount),Math.min(8,Number(value)||4)));
+const clampColumns=(value,pageCount)=>Math.max(1,Math.min(Math.max(1,pageCount),Math.min(8,Number(value)||1)));
 const pageCode=n=>'P'+String(n).padStart(3,'0');
 
-export function buildContactSheetLayout(pageCount,{columns=4,pageWidth=1200,pageHeight=1697,gap=24,padding=24,labelHeight=52}={}){
-  const count=Math.max(0,Number(pageCount)||0),cols=clampColumns(columns,count||1),rows=Math.max(1,Math.ceil(count/cols));
+export function autoContactSheetPreset(pageCount){
+  const count=Math.max(0,Number(pageCount)||0);
+  if(count<=1)return{columns:1,rows:1,preset:'1x1'};
+  if(count===2)return{columns:2,rows:1,preset:'2x1'};
+  if(count<=4)return{columns:2,rows:2,preset:'2x2'};
+  if(count<=8)return{columns:4,rows:2,preset:'4x2'};
+  return{columns:4,rows:Math.ceil(count/4),preset:'4x'+Math.ceil(count/4)};
+}
+
+export function buildContactSheetLayout(pageCount,{columns=null,pageWidth=1200,pageHeight=1697,gap=24,padding=24,labelHeight=52}={}){
+  const count=Math.max(0,Number(pageCount)||0),auto=autoContactSheetPreset(count),manual=columns!==null&&columns!==undefined&&columns!=='auto';
+  const cols=manual?clampColumns(columns,count||1):auto.columns;
+  const rows=manual?Math.max(1,Math.ceil(count/cols)):auto.rows;
   const sheetWidth=padding*2+cols*pageWidth+Math.max(0,cols-1)*gap;
   const sheetHeight=padding*2+rows*(labelHeight+pageHeight)+Math.max(0,rows-1)*gap;
   return{
@@ -14,6 +25,8 @@ export function buildContactSheetLayout(pageCount,{columns=4,pageWidth=1200,page
     pageCount:count,
     columns:cols,
     rows,
+    preset:manual?cols+'x'+rows:auto.preset,
+    selection:manual?'override':'auto-preset',
     pageWidth,
     pageHeight,
     gap,
@@ -38,7 +51,7 @@ function svgViewBox(svg){
   return match?match[1]:'0 0 1200 1697';
 }
 
-export function renderContactSheetSvg(pageSvgs,{columns=4,...options}={}){
+export function renderContactSheetSvg(pageSvgs,{columns=null,...options}={}){
   if(!Array.isArray(pageSvgs)||pageSvgs.length===0)throw new Error('Contact sheet requires at least one page SVG');
   const layout=buildContactSheetLayout(pageSvgs.length,{columns,...options});
   const chunks=[
@@ -72,7 +85,7 @@ function characterContract(character){
   return'- '+(character.name||character.characterId)+': identityMode='+(character.identityMode||'description')+(parts.length?'; '+parts.join('; '):'');
 }
 
-export function buildContactSheetPrompt(project,{columns=4}={}){
+export function buildContactSheetPrompt(project,{columns=null}={}){
   if(!project?.pages?.length)throw new Error('Contact sheet prompt requires project pages');
   const layout=buildContactSheetLayout(project.pages.length,{columns});
   const lines=[
@@ -123,7 +136,7 @@ function resolvedPanelStates(page){
   }));
 }
 
-export function buildContactSheetReviewRequest(project,{columns=4}={}){
+export function buildContactSheetReviewRequest(project,{columns=null}={}){
   const layout=buildContactSheetLayout(project.pages.length,{columns});
   return{
     schema:'manga-contact-sheet-review-request/1',
@@ -166,7 +179,7 @@ export function buildContactSheetGenerationPackage({
   promptAsset='contact-sheet.prompt.md',
   reviewAsset='contact-sheet.review.json',
   referenceAssets=[],
-  columns=4
+  columns=null
 }){
   const bindings=validateReferenceBindings(project,referenceAssets);
   const expected=project.pages.length;

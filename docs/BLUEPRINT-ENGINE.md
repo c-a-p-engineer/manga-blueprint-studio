@@ -161,10 +161,22 @@ Remaining work is mostly outside the provider-independent compiler boundary: ric
 For multi-page work the headless CLI can produce a single batch-preflight surface:
 
 ```bash
-npm run blueprint -- path/to/name.md blueprint-out --contact-sheet --contact-columns 4
+npm run blueprint -- path/to/name.md blueprint-out --contact-sheet
 ```
 
-For an eight-page work with four columns, the review order is:
+The sheet shape is selected automatically:
+
+| Pages | Layout |
+| ---: | --- |
+| 1 | 1×1 |
+| 2 | 2×1 |
+| 3–4 | 2×2 |
+| 5–8 | 4×2 |
+| 9+ | 4 columns × required rows |
+
+`--contact-columns <1..8>` remains an explicit override, but ordinary production should use automatic selection.
+
+For an eight-page work, the automatic review order is:
 
 ```text
 P001 P002 P003 P004

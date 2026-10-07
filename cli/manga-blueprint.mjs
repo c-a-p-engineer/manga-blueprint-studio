@@ -29,7 +29,7 @@ const cliOptions={
   layoutSeed:undefined,
   layoutMutation:undefined,
   contactSheet:false,
-  contactColumns:4
+  contactColumns:null
 };
 
 while(args.length){
@@ -133,5 +133,5 @@ await fs.writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2
 files.push('manifest.json');
 
 console.log('Compiled '+project.pages.length+' page(s) -> '+out);
-if(contactSheetManifest)console.log('Contact sheet preflight: '+contactSheetManifest.columns+'x'+contactSheetManifest.rows);
+if(contactSheetManifest)console.log('Contact sheet preflight: '+contactSheetManifest.columns+'x'+contactSheetManifest.rows+(cliOptions.contactColumns?' (override)':' (auto)'));
 for(const f of files)console.log('  '+f);
