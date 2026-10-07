@@ -24,7 +24,7 @@ node cli/manga-blueprint.mjs --list-layouts 4
 node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
 node cli/manga-blueprint.mjs examples/scene-3page.md blueprint-out --contact-sheet
 ```
-Output includes `work.manga.json`, per-page Clean/Annotated SVG, deterministic lettering SVG/JSON, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only. `--contact-sheet` additionally emits a single multi-page Clean sheet, merged preflight prompt, page-indexed review request and provider-neutral generation package. Layout is selected automatically (`2P → 2×1`, `3–4P → 2×2`, `5–8P → 4×2`); it is intended for batch QA and page-targeted repair, not final publication acceptance.
+Output includes `work.manga.json`, per-page Clean/Annotated SVG, deterministic lettering SVG/JSON, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only. `--contact-sheet` additionally emits range-qualified preflight batches of at most 8 pages, e.g. `contact-sheet.001-008.clean.png` and then `contact-sheet.009-010.clean.png` for a 10-page work. Each batch includes Clean/Blueprint surfaces, merged prompt, page-indexed review request and provider-neutral generation package. Layout is selected automatically inside each batch (`2P → 2×1`, `3–4P → 2×2`, `5–8P → 4×2`); Contact Sheet remains batch QA and page-targeted repair, not final publication acceptance.
 
 ## Pipeline
 ```text

@@ -557,14 +557,17 @@ The legacy `border=inset` value means only an **Inset-style border / 小窓風�
 The Blueprint Engine CLI can opt into a provider-neutral batch package:
 
 ```text
-contact-sheet.clean.svg/png
-contact-sheet.blueprint.svg/png
-contact-sheet.prompt.md
-contact-sheet.review.json
-contact-sheet.generation.json
+contact-sheet.001-008.clean.svg/png
+contact-sheet.001-008.blueprint.svg/png
+contact-sheet.001-008.prompt.md
+contact-sheet.001-008.review.json
+contact-sheet.001-008.generation.json
+
+# works longer than 8 pages continue with the next range
+contact-sheet.009-016.*
 ```
 
-The Contact Sheet spatial asset keeps compiled pages in explicit Pxxx cells. When local rasterization is available, the Contact Sheet PNG is a simple montage of the already-rasterized page PNGs rather than a second rasterization of the giant sheet SVG. `contact-sheet.clean.*` is the generation-facing spatial reference; `contact-sheet.blueprint.*` is human-review only and must never become the default image-model input. The merged prompt must preserve:
+Contact Sheet artifacts are range-qualified and split into batches of at most 8 pages, so the filename itself identifies coverage (`001-008`, `009-010`, etc.). The Contact Sheet spatial asset keeps compiled pages in explicit Pxxx cells. When local rasterization is available, the Contact Sheet PNG is a simple montage of the already-rasterized page PNGs rather than a second rasterization of the giant sheet SVG. Range-qualified `*.clean.*` assets are the generation-facing spatial references; range-qualified `*.blueprint.*` assets are human-review only and must never become the default image-model input. The merged prompt must preserve:
 
 - global reusable-character identity guidance;
 - every resolved per-panel outfit/condition state;

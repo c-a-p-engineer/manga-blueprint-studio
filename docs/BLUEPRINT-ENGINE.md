@@ -188,16 +188,20 @@ Each cell remains an independent full manga page with its own internal reading d
 Additional outputs:
 
 ```text
-contact-sheet.clean.svg
-contact-sheet.blueprint.svg    # human-review surface
-contact-sheet.clean.png        # best-effort montage from Pxxx.clean.png
-contact-sheet.blueprint.png    # best-effort montage from Pxxx.blueprint.png
-contact-sheet.prompt.md
-contact-sheet.review.json
-contact-sheet.generation.json
+contact-sheet.001-008.clean.svg
+contact-sheet.001-008.blueprint.svg    # human-review surface
+contact-sheet.001-008.clean.png        # best-effort montage from P001..P008.clean.png
+contact-sheet.001-008.blueprint.png    # best-effort montage from P001..P008.blueprint.png
+contact-sheet.001-008.prompt.md
+contact-sheet.001-008.review.json
+contact-sheet.001-008.generation.json
+
+# 9ページ目以降があれば次のbatch
+contact-sheet.009-016.*
+
 ```
 
-The PNG sheets are assembled directly from the already-rasterized per-page PNG files instead of re-rasterizing one giant Contact Sheet SVG. The primary montage path is Node-local `@resvg/resvg-js`; ImageMagick is fallback only. This keeps the Contact Sheet as a simple batch view of the exact page rasters. `contact-sheet.clean.png` is generation-facing; `contact-sheet.blueprint.png` is review-only.
+Each Contact Sheet batch contains at most 8 pages. Its filename includes the actual covered page range as three-digit numbers (`001-008`, `009-010`, etc.), so multiple sheets remain self-describing and naturally sortable. The PNG sheets are assembled directly from the already-rasterized per-page PNG files instead of re-rasterizing one giant Contact Sheet SVG. The primary montage path is Node-local `@resvg/resvg-js`; ImageMagick is fallback only. This keeps each Contact Sheet as a simple batch view of the exact page rasters. Range-qualified Clean PNGs are generation-facing; range-qualified Blueprint PNGs are review-only.
 
 `contact-sheet.prompt.md` includes the global reusable-character contract and the complete per-page executable briefs. Resolved outfit/condition continuity therefore survives the merge instead of being reduced to generic phrases such as "school uniform".
 

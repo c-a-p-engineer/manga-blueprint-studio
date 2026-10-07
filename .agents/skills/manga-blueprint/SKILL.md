@@ -92,7 +92,7 @@ npm run validate
 - `Pxxx.blueprint.svg/png`: human-review view; never the default image-model input.
 - `Pxxx.prompt.md`: semantic rendering brief and exact visible-text rules.
 - `manifest.json`: read-first package/provenance information.
-- Optional Contact Sheet mode: `contact-sheet.clean.svg/png`, `contact-sheet.blueprint.svg/png`, `contact-sheet.prompt.md`, `contact-sheet.review.json`, `contact-sheet.generation.json` for batch preflight only. Contact Sheet PNGs are assembled from the already-rasterized per-page PNGs; Clean remains generation-facing and Blueprint remains human-review only. The default layout is page-count-aware: 2P→2×1, 3–4P→2×2, 5–8P→4×2; avoid manual column overrides unless there is a concrete reason.
+- Optional Contact Sheet mode: range-qualified artifacts such as `contact-sheet.001-008.clean.svg/png`, `contact-sheet.001-008.blueprint.svg/png`, `contact-sheet.001-008.prompt.md`, `contact-sheet.001-008.review.json`, `contact-sheet.001-008.generation.json` for batch preflight only. One sheet contains at most 8 pages; longer works continue as `009-016`, etc. Contact Sheet PNGs are assembled from the already-rasterized per-page PNGs; Clean remains generation-facing and Blueprint remains human-review only. Each batch uses the page-count-aware layout: 2P→2×1, 3–4P→2×2, 5–8P→4×2; avoid manual column overrides unless there is a concrete reason.
 
 Clean and Annotated must come from the same geometry/art source.
 

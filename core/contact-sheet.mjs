@@ -4,6 +4,56 @@ import{generationIdentityAuthority,validateReferenceBindings}from'./generation-a
 const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const clampColumns=(value,pageCount)=>Math.max(1,Math.min(Math.max(1,pageCount),Math.min(8,Number(value)||1)));
 const pageCode=n=>'P'+String(n).padStart(3,'0');
+const rangeCode=n=>String(n).padStart(3,'0');
+export const CONTACT_SHEET_MAX_PAGES=8;
+
+export function contactSheetRangeLabel(startPage,endPage){
+  const start=Math.max(1,Number(startPage)||1),end=Math.max(start,Number(endPage)||start);
+  return rangeCode(start)+'-'+rangeCode(end);
+}
+
+export function contactSheetAssetNames(range){
+  const value=String(range||'').trim();
+  if(!/^\d{3}-\d{3}$/.test(value))throw new Error('Contact sheet range must use NNN-NNN format');
+  const prefix='contact-sheet.'+value;
+  return{
+    range:value,
+    cleanSvg:prefix+'.clean.svg',
+    blueprintSvg:prefix+'.blueprint.svg',
+    cleanPng:prefix+'.clean.png',
+    blueprintPng:prefix+'.blueprint.png',
+    prompt:prefix+'.prompt.md',
+    review:prefix+'.review.json',
+    generation:prefix+'.generation.json'
+  };
+}
+
+export function buildContactSheetBatches(pageCount,{batchSize=CONTACT_SHEET_MAX_PAGES,pageNumbers=[]}={}){
+  const count=Math.max(0,Number(pageCount)||0);
+  const size=Math.max(1,Math.min(CONTACT_SHEET_MAX_PAGES,Number(batchSize)||CONTACT_SHEET_MAX_PAGES));
+  const numbers=Array.isArray(pageNumbers)?pageNumbers:[];
+  const batches=[];
+  for(let startIndex=0;startIndex<count;startIndex+=size){
+    const endIndex=Math.min(count,startIndex+size);
+    const batchCount=endIndex-startIndex;
+    const startPage=Number(numbers[startIndex])||startIndex+1;
+    const endPage=Number(numbers[endIndex-1])||endIndex;
+    const range=contactSheetRangeLabel(startPage,endPage);
+    batches.push({
+      index:batches.length,
+      startIndex,
+      endIndex,
+      pageCount:batchCount,
+      startPage,
+      endPage,
+      pageNumbers:Array.from({length:batchCount},(_,i)=>Number(numbers[startIndex+i])||startIndex+i+1),
+      range,
+      assets:contactSheetAssetNames(range),
+      layout:buildContactSheetLayout(batchCount)
+    });
+  }
+  return batches;
+}
 
 export function autoContactSheetPreset(pageCount){
   const count=Math.max(0,Number(pageCount)||0);
@@ -51,7 +101,7 @@ function svgViewBox(svg){
   return match?match[1]:'0 0 1200 1697';
 }
 
-export function renderContactSheetSvg(pageSvgs,{columns=null,...options}={}){
+export function renderContactSheetSvg(pageSvgs,{columns=null,pageNumbers=[],...options}={}){
   if(!Array.isArray(pageSvgs)||pageSvgs.length===0)throw new Error('Contact sheet requires at least one page SVG');
   const layout=buildContactSheetLayout(pageSvgs.length,{columns,...options});
   const chunks=[
@@ -62,7 +112,7 @@ export function renderContactSheetSvg(pageSvgs,{columns=null,...options}={}){
     const row=Math.floor(i/layout.columns),column=i%layout.columns;
     const x=layout.padding+column*(layout.pageWidth+layout.gap);
     const y=layout.padding+row*(layout.pageHeight+layout.labelHeight+layout.gap);
-    const code=pageCode(i+1),pageY=y+layout.labelHeight;
+    const code=pageCode(Number(pageNumbers[i])||i+1),pageY=y+layout.labelHeight;
     chunks.push(
       '<g data-contact-sheet-page="'+code+'">',
       '<text x="'+x+'" y="'+(y+34)+'" font-family="sans-serif" font-size="28" font-weight="700" fill="black">'+esc(code)+'</text>',
@@ -116,7 +166,7 @@ export function buildContactSheetPrompt(project,{columns=null}={}){
     ''
   ];
   for(let i=0;i<project.pages.length;i++){
-    const code=pageCode(i+1);
+    const code=pageCode(project.pages[i]?.pageNumber||i+1);
     lines.push('# ===== '+code+' =====',buildExecutablePrompt(project,i),'');
   }
   return lines.join('\n');

@@ -1,7 +1,7 @@
 import {compileMangaName} from '../core/manga-grammar.mjs';
 import {renderExecutableNameSvg} from '../core/blueprint-renderer.mjs';
 import {generationIdentityAuthority} from '../core/generation-adapter.mjs';
-import {autoContactSheetPreset,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg} from '../core/contact-sheet.mjs';
+import {autoContactSheetPreset,buildContactSheetBatches,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,contactSheetAssetNames,renderContactSheetSvg} from '../core/contact-sheet.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -46,11 +46,19 @@ for(const [count,columns,rows,preset] of [
 const override=buildContactSheetLayout(3,{columns:3});
 if(override.columns!==3||override.rows!==1||override.selection!=='override')throw new Error('contact-sheet columns override failed');
 
+const batches10=buildContactSheetBatches(10);
+if(batches10.length!==2||batches10[0].range!=='001-008'||batches10[1].range!=='009-010')throw new Error('contact-sheet 8-page batching/range naming failed');
+if(batches10[0].layout.columns!==4||batches10[0].layout.rows!==2||batches10[1].layout.columns!==2||batches10[1].layout.rows!==1)throw new Error('contact-sheet batch layout failed');
+const names=contactSheetAssetNames('009-010');
+if(names.cleanPng!=='contact-sheet.009-010.clean.png'||names.blueprintPng!=='contact-sheet.009-010.blueprint.png'||names.review!=='contact-sheet.009-010.review.json')throw new Error('contact-sheet range asset naming failed');
+
 const sheet=renderContactSheetSvg(clean);
 if(!sheet.includes('data-page-code="P001"')||!sheet.includes('data-page-code="P003"'))throw new Error('contact sheet page cells missing');
 if(sheet.includes('data-review='))throw new Error('contact sheet clean contains annotated review layer');
 const blueprintSheet=renderContactSheetSvg(blueprint);
 if(!blueprintSheet.includes('data-review="page-number"'))throw new Error('contact sheet blueprint must retain review annotations');
+const secondBatchSheet=renderContactSheetSvg(clean.slice(0,2),{pageNumbers:[9,10]});
+if(!secondBatchSheet.includes('data-page-code="P009"')||!secondBatchSheet.includes('data-page-code="P010"')||secondBatchSheet.includes('data-page-code="P001"'))throw new Error('contact sheet global page labels failed');
 
 const montageAttempts=buildContactSheetMontageAttempts(
   ['P001.clean.png','P002.clean.png','P003.clean.png'],
