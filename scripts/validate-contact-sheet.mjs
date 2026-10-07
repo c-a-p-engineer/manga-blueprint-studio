@@ -46,6 +46,34 @@ for(const [count,columns,rows,preset] of [
 const override=buildContactSheetLayout(3,{columns:3});
 if(override.columns!==3||override.rows!==1||override.selection!=='override')throw new Error('contact-sheet columns override failed');
 
+// Prefer fully occupied layouts: 6P must be 4+2, never a partially filled 4x2 sheet.
+for(const [count,expected] of [
+  [1,[1]],[2,[2]],[3,[3]],[4,[4]],[5,[4,1]],[6,[4,2]],[7,[4,3]],
+  [8,[8]],[9,[8,1]],[10,[8,2]],[14,[8,4,2]],[16,[8,8]]
+]){
+  const batches=buildContactSheetBatches(count);
+  if(JSON.stringify(batches.map(batch=>batch.pageCount))!==JSON.stringify(expected)){
+    throw new Error('adaptive contact-sheet batching failed for '+count+' pages');
+  }
+  if(batches.some(batch=>batch.pageCount>8))throw new Error('contact-sheet batch exceeded maximum 8 pages');
+  if(batches.reduce((sum,batch)=>sum+batch.pageCount,0)!==count)throw new Error('contact-sheet page coverage changed');
+}
+const batches6=buildContactSheetBatches(6);
+if(batches6[0].range!=='001-004'||batches6[1].range!=='005-006'||batches6[0].layout.preset!=='2x2'||batches6[1].layout.preset!=='2x1'){
+  throw new Error('6-page contact sheet must produce 001-004 2x2 and 005-006 2x1');
+}
+const custom6=buildContactSheetBatches(6,{batchSizes:[3,3]});
+if(custom6.length!==2||custom6[0].range!=='001-003'||custom6[1].range!=='004-006')throw new Error('explicit contact-sheet grouping ignored');
+const customSingle6=buildContactSheetBatches(6,{batchSizes:[6]});
+if(customSingle6.length!==1||customSingle6[0].layout.preset!=='4x2')throw new Error('explicit 6-page sheet ignored');
+const numbered=buildContactSheetBatches(6,{pageNumbers:[9,10,11,12,13,14]});
+if(numbered[0].range!=='009-012'||numbered[1].range!=='013-014')throw new Error('global page range was lost across adaptive batches');
+for(const bad of [[7],[4,0,2],[9],[-1,7],[4,1.5]]){
+  let rejected=false;
+  try{buildContactSheetBatches(6,{batchSizes:bad});}catch{rejected=true;}
+  if(!rejected)throw new Error('invalid explicit contact-sheet grouping accepted: '+JSON.stringify(bad));
+}
+
 const batches10=buildContactSheetBatches(10);
 if(batches10.length!==2||batches10[0].range!=='001-008'||batches10[1].range!=='009-010')throw new Error('contact-sheet 8-page batching/range naming failed');
 if(batches10[0].layout.columns!==4||batches10[0].layout.rows!==2||batches10[1].layout.columns!==2||batches10[1].layout.rows!==1)throw new Error('contact-sheet batch layout failed');
