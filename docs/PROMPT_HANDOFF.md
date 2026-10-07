@@ -558,12 +558,13 @@ The Blueprint Engine CLI can opt into a provider-neutral batch package:
 
 ```text
 contact-sheet.clean.svg/png
+contact-sheet.blueprint.svg/png
 contact-sheet.prompt.md
 contact-sheet.review.json
 contact-sheet.generation.json
 ```
 
-The Contact Sheet spatial asset keeps compiled pages in explicit Pxxx cells. The merged prompt must preserve:
+The Contact Sheet spatial asset keeps compiled pages in explicit Pxxx cells. When local rasterization is available, the Contact Sheet PNG is a simple montage of the already-rasterized page PNGs rather than a second rasterization of the giant sheet SVG. `contact-sheet.clean.*` is the generation-facing spatial reference; `contact-sheet.blueprint.*` is human-review only and must never become the default image-model input. The merged prompt must preserve:
 
 - global reusable-character identity guidance;
 - every resolved per-panel outfit/condition state;

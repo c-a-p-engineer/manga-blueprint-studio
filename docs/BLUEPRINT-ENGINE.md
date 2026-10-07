@@ -189,11 +189,15 @@ Additional outputs:
 
 ```text
 contact-sheet.clean.svg
-contact-sheet.clean.png        # best-effort local rasterization
+contact-sheet.blueprint.svg    # human-review surface
+contact-sheet.clean.png        # best-effort montage from Pxxx.clean.png
+contact-sheet.blueprint.png    # best-effort montage from Pxxx.blueprint.png
 contact-sheet.prompt.md
 contact-sheet.review.json
 contact-sheet.generation.json
 ```
+
+The PNG sheets are assembled directly from the already-rasterized per-page PNG files instead of re-rasterizing one giant Contact Sheet SVG. This keeps the Contact Sheet as a simple batch view of the exact page rasters. `contact-sheet.clean.png` is generation-facing; `contact-sheet.blueprint.png` is review-only.
 
 `contact-sheet.prompt.md` includes the global reusable-character contract and the complete per-page executable briefs. Resolved outfit/condition continuity therefore survives the merge instead of being reduced to generic phrases such as "school uniform".
 

@@ -2,6 +2,7 @@ import {compileMangaName} from '../core/manga-grammar.mjs';
 import {renderExecutableNameSvg} from '../core/blueprint-renderer.mjs';
 import {generationIdentityAuthority} from '../core/generation-adapter.mjs';
 import {autoContactSheetPreset,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg} from '../core/contact-sheet.mjs';
+import {buildContactSheetMontageAttempts} from '../core/png-contact-sheet.mjs';
 
 const source=[
   '# Page 1: start',
@@ -22,6 +23,7 @@ const project=compileMangaName(source,{title:'contact-sheet'});
 const heroine=project.characterLibrary.find(c=>c.name==='heroine');
 heroine.appearance={...heroine.appearance,hair:'blonde',eyes:'red',outfit:'navy blazer worn, white shirt worn'};
 const clean=project.pages.map((_,i)=>renderExecutableNameSvg(project,i,{annotated:false}));
+const blueprint=project.pages.map((_,i)=>renderExecutableNameSvg(project,i,{annotated:true}));
 
 for(const [count,columns,rows,preset] of [
   [1,1,1,'1x1'],
@@ -43,6 +45,17 @@ if(override.columns!==3||override.rows!==1||override.selection!=='override')thro
 const sheet=renderContactSheetSvg(clean);
 if(!sheet.includes('data-page-code="P001"')||!sheet.includes('data-page-code="P003"'))throw new Error('contact sheet page cells missing');
 if(sheet.includes('data-review='))throw new Error('contact sheet clean contains annotated review layer');
+const blueprintSheet=renderContactSheetSvg(blueprint);
+if(!blueprintSheet.includes('data-review="page-number"'))throw new Error('contact sheet blueprint must retain review annotations');
+
+const montageAttempts=buildContactSheetMontageAttempts(
+  ['P001.clean.png','P002.clean.png','P003.clean.png'],
+  'contact-sheet.clean.png',
+  {columns:2,rows:2}
+);
+if(!montageAttempts.length)throw new Error('contact sheet PNG montage attempts missing');
+const [montageCommand,montageArgs]=montageAttempts[0];
+if(montageCommand!=='magick'||montageArgs[0]!=='montage'||!montageArgs.includes('P001.clean.png')||!montageArgs.includes('2x2'))throw new Error('contact sheet PNG montage contract invalid');
 
 const prompt=buildContactSheetPrompt(project);
 if(!prompt.includes('ONE contact-sheet image')||!prompt.includes('# ===== P003 ====='))throw new Error('contact sheet prompt missing batch contract/page brief');
