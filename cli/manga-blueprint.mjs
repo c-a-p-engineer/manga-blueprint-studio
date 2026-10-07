@@ -30,7 +30,8 @@ const cliOptions={
   layoutSeed:undefined,
   layoutMutation:undefined,
   contactSheet:false,
-  contactColumns:null
+  contactColumns:null,
+  contactBatchSizes:null
 };
 
 while(args.length){
@@ -46,11 +47,19 @@ while(args.length){
     if(!Number.isInteger(n)||n<1||n>8){console.error('--contact-columns must be an integer from 1 to 8');process.exit(2);}
     cliOptions.contactColumns=n;
     cliOptions.contactSheet=true;
+  }else if(flag==='--contact-batches'){
+    const parts=value.split(',').map(part=>part.trim());
+    if(!parts.length||parts.some(part=>!/^[1-8]$/.test(part))){
+      console.error('--contact-batches must be comma-separated page counts from 1 to 8 (e.g. 4,2)');
+      process.exit(2);
+    }
+    cliOptions.contactBatchSizes=parts.map(Number);
+    cliOptions.contactSheet=true;
   }else{console.error('Unknown option: '+flag);process.exit(2);}
 }
 
 if(!input){
-  console.error('Usage: node cli/manga-blueprint.mjs <name.md> [out-dir] [--layout <recipe>] [--seed <value>] [--mutation <0..1>] [--contact-sheet] [--contact-columns <1..8>]\n       node cli/manga-blueprint.mjs --list-layouts [panel-count]');
+  console.error('Usage: node cli/manga-blueprint.mjs <name.md> [out-dir] [--layout <recipe>] [--seed <value>] [--mutation <0..1>] [--contact-sheet] [--contact-columns <1..8>] [--contact-batches <4,2,...>]\n       node cli/manga-blueprint.mjs --list-layouts [panel-count]');
   process.exit(2);
 }
 
@@ -61,6 +70,10 @@ if(cliOptions.layoutSeed!==undefined)compileOptions.layoutSeed=cliOptions.layout
 if(cliOptions.layoutMutation!==undefined)compileOptions.layoutMutation=cliOptions.layoutMutation;
 
 const project=compileMangaName(text,compileOptions);
+if(cliOptions.contactBatchSizes&&cliOptions.contactBatchSizes.reduce((sum,size)=>sum+size,0)!==project.pages.length){
+  console.error('--contact-batches page counts must sum to the compiled '+project.pages.length+' pages');
+  process.exit(2);
+}
 await fs.mkdir(out,{recursive:true});
 await fs.writeFile(path.join(out,'work.manga.json'),JSON.stringify(project,null,2));
 
@@ -97,7 +110,7 @@ if(cliOptions.contactSheet){
   }
 
   const pageNumbers=project.pages.map((page,i)=>page.pageNumber||i+1);
-  const batches=buildContactSheetBatches(project.pages.length,{pageNumbers});
+  const batches=buildContactSheetBatches(project.pages.length,{pageNumbers,batchSizes:cliOptions.contactBatchSizes});
   const batchManifests=[];
 
   for(const batch of batches){
