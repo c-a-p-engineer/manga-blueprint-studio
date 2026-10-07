@@ -204,3 +204,7 @@ The PNG sheets are assembled directly from the already-rasterized per-page PNG f
 `contact-sheet.review.json` maps every page cell back to canonical page/panel/character state and requests high-priority checks for page order, panel topology, identity, outfit continuity, scene continuity and reading flow.
 
 Contact Sheet is **preflight only**. Its scale makes exact glyph quality, fingers and subtle face detail lower-confidence checks. Use its per-page `pass | review | repair` outcome to send only affected pages back through the ordinary page-level generation/review loop.
+
+## PNG rasterization
+
+SVG remains the canonical vector output. The CLI derives PNG with `@resvg/resvg-js` as the primary rasterizer, with ImageMagick / librsvg retained only as fallback paths. Contact Sheet PNGs are then assembled from the already-rasterized per-page PNGs, so Clean and Blueprint batch sheets are exact batch views of their page-level rasters.
