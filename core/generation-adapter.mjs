@@ -1,4 +1,13 @@
 // Provider-neutral generation boundary. Canonical state never stores provider request IDs.
+export function generationIdentityAuthority(project){
+  const modes=new Set((project.characterLibrary||[]).map(c=>c.identityMode||'description'));
+  const hasSheet=modes.has('sheet');
+  const hasProjectGuidance=[...modes].some(mode=>mode==='description'||mode==='free');
+  if(hasSheet&&hasProjectGuidance)return'project+references';
+  if(hasSheet)return'references';
+  return'project-character-guidance';
+}
+
 export function createGenerationRequest({
   project,
   pageIndex=0,
@@ -14,7 +23,12 @@ export function createGenerationRequest({
   return{
     schema:'manga-generation-request/1',
     pageId:page.id,
-    authority:{spatial:'clean',semantic:'project',identity:'references',lettering:letteringAsset?'deterministic-overlay':'visible-text-allowlist'},
+    authority:{
+      spatial:'clean',
+      semantic:'project',
+      identity:generationIdentityAuthority(project),
+      lettering:letteringAsset?'deterministic-overlay':'visible-text-allowlist'
+    },
     inputs:{
       cleanAsset,
       prompt,
