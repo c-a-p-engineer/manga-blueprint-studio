@@ -2,7 +2,11 @@ import {compileMangaName} from '../core/manga-grammar.mjs';
 import {renderExecutableNameSvg} from '../core/blueprint-renderer.mjs';
 import {generationIdentityAuthority} from '../core/generation-adapter.mjs';
 import {autoContactSheetPreset,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg} from '../core/contact-sheet.mjs';
-import {buildContactSheetMontageAttempts} from '../core/png-contact-sheet.mjs';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {Resvg} from '@resvg/resvg-js';
+import {buildContactSheetMontageAttempts,buildContactSheetMontageSvg,composeContactSheetPng} from '../core/png-contact-sheet.mjs';
 
 const source=[
   '# Page 1: start',
@@ -56,6 +60,23 @@ const montageAttempts=buildContactSheetMontageAttempts(
 if(!montageAttempts.length)throw new Error('contact sheet PNG montage attempts missing');
 const [montageCommand,montageArgs]=montageAttempts[0];
 if(montageCommand!=='magick'||montageArgs[0]!=='montage'||!montageArgs.includes('P001.clean.png')||!montageArgs.includes('2x2'))throw new Error('contact sheet PNG montage contract invalid');
+
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'manga-contact-sheet-'));
+try{
+  const pagePngs=[1,2,3].map(index=>{
+    const file=path.join(tmp,'P00'+index+'.clean.png');
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="32" height="48"><rect width="32" height="48" fill="white"/><text x="4" y="20">P00'+index+'</text></svg>';
+    fs.writeFileSync(file,new Resvg(svg).render().asPng());
+    return file;
+  });
+  const montageSvg=buildContactSheetMontageSvg(pagePngs,{columns:2,rows:2,gap:4});
+  if((montageSvg.match(/data:image\/png;base64,/g)||[]).length!==3)throw new Error('resvg montage must embed all page PNGs');
+  const output=path.join(tmp,'contact-sheet.clean.png');
+  const composed=composeContactSheetPng(pagePngs,output,{columns:2,rows:2,gap:4});
+  if(!composed.ok||composed.engine!=='resvg-js-montage'||!fs.existsSync(output)||fs.statSync(output).size<100)throw new Error('resvg contact-sheet PNG montage failed');
+}finally{
+  fs.rmSync(tmp,{recursive:true,force:true});
+}
 
 const prompt=buildContactSheetPrompt(project);
 if(!prompt.includes('ONE contact-sheet image')||!prompt.includes('# ===== P003 ====='))throw new Error('contact sheet prompt missing batch contract/page brief');
