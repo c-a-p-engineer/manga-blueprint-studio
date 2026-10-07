@@ -28,14 +28,33 @@ export function contactSheetAssetNames(range){
   };
 }
 
-export function buildContactSheetBatches(pageCount,{batchSize=CONTACT_SHEET_MAX_PAGES,pageNumbers=[]}={}){
+export function buildContactSheetBatches(pageCount,{batchSize=CONTACT_SHEET_MAX_PAGES,batchSizes=null,pageNumbers=[]}={}){
   const count=Math.max(0,Number(pageCount)||0);
-  const size=Math.max(1,Math.min(CONTACT_SHEET_MAX_PAGES,Number(batchSize)||CONTACT_SHEET_MAX_PAGES));
+  const limit=Math.max(1,Math.min(CONTACT_SHEET_MAX_PAGES,Number(batchSize)||CONTACT_SHEET_MAX_PAGES));
   const numbers=Array.isArray(pageNumbers)?pageNumbers:[];
+  let sizes;
+  if(batchSizes!==null){
+    if(!Array.isArray(batchSizes)||batchSizes.some(size=>!Number.isInteger(size)||size<1||size>CONTACT_SHEET_MAX_PAGES)){
+      throw new Error('Contact sheet batch sizes must be integers from 1 to 8.');
+    }
+    if(batchSizes.reduce((sum,size)=>sum+size,0)!==count){
+      throw new Error('Contact sheet batch sizes must sum to the work page count ('+count+').');
+    }
+    sizes=[...batchSizes];
+  }else{
+    // Prefer filled 4x2, 2x2, 2x1 and 1x1 sheets over partially empty 4x2 sheets.
+    // A 3-page remainder uses 2x2; 6 pages therefore become 4+2 instead of 6.
+    sizes=[];
+    let remaining=count;
+    for(const size of [8,4,3,2,1]){
+      if(size>limit)continue;
+      while(remaining>=size){sizes.push(size);remaining-=size;}
+    }
+  }
   const batches=[];
-  for(let startIndex=0;startIndex<count;startIndex+=size){
-    const endIndex=Math.min(count,startIndex+size);
-    const batchCount=endIndex-startIndex;
+  let startIndex=0;
+  for(const size of sizes){
+    const endIndex=startIndex+size;
     const startPage=Number(numbers[startIndex])||startIndex+1;
     const endPage=Number(numbers[endIndex-1])||endIndex;
     const range=contactSheetRangeLabel(startPage,endPage);
@@ -43,14 +62,15 @@ export function buildContactSheetBatches(pageCount,{batchSize=CONTACT_SHEET_MAX_
       index:batches.length,
       startIndex,
       endIndex,
-      pageCount:batchCount,
+      pageCount:size,
       startPage,
       endPage,
-      pageNumbers:Array.from({length:batchCount},(_,i)=>Number(numbers[startIndex+i])||startIndex+i+1),
+      pageNumbers:Array.from({length:size},(_,i)=>Number(numbers[startIndex+i])||startIndex+i+1),
       range,
       assets:contactSheetAssetNames(range),
-      layout:buildContactSheetLayout(batchCount)
+      layout:buildContactSheetLayout(size)
     });
+    startIndex=endIndex;
   }
   return batches;
 }
