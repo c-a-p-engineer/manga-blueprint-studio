@@ -32,7 +32,8 @@ The current headless compiler accepts a lightweight Markdown Name DSL and derive
 - manga line-effect hints;
 - clean and annotated blueprint visuals;
 - page prompts with explicit `TEXT TO RENDER` allowlist;
-- a read-first compilation manifest.
+- a read-first compilation manifest;
+- optional headless Contact Sheet preflight artifacts that preserve all compiled page cells in numeric order for one-shot multi-page generation/review.
 
 ### AI Name DSL boundary
 
@@ -77,6 +78,12 @@ The compiler package follows the same conceptual boundary as the Web export pipe
 - `manifest.json` — read-first package index.
 
 The headless preview manifest currently uses `manga-blueprint-name-package/2`; it is distinct from the existing Web export manifest `manga-blueprint-export-manifest/3`.
+
+### Headless Contact Sheet preflight
+
+The CLI may opt into `--contact-sheet` for multi-page work. This produces a single contact-sheet spatial reference plus a merged prompt, a page-indexed review request and a provider-neutral generation package. The mode exists to catch cross-page identity/outfit/scene drift quickly and to identify which pages need individual repair.
+
+Contact Sheet does **not** become canonical project state, does not change Web selected-page export scope, and is never sufficient final acceptance for small lettering, fine anatomy or subtle facial detail. Final delivery remains page-level.
 
 ## Existing Web editor contract
 

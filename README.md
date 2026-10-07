@@ -22,8 +22,9 @@ npm install
 npm run blueprint -- examples/combat-1p.md blueprint-out
 node cli/manga-blueprint.mjs --list-layouts 4
 node cli/manga-blueprint.mjs examples/combat-1p.md blueprint-out --layout hero-bottom --seed 42 --mutation 0.25
+node cli/manga-blueprint.mjs examples/scene-3page.md blueprint-out --contact-sheet --contact-columns 3
 ```
-Output includes `work.manga.json`, per-page Clean/Annotated SVG, deterministic lettering SVG/JSON, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only.
+Output includes `work.manga.json`, per-page Clean/Annotated SVG, deterministic lettering SVG/JSON, optional PNG, prompt, portable `generation.json`, and manifest. Clean is generation-facing; Annotated is human-review only. `--contact-sheet` additionally emits a single multi-page Clean sheet, merged preflight prompt, page-indexed review request and provider-neutral generation package; it is intended for batch QA and page-targeted repair, not final publication acceptance.
 
 ## Pipeline
 ```text

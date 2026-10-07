@@ -179,7 +179,7 @@ Clean and Annotated must be generated from the **same canonical geometry/art sou
 
 `manga-blueprint-export-manifest/3` remains the read-first authority for the established Web export package. Current Web generation/review export is selected-page scoped until intentionally changed.
 
-Blueprint Engine packages likewise include a read-first manifest and per-page assets. Do not conflate headless multi-page compilation with established Web multi-page export support.
+Blueprint Engine packages likewise include a read-first manifest and per-page assets. The headless CLI may additionally emit an **opt-in Contact Sheet preflight package** that combines multiple compiled pages into one review/generation surface for fast cross-page checking. Contact Sheet is review/preflight only: it does not turn Web export into multi-page export and does not replace page-level final acceptance. Do not conflate headless multi-page compilation or Contact Sheet preflight with established Web multi-page export support.
 
 Provider-specific behavior belongs at adapter/export boundaries; core project state remains provider-independent and local-first.
 

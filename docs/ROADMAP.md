@@ -35,6 +35,11 @@ Prototype 0.25.0 extends the 0.20 production baseline with a closed quality loop
   - Continuity Graph v1 across panels/pages for screen side, facing, prop hand, outfit/condition and intentional breaks;
   - deterministic lettering plan and transparent SVG overlay for exact dialogue/SFX;
   - CLI emits per-page lettering SVG/JSON and generation packages reference them.
+- [x] Headless multi-page Contact Sheet preflight:
+  - opt-in `--contact-sheet` / `--contact-columns` CLI mode;
+  - merged Clean spatial sheet + full per-page prompt contract;
+  - page-indexed batch review request with outfit/identity continuity checks;
+  - preflight-only status with page-level final verification retained.
 
 ## Post-backlog roadmap
 

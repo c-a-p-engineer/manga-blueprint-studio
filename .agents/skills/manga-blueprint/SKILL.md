@@ -45,8 +45,8 @@ Do not confuse upload/export dimensions with manga composition rules.
 7. Express physical relationships as structured contact when contact matters.
 8. Consult `/docs/MANGA-DICTIONARY.md` by desired effect first. Treat genre entries as candidate biases, not rules.
 9. Choose transition/pacing, camera/composition, panel grammar and rendering style as separate axes.
-10. Compile with the CLI.
-11. Review Annotated output for human-readable intent and Clean output for generation-facing spatial fidelity.
+10. Compile with the CLI. For multi-page work, use the optional `--contact-sheet` mode when one-shot cross-page preflight is useful.
+11. Review Annotated output for human-readable intent and Clean output for generation-facing spatial fidelity. A Contact Sheet is a fast batch-review surface, not final page acceptance.
 12. Patch semantic source and recompile. Do not manually edit generated Clean/Annotated assets as the normal workflow.
 
 ## Translating human manga terms
@@ -73,6 +73,8 @@ See `/docs/MANGA-DICTIONARY.md` for the broader shared vocabulary and reverse lo
 ```bash
 npm install
 npm run blueprint -- <name-source.md> <output-dir>
+# optional multi-page preflight
+npm run blueprint -- <name-source.md> <output-dir> --contact-sheet --contact-columns 4
 ```
 
 For repository changes run:
@@ -90,6 +92,7 @@ npm run validate
 - `Pxxx.blueprint.svg/png`: human-review view; never the default image-model input.
 - `Pxxx.prompt.md`: semantic rendering brief and exact visible-text rules.
 - `manifest.json`: read-first package/provenance information.
+- Optional Contact Sheet mode: `contact-sheet.clean.svg/png`, `contact-sheet.prompt.md`, `contact-sheet.review.json`, `contact-sheet.generation.json` for batch preflight only.
 
 Clean and Annotated must come from the same geometry/art source.
 

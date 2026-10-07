@@ -155,3 +155,36 @@ A Web user may instead import/refine the canonical project visually. Manual Web 
 The local/compiler side now covers semantic grammar, energy/attention, candidate layout solving, irregular/inset geometry, deterministic articulated pose rendering, prop/body contact anchors, layered clean/annotated rendering, executable generation briefs, deterministic packages and best-effort PNG rasterization.
 
 Remaining work is mostly outside the provider-independent compiler boundary: richer anatomy/IK, arbitrary prop libraries, appearance/reference-sheet binding, page-turn/spread semantics, and provider-specific image-generation invocation/evaluation. Those should be adapters or later quality layers rather than reasons to move semantic ownership into the Web UI.
+
+## Contact Sheet preflight
+
+For multi-page work the headless CLI can produce a single batch-preflight surface:
+
+```bash
+npm run blueprint -- path/to/name.md blueprint-out --contact-sheet --contact-columns 4
+```
+
+For an eight-page work with four columns, the review order is:
+
+```text
+P001 P002 P003 P004
+P005 P006 P007 P008
+```
+
+Each cell remains an independent full manga page with its own internal reading direction. Page-cell order is a review index and does not replace the page's RTL/LTR contract.
+
+Additional outputs:
+
+```text
+contact-sheet.clean.svg
+contact-sheet.clean.png        # best-effort local rasterization
+contact-sheet.prompt.md
+contact-sheet.review.json
+contact-sheet.generation.json
+```
+
+`contact-sheet.prompt.md` includes the global reusable-character contract and the complete per-page executable briefs. Resolved outfit/condition continuity therefore survives the merge instead of being reduced to generic phrases such as "school uniform".
+
+`contact-sheet.review.json` maps every page cell back to canonical page/panel/character state and requests high-priority checks for page order, panel topology, identity, outfit continuity, scene continuity and reading flow.
+
+Contact Sheet is **preflight only**. Its scale makes exact glyph quality, fingers and subtle face detail lower-confidence checks. Use its per-page `pass | review | repair` outcome to send only affected pages back through the ordinary page-level generation/review loop.

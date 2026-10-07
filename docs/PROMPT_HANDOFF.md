@@ -2,9 +2,9 @@
 
 ## Scope
 
-This document defines the **current selected-page AI generation/review handoff**.
+This document defines the **current selected-page AI generation/review handoff** and the separate **headless multi-page Contact Sheet preflight** boundary.
 
-The editor already supports multiple works and pages, but generation/review packages remain selected-page scoped until the scoped-export phase ships. Do not infer multi-page generation semantics merely because a project contains multiple pages.
+The editor already supports multiple works and pages, but Web generation/review packages remain selected-page scoped until the scoped-export phase ships. Do not infer Web multi-page export semantics merely because a project contains multiple pages. The headless CLI may separately create an opt-in Contact Sheet preflight package; that package is batch QA, not Web export and not final page acceptance.
 
 ## Recommended generation handoff
 
@@ -551,3 +551,37 @@ Downstream generation must preserve:
 - the child as a real editable manga panel with its own beat/camera/cast/text, not as a speech balloon, UI card, or background prop.
 
 The legacy `border=inset` value means only an **Inset-style border / 小窓風枠** and does not establish panel parentage.
+
+## Headless Contact Sheet preflight
+
+The Blueprint Engine CLI can opt into a provider-neutral batch package:
+
+```text
+contact-sheet.clean.svg/png
+contact-sheet.prompt.md
+contact-sheet.review.json
+contact-sheet.generation.json
+```
+
+The Contact Sheet spatial asset keeps compiled pages in explicit Pxxx cells. The merged prompt must preserve:
+
+- global reusable-character identity guidance;
+- every resolved per-panel outfit/condition state;
+- each page's own executable generation brief;
+- each page's internal reading/writing direction;
+- explicit page-cell separation.
+
+Do not manually compress those contracts to vague summaries such as "two students in uniform". That loses canonical clothing/identity state and can reintroduce cross-page drift.
+
+`manga-contact-sheet-review-request/1` maps sheet cells to page/panel/character expectations and supports one-pass detection of high-level cross-page failures. It explicitly marks final acceptance false. Exact lettering, fine anatomy and subtle facial detail must still be checked on individual page outputs.
+
+The intended loop is:
+
+```text
+multi-page compile
+  -> Contact Sheet generation
+  -> one-pass batch review
+  -> classify Pxxx as pass / review / repair
+  -> regenerate only affected pages when possible
+  -> page-level final verification
+```
