@@ -158,23 +158,24 @@ Remaining work is mostly outside the provider-independent compiler boundary: ric
 
 ## Contact Sheet preflight
 
-For multi-page work the headless CLI can produce a single batch-preflight surface:
+For multi-page work the headless CLI can produce one or more batch-preflight surfaces:
 
 ```bash
 npm run blueprint -- path/to/name.md blueprint-out --contact-sheet
+# Respect an explicit grouping for a six-page story (3P + 3P):
+npm run blueprint -- path/to/name.md blueprint-out --contact-sheet --contact-batches 3,3
 ```
 
-The sheet shape is selected automatically:
+Automatic batches are at most 8 pages and prefer filled layouts, not a single partially empty 4×2 sheet. Examples: **5P→4+1, 6P→4+2, 7P→4+3, 8P→8, 10P→8+2**. Within a batch the standard layout is:
 
-| Pages | Layout |
+| Batch pages | Layout |
 | ---: | --- |
 | 1 | 1×1 |
 | 2 | 2×1 |
 | 3–4 | 2×2 |
-| 5–8 | 4×2 |
-| 9+ | 4 columns × required rows |
+| 5–8 (when explicitly requested, or full 8P) | 4×2 |
 
-`--contact-columns <1..8>` remains an explicit override, but ordinary production should use automatic selection.
+`--contact-batches <sizes>` takes comma-separated group sizes, each 1–8, whose sum must equal the compiled work page count. Explicit grouping wins over the automatic partition. `--contact-columns <1..8>` overrides columns independently, including for explicitly grouped sheets.
 
 For an eight-page work, the automatic review order is:
 
@@ -196,16 +197,16 @@ contact-sheet.001-008.prompt.md
 contact-sheet.001-008.review.json
 contact-sheet.001-008.generation.json
 
-# 9ページ目以降があれば次のbatch
-contact-sheet.009-016.*
+# a 10-page work continues with its remaining two pages
+contact-sheet.009-010.*
 
 ```
 
-Each Contact Sheet batch contains at most 8 pages. Its filename includes the actual covered page range as three-digit numbers (`001-008`, `009-010`, etc.), so multiple sheets remain self-describing and naturally sortable. The PNG sheets are assembled directly from the already-rasterized per-page PNG files instead of re-rasterizing one giant Contact Sheet SVG. The primary montage path is Node-local `@resvg/resvg-js`; ImageMagick is fallback only. This keeps each Contact Sheet as a simple batch view of the exact page rasters. Range-qualified Clean PNGs are generation-facing; range-qualified Blueprint PNGs are review-only.
+Each Contact Sheet batch contains at most 8 pages, with automatic partition sizes chosen to avoid sparse larger layouts unless the user explicitly requests them. Its filename includes the actual covered page range as three-digit numbers (`001-008`, `009-010`, etc.), so multiple sheets remain self-describing and naturally sortable. The PNG sheets are assembled directly from the already-rasterized per-page PNG files instead of re-rasterizing one giant Contact Sheet SVG. The primary montage path is Node-local `@resvg/resvg-js`; ImageMagick is fallback only. This keeps each Contact Sheet as a simple batch view of the exact page rasters. Range-qualified Clean PNGs are generation-facing; range-qualified Blueprint PNGs are review-only.
 
-`contact-sheet.prompt.md` includes the global reusable-character contract and the complete per-page executable briefs. Resolved outfit/condition continuity therefore survives the merge instead of being reduced to generic phrases such as "school uniform".
+Each range-qualified `contact-sheet.NNN-NNN.prompt.md` includes the global reusable-character contract and the complete per-page executable briefs. Resolved outfit/condition continuity therefore survives the merge instead of being reduced to generic phrases such as "school uniform".
 
-`contact-sheet.review.json` maps every page cell back to canonical page/panel/character state and requests high-priority checks for page order, panel topology, identity, outfit continuity, scene continuity and reading flow.
+Each range-qualified `contact-sheet.NNN-NNN.review.json` maps every page cell back to canonical page/panel/character state and requests high-priority checks for page order, panel topology, identity, outfit continuity, scene continuity and reading flow.
 
 Contact Sheet is **preflight only**. Its scale makes exact glyph quality, fingers and subtle face detail lower-confidence checks. Use its per-page `pass | review | repair` outcome to send only affected pages back through the ordinary page-level generation/review loop.
 
