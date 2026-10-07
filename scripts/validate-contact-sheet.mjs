@@ -3,6 +3,7 @@ import {renderExecutableNameSvg} from '../core/blueprint-renderer.mjs';
 import {generationIdentityAuthority} from '../core/generation-adapter.mjs';
 import {autoContactSheetPreset,buildContactSheetBatches,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,contactSheetAssetNames,renderContactSheetSvg} from '../core/contact-sheet.mjs';
 import fs from 'node:fs';
+import {spawnSync} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import {Resvg} from '@resvg/resvg-js';
@@ -112,6 +113,30 @@ try{
   if(!composed.ok||composed.engine!=='resvg-js-montage'||!fs.existsSync(output)||fs.statSync(output).size<100)throw new Error('resvg contact-sheet PNG montage failed');
 }finally{
   fs.rmSync(tmp,{recursive:true,force:true});
+}
+
+// CLI integration: explicit sheet sizes must flow through compilation, output names and manifest.
+const cliTmp=fs.mkdtempSync(path.join(os.tmpdir(),'manga-contact-cli-'));
+try{
+  const cliSource=Array.from({length:6},(_,i)=>'# Page '+(i+1)+': review\\nコマ1: heroine waits\\n登場: heroine@center').join('\\n\\n').replaceAll('\\n','\n');
+  const input=path.join(cliTmp,'six-pages.md'),output=path.join(cliTmp,'out');
+  fs.writeFileSync(input,cliSource);
+  const run=spawnSync(process.execPath,[path.resolve('cli/manga-blueprint.mjs'),input,output,'--contact-batches','3,3'],{encoding:'utf8'});
+  if(run.status!==0)throw new Error('CLI explicit batch sizes failed: '+run.stderr);
+  const manifest=JSON.parse(fs.readFileSync(path.join(output,'manifest.json'),'utf8'));
+  const batches=manifest.contactSheet?.batches||[];
+  if(batches.length!==2||batches[0].range!=='001-003'||batches[1].range!=='004-006'){
+    throw new Error('CLI did not preserve explicit 3+3 grouping in manifest');
+  }
+  for(const range of ['001-003','004-006']){
+    for(const name of ['contact-sheet.'+range+'.clean.svg','contact-sheet.'+range+'.blueprint.svg','contact-sheet.'+range+'.prompt.md','contact-sheet.'+range+'.review.json']){
+      if(!fs.existsSync(path.join(output,name)))throw new Error('CLI contact sheet asset missing: '+name);
+    }
+  }
+  const bad=spawnSync(process.execPath,[path.resolve('cli/manga-blueprint.mjs'),input,path.join(cliTmp,'invalid'),'--contact-batches','4,3'],{encoding:'utf8'});
+  if(bad.status!==2||!bad.stderr.includes('must sum'))throw new Error('CLI did not reject grouping with wrong total');
+}finally{
+  fs.rmSync(cliTmp,{recursive:true,force:true});
 }
 
 const prompt=buildContactSheetPrompt(project);
