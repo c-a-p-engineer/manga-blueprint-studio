@@ -7,6 +7,28 @@ function baseFor(project,c){
   return(project.characterLibrary||[]).find(x=>x.characterId===c.characterId||x.referenceKey&&x.referenceKey===c.referenceKey)||null;
 }
 
+export function resolveCharacterContinuity(project){
+  const lastByCharacter=new Map();
+  for(const page of[...(project.pages||[])].sort((a,b)=>(a.order||a.pageNumber||0)-(b.order||b.pageNumber||0))){
+    for(const panel of[...(page.panels||[])].sort((a,b)=>(a.order||0)-(b.order||0))){
+      for(const c of panel.characters||[]){
+        const base=baseFor(project,c),previous=lastByCharacter.get(c.characterId)||{};
+        const authored=c.continuityState||{};
+        const outfitExplicit=!!authored.outfit&&!['base','inherited'].includes(authored.outfitSource);
+        const conditionExplicit=!!authored.condition&&!['base','inherited'].includes(authored.conditionSource);
+        const baseOutfit=base?.appearance?.outfit||'';
+        const outfit=outfitExplicit?authored.outfit:(previous.outfit||baseOutfit||authored.outfit||'');
+        const condition=conditionExplicit?authored.condition:(previous.condition||authored.condition||'');
+        const outfitSource=outfitExplicit?'explicit':previous.outfit?'inherited':outfit?'base':'';
+        const conditionSource=conditionExplicit?'explicit':previous.condition?'inherited':condition?'base':'';
+        c.continuityState={...authored,outfit,condition,outfitSource,conditionSource};
+        lastByCharacter.set(c.characterId,{outfit,condition});
+      }
+    }
+  }
+  return project;
+}
+
 function eventFor(project,page,panel,c){
   const base=baseFor(project,c),props=(c.renderPose?.props||[]).map(p=>({kind:p.kind,hand:p.hand||''}));
   return{
@@ -24,7 +46,9 @@ function eventFor(project,page,panel,c){
     movement:panel.motionDirection||c.motionPhase||'',
     props,
     outfit:c.continuityState?.outfit||base?.appearance?.outfit||'',
+    outfitSource:c.continuityState?.outfitSource||'',
     condition:c.continuityState?.condition||'',
+    conditionSource:c.continuityState?.conditionSource||'',
     intentionalBreak:!!panel.continuity?.break,
     breakReason:panel.continuity?.reason||''
   };
@@ -47,11 +71,11 @@ function compare(a,b){
       issues.push({type:'prop-hand-switch',severity:'review',characterId:b.characterId,from:a.id,to:b.id,evidence:{prop:pa.kind,hand:[pa.hand,pb.hand]}});
     }
   }
-  if(a.outfit&&b.outfit&&a.outfit!==b.outfit){
-    issues.push({type:'outfit-state-change',severity:'review',characterId:b.characterId,from:a.id,to:b.id,evidence:{from:a.outfit,to:b.outfit}});
+  if(a.outfit&&b.outfit&&a.outfit!==b.outfit&&b.outfitSource!=='explicit'){
+    issues.push({type:'outfit-state-change',severity:'review',characterId:b.characterId,from:a.id,to:b.id,evidence:{from:a.outfit,to:b.outfit,source:b.outfitSource||'unknown'}});
   }
-  if(a.condition&&b.condition&&a.condition!==b.condition&&!/change|damage|heal|変化|負傷|回復/.test(lower(b.condition))){
-    issues.push({type:'condition-state-change',severity:'review',characterId:b.characterId,from:a.id,to:b.id,evidence:{from:a.condition,to:b.condition}});
+  if(a.condition&&b.condition&&a.condition!==b.condition&&b.conditionSource!=='explicit'&&!/change|damage|heal|変化|負傷|回復/.test(lower(b.condition))){
+    issues.push({type:'condition-state-change',severity:'review',characterId:b.characterId,from:a.id,to:b.id,evidence:{from:a.condition,to:b.condition,source:b.conditionSource||'unknown'}});
   }
   return issues;
 }
@@ -82,6 +106,7 @@ export function buildContinuityGraph(project){
 }
 
 export function applyContinuityGraph(project){
+  resolveCharacterContinuity(project);
   const graph=buildContinuityGraph(project);
   project.meta.continuityGraph=graph;
   for(const page of project.pages||[]){

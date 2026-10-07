@@ -154,6 +154,10 @@ Blueprint Engine character tokens initially compile to `description` placeholder
 
 Stick figures communicate body relation, pose, placement, and approximate scale. They do not define finished appearance or clothing.
 
+### Character continuity state
+
+`characterLibrary[].appearance.outfit` is the baseline clothing state. A placed character may author an explicit `continuityState.outfit`; that resolved outfit is then inherited across later panels/pages until another explicit outfit state replaces it. The same inheritance model applies to character condition. Compiler output records `outfitSource` / `conditionSource` as `base`, `explicit`, or `inherited` so diagnostics and generation handoff can distinguish an intentional change from drift. Generation briefs must carry the resolved outfit and prohibit unrequested clothing add/remove/recolor/redesign.
+
 ## AI-safe visual/text boundary
 
 Clean visuals communicate spatial composition. `.manga.json` + prompt communicate meaning. Character guidance controls identity. Art direction controls rendering language. Exact visible text comes only from explicit renderable-text allowlists.

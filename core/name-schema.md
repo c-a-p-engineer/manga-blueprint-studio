@@ -97,7 +97,7 @@ Supported semantic fields:
 - `情報量:` / `detail:` — per-panel salience/detail budget. Example: `hero=high, mob=silhouette, crowd=low, background=low`.
 - `モブ情報量:` / `crowd detail:` — shorthand for crowd/extra simplification.
 - `連続性:` / `continuity:` — mark an intentional continuity break/cut when screen-side/state changes should not be diagnosed as accidental.
-- `状態:` / `state:` — character continuity state, e.g. `hero> outfit=uniform; condition=injured`.
+- `状態:` / `state:` — character continuity state, e.g. `hero> outfit=uniform; condition=injured`. An explicit `outfit=` or `condition=` becomes the new resolved state and is inherited by later appearances of that character across panels/pages until another explicit state replaces it. If no explicit outfit has appeared yet, `characterLibrary[].appearance.outfit` is the baseline.
 - `カメラ:` / `camera:` — semantic distance/angle/viewpoint keywords.
 - `背景:` / `background:` — panel-local background override.
 - `効果音:` / `sfx:` — exact renderable SFX.
@@ -180,3 +180,37 @@ Character tokens are semantic handles, not finished display names. The compiler 
 ## Authority
 
 The DSL is an AI-facing authoring IR, not persistent project authority. After compilation, `manga-blueprint/0.2` is canonical. The Web editor is an optional GUI client over that project state; the CLI/Engine path is the primary automation path.
+
+## Character state inheritance
+
+Character clothing/condition is stateful rather than re-invented per panel.
+
+```text
+base appearance outfit
+  → first character appearance
+  → explicit 状態/State override when authored
+  → subsequent panels/pages inherit the resolved state
+  → next explicit override becomes the new state
+```
+
+For example:
+
+```md
+コマ1: 教室で話す
+登場: heroine@right
+状態: heroine> outfit=navy blazer worn, white shirt, red ribbon, pleated skirt
+
+コマ2: 廊下へ出る
+登場: heroine@left
+# outfit omitted: inherits panel 1
+
+コマ3: 暑くなりブレザーを脱ぐ
+登場: heroine@center
+状態: heroine> outfit=navy blazer carried, white shirt worn, red ribbon worn, pleated skirt worn
+
+コマ4: 外へ出る
+登場: heroine@center
+# inherits panel 3
+```
+
+The compiler materializes the resolved state into each placed-character instance and records whether it came from the base appearance, an explicit authored state, or inheritance. Generation briefs receive the resolved outfit and must not silently add/remove/recolor/redesign clothing between explicit transitions.

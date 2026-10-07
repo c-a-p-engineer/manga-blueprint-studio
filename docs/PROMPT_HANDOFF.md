@@ -97,7 +97,7 @@ Controls strongly/exactly as declared by the current render contract:
 - pose direction/body relationship;
 - balloon/effect geometry that remains in clean output.
 
-The planning stick figure does **not** define finished appearance, clothing state, or pixel-exact anatomy. A stick figure is an abstract pose/placement guide and must never be interpreted as an unclothed body. Finished clothing comes from Character Sheet / appearance guidance. If no outfit is specified, downstream generation uses ordinary scene-appropriate clothing instead of inferring nudity from the planning figure.
+The planning stick figure does **not** define finished appearance, clothing state, or pixel-exact anatomy. A stick figure is an abstract pose/placement guide and must never be interpreted as an unclothed body. Finished clothing comes from Character Sheet / appearance guidance plus canonical character continuity state. `characterLibrary[].appearance.outfit` seeds the baseline; explicit per-character `continuityState.outfit` changes replace that state, and later panels/pages inherit the resolved outfit until another explicit change. The generation brief must state the resolved outfit for each placed character and prohibit unrequested clothing add/remove/recolor/redesign. If no outfit is specified anywhere, downstream generation uses ordinary scene-appropriate clothing instead of inferring nudity from the planning figure.
 
 ### `.manga.json` + prompt — semantic authority
 

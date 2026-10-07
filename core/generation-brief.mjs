@@ -1,4 +1,18 @@
 const q=v=>JSON.stringify(String(v));
+const baseFor=(project,c)=>(project.characterLibrary||[]).find(x=>x.characterId===c.characterId||x.referenceKey&&x.referenceKey===c.referenceKey)||null;
+function characterStateLines(project,c){
+  const base=baseFor(project,c),appearance=base?.appearance||{},state=c.continuityState||{},outfit=state.outfit||appearance.outfit||'',lines=[];
+  const identity=[appearance.hair&&`hair=${q(appearance.hair)}`,appearance.eyes&&`eyes=${q(appearance.eyes)}`,appearance.features&&`features=${q(appearance.features)}`].filter(Boolean);
+  if(identity.length)lines.push(`CHARACTER IDENTITY: ${c.name}: ${identity.join('; ')}`);
+  if(outfit){
+    lines.push(`CHARACTER OUTFIT: ${c.name}: ${q(outfit)} (source=${state.outfitSource||'base'})`);
+    lines.push(state.outfitSource==='explicit'
+      ?`OUTFIT TRANSITION: ${c.name}: this panel explicitly sets the resolved outfit above; carry this exact outfit forward until another explicit outfit state.`
+      :`OUTFIT CONTINUITY: ${c.name}: preserve the exact resolved outfit above from the previous state; do not add, remove, recolor, or redesign clothing items.`);
+  }
+  if(state.condition)lines.push(`CHARACTER CONDITION: ${c.name}: ${q(state.condition)} (source=${state.conditionSource||'inherited'})`);
+  return lines;
+}
 export function buildExecutablePrompt(project,pageIndex=0){
   const page=project.pages[pageIndex],text=page.panels.flatMap(p=>[...p.balloons.map(b=>b.text),...(p.effects.sfxText?[p.effects.sfxText]:[])]);
   const lettering=project.meta?.letteringStrategy||'overlay-preferred';
@@ -41,6 +55,7 @@ export function buildExecutablePrompt(project,pageIndex=0){
     if(p.style?.breakout&&p.style.breakout!=='none')frame.push(`breakout=${p.style.breakout}`);
     if(frame.length)lines.push(`FRAME DIRECTION: ${frame.join('; ')}`);
     lines.push(`CAST: ${p.characters.map(c=>`${c.name} [pose=${c.poseId}; expression=${c.expression.type}; gaze=${c.gaze?.target||'auto'}; support=${c.supportState}; motion=${c.motionPhase}; depth=${c.depthOrder??0}; detail=${c.detailLevel||'medium'}]`).join(', ')||'(none)'}`);
+    for(const c of p.characters)lines.push(...characterStateLines(project,c));
     if(p.detailBudget)lines.push(`DETAIL/SALIENCE: crowd=${p.detailBudget.crowd||'low'}; background=${p.detailBudget.background||'medium'}; characters=${Object.entries(p.detailBudget.characters||{}).map(([k,v])=>`${k}:${v}`).join(', ')||'derived'}`);
     if(['low','silhouette','none'].includes(p.detailBudget?.crowd))lines.push('CROWD RULE: background extras are simplified; omit eye detail and nonessential facial features.');
     if(p.compositionPlan?.negativeSpace)lines.push(`NEGATIVE SPACE: preserve derived region x=${Math.round(p.compositionPlan.negativeSpace.x)}, y=${Math.round(p.compositionPlan.negativeSpace.y)}, w=${Math.round(p.compositionPlan.negativeSpace.w)}, h=${Math.round(p.compositionPlan.negativeSpace.h)}`);
