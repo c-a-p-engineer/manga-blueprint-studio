@@ -221,3 +221,11 @@ Contact Sheet is **preflight only**. Its scale makes exact glyph quality, finger
 ## PNG rasterization
 
 SVG remains the canonical vector output. The CLI derives PNG with `@resvg/resvg-js` as the primary rasterizer, with ImageMagick / librsvg retained only as fallback paths. Contact Sheet PNGs are then assembled from the already-rasterized per-page PNGs, so Clean and Blueprint batch sheets are exact batch views of their page-level rasters.
+
+
+### Four-page sheets and reader-flow review (docs/BLUEPRINT-ENGINE.md)
+
+- **Maximum four pages per contact sheet.** Split e.g. an 8P work into `contact-sheet.001-004.*` and `contact-sheet.005-008.*` (2×2 each). One-page image generation replaces 8P composite rendering; sheets are only for reviewing the plan.
+- **Annotated / Full Review: visual reader-path estimate** shows order and reading direction using light cyan arrows derived from canonical panel order; explicit primary attention coordinates refine the route when available. This is a composition aid, **not actual measured eye tracking**. Character gaze lines use only resolved, authored gaze targets. Full Review is more explicit; Clean stays entirely free of both guide types.
+- The review guides do not become manga lettering or image-model input, and cannot change the canonical `work.manga.json`.
+- The CLI supports `--contact-batches 4,4` for explicit partitioning; default grouping fills batches of ≤4. Review Full SVG and PNG use the same page ranges.
