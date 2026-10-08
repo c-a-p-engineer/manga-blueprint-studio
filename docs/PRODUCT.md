@@ -218,3 +218,11 @@ A change is not complete solely because code compiles. Relevant changes should p
 - Web selected-page generation contracts;
 - documentation synchronization;
 - GitHub Pages behavior when public Web surfaces change.
+
+
+### Four-page sheets and reader-flow review (docs/PRODUCT.md)
+
+- **Maximum four pages per contact sheet.** Split e.g. an 8P work into `contact-sheet.001-004.*` and `contact-sheet.005-008.*` (2×2 each). One-page image generation replaces 8P composite rendering; sheets are only for reviewing the plan.
+- **Annotated / Full Review: visual reader-path estimate** shows order and reading direction using light cyan arrows derived from canonical panel order; explicit primary attention coordinates refine the route when available. This is a composition aid, **not actual measured eye tracking**. Character gaze lines use only resolved, authored gaze targets. Full Review is more explicit; Clean stays entirely free of both guide types.
+- The review guides do not become manga lettering or image-model input, and cannot change the canonical `work.manga.json`.
+- The CLI supports `--contact-batches 4,4` for explicit partitioning; default grouping fills batches of ≤4. Review Full SVG and PNG use the same page ranges.

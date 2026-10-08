@@ -84,7 +84,7 @@ export function renderReviewFullPageSvg(project,pageIndex=0){
   }
   const H=Math.ceil(Math.max(TOP+PH+M,y+M));
   const code=pageCode(page.pageNumber||pageIndex+1),title=value(project.meta?.title)+(page.title?' / '+page.title:'');
-  const pageSvg=renderExecutableNameSvg(project,pageIndex,{annotated:true});
+  const pageSvg=renderExecutableNameSvg(project,pageIndex,{annotated:true,reviewMode:'full'});
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" data-review-full-page="'+code+'">'+
     '<rect width="100%" height="100%" fill="#e8edf5"/>'+
     '<text x="'+M+'" y="60" font-size="30" font-family="sans-serif" fill="#152b45" font-weight="bold">'+esc(code)+' — '+esc(title)+'</text>'+
@@ -104,6 +104,7 @@ export function renderReviewFullContactSheetSvg(project,{columns=null}={}){
   });
   return renderContactSheetSvg(pages,{
     columns,
+    pageNumbers:project.pages.map((p,i)=>p.pageNumber||i+1),
     pageWidth:Math.max(...size.map(x=>x.w)),
     pageHeight:Math.max(...size.map(x=>x.h))
   });

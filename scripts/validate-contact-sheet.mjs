@@ -1,7 +1,7 @@
 import {compileMangaName} from '../core/manga-grammar.mjs';
 import {renderExecutableNameSvg} from '../core/blueprint-renderer.mjs';
 import {generationIdentityAuthority} from '../core/generation-adapter.mjs';
-import {autoContactSheetPreset,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg} from '../core/contact-sheet.mjs';
+import {autoContactSheetPreset,buildContactSheetBatches,contactSheetAssetNames,buildContactSheetGenerationPackage,buildContactSheetLayout,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg} from '../core/contact-sheet.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -34,15 +34,22 @@ for(const [count,columns,rows,preset] of [
   [2,2,1,'2x1'],
   [3,2,2,'2x2'],
   [4,2,2,'2x2'],
-  [5,4,2,'4x2'],
-  [8,4,2,'4x2'],
-  [9,4,3,'4x3']
+  // Contact Sheets never exceed four pages.
 ]){
   const layout=buildContactSheetLayout(count);
   if(layout.columns!==columns||layout.rows!==rows||layout.preset!==preset||layout.selection!=='auto-preset')throw new Error('auto contact-sheet preset failed for '+count+' pages');
   const direct=autoContactSheetPreset(count);
   if(direct.columns!==columns||direct.rows!==rows||direct.preset!==preset)throw new Error('preset selector failed for '+count+' pages');
 }
+for(const [count,expected] of [[4,[4]],[5,[4,1]],[6,[4,2]],[7,[4,3]],[8,[4,4]],[9,[4,4,1]]]){
+  const batches=buildContactSheetBatches(count);
+  if(JSON.stringify(batches.map(b=>b.pageCount))!==JSON.stringify(expected))throw new Error('4-page batch partition incorrect at '+count);
+  if(batches.some(b=>b.pageCount>4))throw new Error('Batch must not exceed four pages');
+}
+const second=buildContactSheetBatches(8,{pageNumbers:[1,2,3,4,5,6,7,8]});
+if(second[0].range!=='001-004'||second[1].range!=='005-008')throw new Error('Range-based naming failed');
+if(contactSheetAssetNames('005-008').prompt!=='contact-sheet.005-008.prompt.md')throw new Error('Range-aware prompt asset name failed');
+if(!/at most 4 pages/.test((()=>{try{autoContactSheetPreset(5);return '';}catch(e){return e.message;}})()))throw new Error('A single five-page sheet must fail');
 const override=buildContactSheetLayout(3,{columns:3});
 if(override.columns!==3||override.rows!==1||override.selection!=='override')throw new Error('contact-sheet columns override failed');
 

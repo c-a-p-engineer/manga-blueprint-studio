@@ -45,7 +45,7 @@ Do not confuse upload/export dimensions with manga composition rules.
 7. Express physical relationships as structured contact when contact matters.
 8. Consult `/docs/MANGA-DICTIONARY.md` by desired effect first. Treat genre entries as candidate biases, not rules.
 9. Choose transition/pacing, camera/composition, panel grammar and rendering style as separate axes.
-10. Compile with the CLI. For multi-page work, use the optional `--contact-sheet` mode when one-shot cross-page preflight is useful.
+10. Compile with the CLI. For multi-page work, use optional `--contact-sheet` to inspect groups of at most four pages; the actual image-model rendering is always **one page per invocation**.
 11. Review Annotated output for human-readable intent and Clean output for generation-facing spatial fidelity. A Contact Sheet is a fast batch-review surface, not final page acceptance.
 12. Patch semantic source and recompile. Do not manually edit generated Clean/Annotated assets as the normal workflow.
 
@@ -92,7 +92,7 @@ npm run validate
 - `Pxxx.blueprint.svg/png`: human-review view; never the default image-model input.
 - `Pxxx.prompt.md`: semantic rendering brief and exact visible-text rules.
 - `manifest.json`: read-first package/provenance information.
-- Optional Contact Sheet mode: `contact-sheet.clean.svg/png`, `contact-sheet.blueprint.svg/png`, `contact-sheet.prompt.md`, `contact-sheet.review.json`, `contact-sheet.generation.json` for batch preflight only. Contact Sheet PNGs are assembled from the already-rasterized per-page PNGs; Clean remains generation-facing and Blueprint remains human-review only. The default layout is page-count-aware: 2P→2×1, 3–4P→2×2, 5–8P→4×2; avoid manual column overrides unless there is a concrete reason.
+- Optional Contact Sheet mode: `contact-sheet.clean.svg/png`, `contact-sheet.blueprint.svg/png`, `contact-sheet.prompt.md`, `contact-sheet.review.json`, `contact-sheet.generation.json` for batch preflight only. Contact Sheet PNGs are assembled from the already-rasterized per-page PNGs; Clean remains generation-facing and Blueprint remains human-review only. The default layout is page-count-aware: 2P→2×1, 3–4P→2×2, 5–8P→multiple ≤4P sheets; avoid manual column overrides unless there is a concrete reason.
 
 Clean and Annotated must come from the same geometry/art source.
 
@@ -152,7 +152,7 @@ When turning a blueprint into an image-model prompt:
 For a request such as 「これで画像生成して」 concerning an existing work, apply the **manifest-first compiled-package workflow** in [Prompt and Image Handoff Contract](../../../docs/PROMPT_HANDOFF.md#llm-execution-of-compiled-name-packages). This is **LLM execution policy**, not a request to add provider credentials or network calls to the compiler.
 
 1. Resolve the actual requested work/revision, then read its `manifest.json`, `work.manga.json`, and matching `*.generation.json`. Never invent an unrelated story from previous conversation context.
-2. For 2–8 page *rough preflight*, select its specific Contact Sheet batch/range. For publication-ready output select `Pxxx.generation.json` for one page. 8P rough is one sheet; final rendering stays page-scoped.
+2. For optional rough preflight, use batches of **at most four pages**, selecting the specific Contact Sheet range. Never make an eight-page generation request; finished art is one page at a time. For publication-ready output select `Pxxx.generation.json` for one page. An 8P work becomes 001-004 and 005-008 review sheets; generation remains page-scoped.
 3. Check package references, page IDs/count, Clean visual, **complete** generation prompt and required character references. On a local checkout run `npm run preflight:generation -- <compiled-dir> --contact-sheet [NNN-NNN]` or `--page P007`; if no local runtime is available, perform the equivalent checks via retrieved files. Stop when required inputs are missing or conflict.
 4. Resolve actual Clean SVG/PNG bytes, render SVG as PNG when the image model cannot accept SVG, and **attach the real image** plus the full relevant prompt to the image-model call. A repository path, tool argument claim, or prose-only summary **does not** mean the image was attached. If the image tool cannot take the required visual reference, report the blocked boundary; do not substitute prompt-only generation.
 5. Keep Annotated review out of generation-facing image inputs. Preserve authored story beats, exact page order, character/ref/outfit state, RTL page reading and vertical Japanese writing. Text glyphs come only from `TEXT TO RENDER`; deterministic lettering is composited in final production when needed.
@@ -180,3 +180,11 @@ A blueprint task is done when:
 - named human techniques/hard locks are preserved;
 - selected expression techniques can be explained by intended effect;
 - repository validation passes for code/contract changes.
+
+
+### Four-page sheets and reader-flow review (.agents/skills/manga-blueprint/SKILL.md)
+
+- **Maximum four pages per contact sheet.** Split e.g. an 8P work into `contact-sheet.001-004.*` and `contact-sheet.005-008.*` (2×2 each). One-page image generation replaces 8P composite rendering; sheets are only for reviewing the plan.
+- **Annotated / Full Review: visual reader-path estimate** shows order and reading direction using light cyan arrows derived from canonical panel order; explicit primary attention coordinates refine the route when available. This is a composition aid, **not actual measured eye tracking**. Character gaze lines use only resolved, authored gaze targets. Full Review is more explicit; Clean stays entirely free of both guide types.
+- The review guides do not become manga lettering or image-model input, and cannot change the canonical `work.manga.json`.
+- The CLI supports `--contact-batches 4,4` for explicit partitioning; default grouping fills batches of ≤4. Review Full SVG and PNG use the same page ranges.
