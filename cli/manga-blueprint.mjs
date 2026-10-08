@@ -98,7 +98,7 @@ for(let i=0;i<project.pages.length;i++){
     await fs.writeFile(path.join(out,reviewFull),renderReviewFullPageSvg(project,i));
     files.push(reviewFull);
     reviewFullAssetList.push({page:i+1,svg:reviewFull,png:null});
-    const renderResult=rasterizeSvg(path.join(out,reviewFull),path.join(out,reviewFullPng));
+    const renderResult=rasterizeSvg(path.join(out,reviewFull),path.join(out,reviewFullPng),{maxWidth:1200});
     raster.push({source:reviewFull,output:renderResult.ok?reviewFullPng:null,...renderResult});
     pageReviewFullPngAssets.push(renderResult.ok?reviewFullPng:null);
     if(renderResult.ok){
