@@ -63,7 +63,7 @@ export function renderReviewFullPageSvg(project,pageIndex=0){
   let y=TOP;
   for(const panel of ordered){
     const fields=panelMetadata(panel,byId);
-    const rows=fields.flatMap(v=>wrap(v,102));
+    const rows=fields.flatMap(v=>wrap(v,80));
     const CARD_H=52+rows.length*LINE+25;
     const x=M+PW+GAP,w=SIDE;
     cards.push('<g data-review-full-panel="'+esc(panel.order)+'">',
