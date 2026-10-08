@@ -586,3 +586,38 @@ multi-page compile
   -> regenerate only affected pages when possible
   -> page-level final verification
 ```
+
+## LLM execution of compiled Name packages
+
+This section owns the **agent/runtime procedure** after the headless compiler has produced `manifest.json`. The user may simply say “これで画像生成して”; they should not have to restate file lists or memorize the Studio package format. The LLM must not silently replace authored manga semantics with a new plot.
+
+### Preflight and source resolution (P0-01 / P0-02)
+
+1. Resolve the requested repository, work and revision. If multiple works are plausible, clarify instead of silently selecting the previous chat’s unrelated work.
+2. Read `manifest.json` first, then the canonical `work.manga.json` and the matching `contact-sheet.NNN-NNN.generation.json` or `Pxxx.generation.json`. The actual name is taken from the manifest; older CLI packages may instead use unqualified `contact-sheet.generation.json`.
+3. Read all referenced page prompts, the batch prompt, actual Clean visual(s), and any required character references. A Contact Sheet rough must preserve every page's original story beats and page/cell order; a final image generation is limited to one page.
+4. Validate work title, project/page IDs, page/cell count and order, prompt panel count, reading direction, exact `TEXT TO RENDER` allowlist, binding readiness and asset existence. If necessary, rasterize the Clean SVG, keeping semantic and spatial authorities linked. Unresolved appearance/character references are disclosed for review and must not silently be invented as approved identity.
+5. A local CLI checkout may produce a **read-only** report with:
+
+   ```bash
+   npm run preflight:generation -- /path/to/work/blueprint --contact-sheet 001-008
+   npm run preflight:generation -- /path/to/work/blueprint --page P007
+   ```
+
+   The JSON status `prepared-not-attached` means the files and contracts were checked, **not** that an image-model request has been executed. `blocked` means mandatory input is missing/mismatched and rendering must stop. The preflight script does not upload assets, call a provider, trigger CI or modify files.
+
+### Image model handoff (P0-02)
+
+The LLM must explicitly supply the **real image payload** for the selected Clean visual and **complete corresponding semantic prompt** in the same invocation (with project/ref guidance when required). A GitHub path, an in-chat link, a prompt mentioning the filename, or an Annotated review image is not a substitute. If the tool cannot attach or interpret the Clean reference, stop and report the exact capability boundary; do **not** silently fall back to text-only story invention. Keep Anthology/previous chat concepts out of the current work unless the canonical source intentionally includes them.
+
+For a Contact Sheet, generate only a **batch rough/preflight image**, retaining all page cells and the work's exact plot. Do not mark an 8P composite as eight final pages. For final production generate **Pxxx one page at a time**, then use the deterministic lettering overlay and page-specific checks.
+
+### Independent image observation and triage (P0-03)
+
+After an image-model invocation, inspect **the resulting image**, not just the request text. Record what is actually observable: number/order of pages, per-page panel topology, plot anchors/actions, character identity/outfit and exceptional shape restrictions, RTL path, and visible glyphs. The compiler's expected JSON may define the target but **must never be copied into observed evidence**. Use the existing `manga-blueprint-observation/1` / Structural Evaluator and Repair Plan workflow where supported; use manually verified `pass / review / repair` when a provider observation adapter is absent.
+
+A model that draws an unrelated observatory/space/forest story for SCP-5031 fails **story-content** validation regardless of attractive artwork or a correct 4×2 grid. A missing/indeterminate visual input or observation is `unverified`, never `pass`. A failed sheet returns specific Pxxx pages to targeted repair; changed final candidates need fresh page-level acceptance. Only confirmed accepted assets belong in the Works Repository's `final/` directory.
+
+### Scope and boundary
+
+This is not a replacement for `manga-blueprint/0.2`, `manga-generation-package/1` or provider-neutral adapter authority; no model credentials or provider request IDs are stored in canonical project data. The existing Web selected-page workflow remains unchanged. New full provider adapters are still separate roadmap work.
