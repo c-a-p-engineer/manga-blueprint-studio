@@ -133,6 +133,21 @@ Use `/docs/MANGA-KNOWLEDGE.md` for fundamentals and medium context. Use `/docs/M
 
 If the human names a technique, treat it as authored intent. If the human only describes an effect, encode semantics first and let techniques remain explainable candidates.
 
+## Contextual costumes, extras, and continuity
+
+When authoring or revising Name/Blueprint semantics and when preparing page-level image-generation prompts:
+
+1. **Establish the scene context first:** location, time/season/weather, social setting, character role, current action, and any authored worldbuilding constraints. Do not invent a uniform, season, or costume as canon when the source leaves it open; choose a plausible provisional default or flag a consequential ambiguity.
+2. **Named characters:** specify visually observable clothing, footwear, accessories, protective equipment, and their condition **only to the degree needed for the scene**. Explicitly authored designs, references, disguise, uniform rules, and nonhuman visibility/anatomy constraints take precedence over generic realism.
+3. **Background extras / mobs:** derive clothing and appearance from the *same scene context*, distinguishing roles (e.g. researchers, guards, visitors, patients) when relevant. Vary faces, builds, silhouettes, age-appropriate presentation, and clothing details enough to avoid cloned crowds, while preserving shared institutional dress codes. Do not assign elaborate identities or distracting details to incidental extras.
+4. **Continuity:** carry a character's last established outfit, hairstyle, carried items, wear/damage, and relevant protective equipment across panels/pages **unless a visible or narratively justified change occurs** (changing clothes, time skip, relocation, work shift, injury, etc.). On a scene transition, re-evaluate suitability; do not silently reset the outfit to a generic default.
+5. **Image-model handoff:** include the resolved outfit and relevant extra/background constraints in each page's *semantic* generation brief, alongside character identity references. The Clean skeleton is spatial guidance, **not evidence that a character is unclothed**. Do not use Annotated as the generation image.
+6. **Review:** compare rendered named characters and extras against the scene, explicit references, preceding page, and any deliberate outfit transitions. Flag unexplained outfit drift, inconsistent uniform/equipment, incongruous extras, and nonhuman-visibility violations for page-scoped repair.
+
+**SCP-5031 example:** ordinary staff may be differentiated by their actual scene roles and documented facility dress; SCP-5031 itself must respect the story's invisibility constraints, **not** be rendered as a clothed humanoid or mascot merely because the workflow asks for costumes. Story-specific instructions always override this example.
+
+This is an **authoring/handoff quality rule**, not a new mandatory schema field or a blanket requirement to dress every figure alike. Preserve explicit author choices; avoid adding arbitrary detail to background extras.
+
 ## Prompt handoff
 
 When turning a blueprint into an image-model prompt:
