@@ -41,6 +41,13 @@ Prototype 0.25.0 extends the 0.20 production baseline with a closed quality loop
   - page-indexed batch review request with outfit/identity continuity checks;
   - preflight-only status with page-level final verification retained.
 
+
+### Additional review delivery (headless CLI)
+
+- [x] Annotated human-review SVG incorporates the deterministic authored dialogue/SFX overlay.
+- [x] Opt-in `--review-full` page-level and batch review sheets include a sidecar inventory of canonical backgrounds, characters, action, continuity and all exact text; review-only, not generation-facing.
+- [ ] Validate real-work PNG readability and page-level typography against the SCP-5031 eight-page practice in the Works Repository.
+
 ## Post-backlog roadmap
 
 ### 0.21 — Web/Core convergence hardening
