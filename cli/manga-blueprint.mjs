@@ -11,6 +11,7 @@ import{buildLetteringPlan,renderLetteringOverlaySvg}from'../core/lettering-rende
 import{listLayoutRecipes,layoutRecipeCount,layoutSettingsSnippet}from'../core/layout-recipes.mjs';
 import{buildContactSheetGenerationPackage,buildContactSheetPrompt,buildContactSheetReviewRequest,renderContactSheetSvg}from'../core/contact-sheet.mjs';
 import{composeContactSheetPng}from'../core/png-contact-sheet.mjs';
+import{renderReviewFullPageSvg,renderReviewFullContactSheetSvg}from'../core/review-full.mjs';
 
 const args=process.argv.slice(2);
 if(args[0]==='--list-layouts'){
@@ -30,12 +31,14 @@ const cliOptions={
   layoutSeed:undefined,
   layoutMutation:undefined,
   contactSheet:false,
-  contactColumns:null
+  contactColumns:null,
+  reviewFull:false
 };
 
 while(args.length){
   const flag=args.shift();
   if(flag==='--contact-sheet'){cliOptions.contactSheet=true;continue;}
+  if(flag==='--review-full'){cliOptions.reviewFull=true;continue;}
   const value=args.shift();
   if(value===undefined){console.error('Missing value for option: '+flag);process.exit(2);}
   if(flag==='--layout')cliOptions.layoutRecipe=value;
@@ -50,7 +53,7 @@ while(args.length){
 }
 
 if(!input){
-  console.error('Usage: node cli/manga-blueprint.mjs <name.md> [out-dir] [--layout <recipe>] [--seed <value>] [--mutation <0..1>] [--contact-sheet] [--contact-columns <1..8>]\n       node cli/manga-blueprint.mjs --list-layouts [panel-count]');
+  console.error('Usage: node cli/manga-blueprint.mjs <name.md> [out-dir] [--layout <recipe>] [--seed <value>] [--mutation <0..1>] [--contact-sheet] [--contact-columns <1..8>] [--review-full]\n       node cli/manga-blueprint.mjs --list-layouts [panel-count]');
   process.exit(2);
 }
 
@@ -64,7 +67,7 @@ const project=compileMangaName(text,compileOptions);
 await fs.mkdir(out,{recursive:true});
 await fs.writeFile(path.join(out,'work.manga.json'),JSON.stringify(project,null,2));
 
-const files=['work.manga.json'],raster=[],pageCleanAssets=[],pageBlueprintAssets=[],pageCleanPngAssets=[],pageBlueprintPngAssets=[],pagePromptAssets=[];
+const files=['work.manga.json'],raster=[],pageCleanAssets=[],pageBlueprintAssets=[],pageCleanPngAssets=[],pageBlueprintPngAssets=[],pageReviewFullPngAssets=[],pagePromptAssets=[],reviewFullAssetList=[];
 for(let i=0;i<project.pages.length;i++){
   const n=String(i+1).padStart(3,'0');
   const clean='P'+n+'.clean.svg',annotated='P'+n+'.blueprint.svg',prompt='P'+n+'.prompt.md',lettering='P'+n+'.lettering.svg',letteringJson='P'+n+'.lettering.json';
@@ -86,6 +89,19 @@ for(let i=0;i<project.pages.length;i++){
     if(kind==='clean')pageCleanPngAssets.push(r.ok?png:null);
     else pageBlueprintPngAssets.push(r.ok?png:null);
     if(r.ok)files.push(png);
+  }
+  if(cliOptions.reviewFull){
+    const reviewFull='P'+n+'.review-full.svg',reviewFullPng='P'+n+'.review-full.png';
+    await fs.writeFile(path.join(out,reviewFull),renderReviewFullPageSvg(project,i));
+    files.push(reviewFull);
+    reviewFullAssetList.push({page:i+1,svg:reviewFull,png:null});
+    const renderResult=rasterizeSvg(path.join(out,reviewFull),path.join(out,reviewFullPng));
+    raster.push({source:reviewFull,output:renderResult.ok?reviewFullPng:null,...renderResult});
+    pageReviewFullPngAssets.push(renderResult.ok?reviewFullPng:null);
+    if(renderResult.ok){
+      files.push(reviewFullPng);
+      reviewFullAssetList[reviewFullAssetList.length-1].png=reviewFullPng;
+    }
   }
 }
 
@@ -129,6 +145,19 @@ if(cliOptions.contactSheet){
   });
   await fs.writeFile(path.join(out,sheetGeneration),JSON.stringify(generation,null,2));
   files.push(sheetClean,sheetBlueprint,sheetPrompt,sheetReview,sheetGeneration);
+  let reviewFullSheet=null;
+  if(cliOptions.reviewFull){
+    const fullSheetSvg='contact-sheet.review-full.svg',fullSheetPng='contact-sheet.review-full.png';
+    await fs.writeFile(path.join(out,fullSheetSvg),renderReviewFullContactSheetSvg(project,{columns:cliOptions.contactColumns}));
+    files.push(fullSheetSvg);
+    const fullPngReady=pageReviewFullPngAssets.length===project.pages.length&&pageReviewFullPngAssets.every(Boolean);
+    const fullMontage=fullPngReady
+      ?composeContactSheetPng(pageReviewFullPngAssets.map(name=>path.join(out,name)),path.join(out,fullSheetPng),montageOptions)
+      :{ok:false,engine:'none',reason:'A Pxxx.review-full.png could not be rasterized; full review montage skipped.'};
+    raster.push({source:'Pxxx.review-full.png',output:fullMontage.ok?fullSheetPng:null,kind:'review-full-png-montage',...fullMontage});
+    if(fullMontage.ok)files.push(fullSheetPng);
+    reviewFullSheet={svg:fullSheetSvg,png:fullMontage.ok?fullSheetPng:null,role:'human-review-only'};
+  }
   contactSheetManifest={
     schema:'manga-contact-sheet-generation-package/1',
     role:'multi-page-preflight-only',
@@ -142,12 +171,14 @@ if(cliOptions.contactSheet){
     generation:sheetGeneration,
     png:cleanMontage.ok?sheetCleanPng:null,
     blueprintPng:blueprintMontage.ok?sheetBlueprintPng:null,
+    ...(reviewFullSheet?{reviewFull:reviewFullSheet}:{}),
     pngComposition:'page-png-montage'
   };
 }
 
 const manifest=buildManifest(project,path.basename(input));
 manifest.blueprintRenderer={name:'executable-name-layered',version:3,cleanRole:'generation-facing spatial contract',annotatedRole:'human review only',poseSolver:'deterministic-spatial-v3',compositionSolver:'in-panel-v1'};
+if(cliOptions.reviewFull)manifest.reviewFull={schema:'manga-blueprint-review-full/1',role:'human-review-only',pages:reviewFullAssetList};
 manifest.lettering={schema:'manga-blueprint-lettering-plan/1',strategy:project.meta.letteringStrategy||'overlay-preferred',assets:project.pages.map((_,i)=>{const n=String(i+1).padStart(3,'0');return{page:i+1,svg:'P'+n+'.lettering.svg',plan:'P'+n+'.lettering.json'}})};
 manifest.layoutRecipes={version:1,source:'core/layout-recipes.mjs',pages:project.pages.map((page,index)=>({page:index+1,recipeId:page.layoutDecision?.recipeId||page.layoutDecision?.winner||null,seed:page.layoutDecision?.signals?.seed??0,mutation:page.layoutDecision?.signals?.mutation??0}))};
 manifest.rasterization={mode:'best-effort-local',results:raster};
