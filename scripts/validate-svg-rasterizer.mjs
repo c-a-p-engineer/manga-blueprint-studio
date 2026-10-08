@@ -14,7 +14,15 @@ try{
   const bytes=fs.readFileSync(png);
   const signature=[0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a];
   if(bytes.length<24||signature.some((value,index)=>bytes[index]!==value))throw new Error('Rasterized output is not a PNG');
-  console.log('SVG rasterizer validation passed');
+  const downscaled=path.join(dir,'preview.png');
+  const shrunk=rasterizeSvg(svg,downscaled,{maxWidth:16});
+  if(!shrunk.ok||shrunk.maxWidth!==16)throw new Error('width-bounded preview rasterization failed');
+  const preview=fs.readFileSync(downscaled);
+  if(preview.readUInt32BE(16)!==16||preview.readUInt32BE(20)!==12)throw new Error('Preview raster dimensions must be 16x12');
+  const unchanged=path.join(dir,'unchanged.png');
+  const original=rasterizeSvg(svg,unchanged,{maxWidth:64});
+  if(!original.ok||fs.readFileSync(unchanged).readUInt32BE(16)!==32)throw new Error('Never upscale a small page');
+    console.log('SVG rasterizer validation passed');
 }finally{
   fs.rmSync(dir,{recursive:true,force:true});
 }

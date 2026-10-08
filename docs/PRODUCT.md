@@ -79,6 +79,15 @@ The compiler package follows the same conceptual boundary as the Web export pipe
 
 The headless preview manifest currently uses `manga-blueprint-name-package/2`; it is distinct from the existing Web export manifest `manga-blueprint-export-manifest/3`.
 
+
+### Full Review and Annotated lettering (headless)
+
+The CLI's `Pxxx.blueprint.svg/png` (Annotated) now overlays exactly authored dialogue/SFX from the deterministic Lettering plan on top of its existing direction annotations. `Pxxx.clean.svg/png` remains **unchanged** and contains no authored lettering or review labels. A lettering entry that cannot fit is marked `fit: "unplaceable"` in its JSON plan rather than guessed or written outside the panel.
+
+For an explicitly requested all-information human review, `--review-full` adds `Pxxx.review-full.svg/png`, comprising the Annotated page plus an external readable sidecar with the *full canonical* panel action, background/time/weather/mood, camera, technique/effect, frame/attention/reading-flow, character identity/outfit/condition/appearance/props and exact dialogue/SFX. Missing fields are displayed as `未指定`, not invented. When combined with `--contact-sheet`, it also outputs `contact-sheet.review-full.svg/png`. The PNG files use a width-bounded (up to 1200px per Review Full page) best-effort rasterization/montage pipeline; lack of rasterization is reported in `manifest.rasterization`, and manifest paths only point to successful PNGs.
+
+Full Review is human-review-only, never the image-model's Clean input or a second source of truth. The original page SVGs remain available regardless of `--review-full`.
+
 ### Headless Contact Sheet preflight
 
 The CLI may opt into `--contact-sheet` for multi-page work. This produces both Clean and Blueprint contact-sheet surfaces plus a merged prompt, a page-indexed review request and a provider-neutral generation package. When per-page PNG rasterization succeeds, `contact-sheet.clean.png` and `contact-sheet.blueprint.png` are assembled directly from the corresponding `Pxxx.*.png` files; the Clean sheet remains generation-facing and the Blueprint sheet remains human-review only. Layout selection is automatic: 2 pages use 2×1, 3–4 pages use 2×2, and 5–8 pages use 4×2. One page falls back to 1×1; larger works use four columns with the required row count. `--contact-columns` remains an explicit override for exceptional/debug use. The mode exists to catch cross-page identity/outfit/scene drift quickly and to identify which pages need individual repair.

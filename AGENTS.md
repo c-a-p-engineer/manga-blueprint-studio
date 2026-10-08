@@ -219,6 +219,14 @@ Current serialized project format remains `manga-blueprint/0.2`. Current establi
 
 Compatible optional additions may normalize into old files without a format bump when semantics remain backward-compatible. Do not bump versions merely for presentation changes.
 
+## GitHub Actions permission boundary
+
+- Automated tests, type checks, static validation, build checks and ordinary site deployment are part of the development workflow. They may run without separate user approval, and validated code may be merged into `master` without an extra confirmation.
+- **Manga production outputs are different.** Do not manually dispatch, or configure automatic triggers that will dispatch, GitHub Actions jobs whose purpose is to create/save manga artwork, Blueprint practice artifacts or other work-specific production deliverables without the user's explicit prior approval.
+- A compiler invoked inside an ordinary test to check deterministic behavior is validation; a workflow such as `combat-blueprint-trial.yml` that exports an actual Blueprint package for download is artifact generation and must be manual-only.
+- Before merging `core/`, `cli/`, or workflow changes, check the current GitHub Actions trigger rules so the merge cannot inadvertently launch a production-artifact workflow.
+- GitHub Actions running validation are not evidence of final manga image quality. Review rendered images and human acceptance separately.
+
 ## Verification / definition of done
 
 Relevant changes must preserve or intentionally update:

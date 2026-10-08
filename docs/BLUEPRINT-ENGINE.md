@@ -79,6 +79,19 @@ canonical semantics
 
 `Pxxx.blueprint.svg` adds a human-review layer over the exact same art geometry. The review layer may show compact beat summaries, character labels, primary/secondary attention markers, gaze guides, contact labels, camera/energy information and diagnostics. These annotations exist to make authored intent reviewable without reconstructing meaning from canonical JSON. They are never part of the generation-facing spatial contract and must not leak into `Pxxx.clean.svg`.
 
+
+## Human review views: Annotated and optional Full Review
+
+Annotated (`Pxxx.blueprint.svg/png`) retains the existing spatial annotations and includes the exact deterministic dialogue/SFX overlay. Lettering comes from canonical `balloons[]` / `effects.sfxText`; editorial/camera/character labels do not enter the visible-text allowlist. The Clean page continues to omit both review labels and manga lettering.
+
+Pass `--review-full` to export `Pxxx.review-full.svg/png` with the entire Annotated page alongside a legible per-panel metadata sidecar: story/action, background (location/time/weather/mood), characters (appearance/outfit/condition/expression/pose/props), camera, effects, reading flow, all authored dialogue/SFX, attention and available contact details. Fields without data are explicitly identified as missing rather than guessed. `--contact-sheet --review-full` additionally exports `contact-sheet.review-full.svg/png` for batch comparison. PNG is best-effort, Review Full page PNG previews are capped at 1200px wide before montage to limit resource usage, and their status is in the manifest. No full-review asset is an image-generation input.
+
+Example:
+
+```bash
+npm run blueprint -- examples/scene-3page.md blueprint-out --contact-sheet --review-full
+```
+
 ## Raster output
 
 The CLI always emits canonical SVG. It also attempts PNG output using an installed local rasterizer, in this order: `magick`, `rsvg-convert`, then `convert` on non-Windows systems. Rasterization is deliberately adapter-level: absence of a rasterizer never invalidates the canonical package. `manifest.rasterization` records the actual engine/result.
