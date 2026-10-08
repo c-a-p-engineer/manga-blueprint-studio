@@ -32,6 +32,8 @@ const unsure=good();unsure.pages[0].anchors[0].verdict='uncertain';
 check('uncertain-story',unsure,{scope:'rough'},'review');
 const emptyEvidence=good();emptyEvidence.pages[0].anchors[0].observedDescription='';
 check('verdict-without-observed-description',emptyEvidence,{scope:'rough'},'review');
+const unsupportedMismatch=good();unsupportedMismatch.pages[0].anchors[0]={panelOrder:1,observedDescription:'',verdict:'mismatch'};
+check('unsupported-mismatch-is-not-repair',unsupportedMismatch,{scope:'rough'},'review');
 const extra=good();extra.pages.push({pageNumber:9,anchors:[]});
 check('unknown-page',extra,{scope:'rough'},'unverified');
 const noSource=good();delete noSource.source.generatedAsset;
