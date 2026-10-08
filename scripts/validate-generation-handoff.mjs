@@ -39,7 +39,7 @@ function fixture(){
   assets['work.manga.json']={exists:true,text:JSON.stringify(project)};
   const title='Work: '+project.meta.title+'\n';
   for(const n of [1,2])assets['P00'+n+'.prompt.md']={exists:true,text:'# Generation\n'+title+'Page: P00'+n+'\n## TEXT TO RENDER\n- (none)\n## Panel 1\nACTION: Beat '+n};
-  assets['contact-sheet.001-002.prompt.md']={exists:true,text:'# Batch\n'+title+'## TEXT TO RENDER\n# ===== P001 =====\n# ===== P002 =====\n'};
+  assets['contact-sheet.001-002.prompt.md']={exists:true,text:'# Batch\n'+title+'## TEXT TO RENDER\n# ===== P001 =====\nACTION: Beat 1\n# ===== P002 =====\nACTION: Beat 2\n'};
   assets['contact-sheet.001-002.review.json']={exists:true,text:JSON.stringify({pageCells:[{code:'P001'},{code:'P002'}]})};
   const readAsset=name=>assets[name]||{exists:false};
   return {project,manifest,generation,pageGeneration,assets,readAsset};
@@ -70,6 +70,9 @@ check('contact-missing-image',f=>{delete f.assets['contact-sheet.001-002.clean.s
 check('contact-annotated',f=>{f.generation.inputs.contactSheetAsset='contact-sheet.001-002.blueprint.svg'},'blocked','sheet-spatial-mismatch');
 check('contact-unready',f=>{f.generation.ready=false},'blocked','unready-package');
 check('contact-bad-review',f=>{f.assets['contact-sheet.001-002.review.json'].text=JSON.stringify({pageCells:[{code:'P002'},{code:'P001'}]})},'blocked','sheet-review-order');
+check('contact-wrong-story-same-title',f=>{f.assets['P002.prompt.md'].text=f.assets['P002.prompt.md'].text.replace('ACTION: Beat 2','ACTION: Moon Observatory')},'blocked','story-action-mismatch');
+check('contact-batch-story-drift',f=>{f.assets['contact-sheet.001-002.prompt.md'].text=f.assets['contact-sheet.001-002.prompt.md'].text.replace('ACTION: Beat 1','ACTION: Ancient Ruins')},'blocked','story-action-mismatch');
+check('contact-batch-heading-drift',f=>{f.assets['contact-sheet.001-002.prompt.md'].text=f.assets['contact-sheet.001-002.prompt.md'].text.replace('# ===== P002 =====','# ===== P099 =====')},'blocked','batch-prompt-page-order');
 check('contact-bad-title',f=>{f.project.meta.title='Other title'},'blocked','wrong-work-prompt');
 check('contact-raster-mismatch',f=>{f.assets['contact-sheet.001-002.clean.svg'].validImage=false},'blocked','invalid-visual-bytes');
 check('contact-bad-batch-size',f=>{f.manifest.contactSheet.batches[0].pageCount=9},'blocked','batch-page-count');
