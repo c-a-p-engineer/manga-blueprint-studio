@@ -27,7 +27,7 @@ export function validateGenerationHandoff({manifest, project, generation, target
     files.push({role, path:name, mediaType:/\.png$/i.test(name)?'image/png':/\.svg$/i.test(name)?'image/svg+xml':'text/plain'});
     return value;
   };
-  const checkPrompt = (name, code, panelCount, combined = false) => {
+  const checkPrompt = (name, code, panelCount, combined = false, expectedPages = []) => {
     const value = read(name, combined ? 'contact-sheet-prompt' : 'page-prompt');
     if (!value) return;
     const source = value.text;
@@ -36,6 +36,18 @@ export function validateGenerationHandoff({manifest, project, generation, target
     if (title && !source.split(/\r?\n/).some(line => line.trim() === 'Work: ' + title))
       fail('wrong-work-prompt', 'Prompt does not identify the canonical work title', name);
     if (!source.includes('## TEXT TO RENDER')) fail('missing-text-allowlist', 'Prompt has no exact text allowlist', name);
+    if (combined) {
+      const seen=[...source.matchAll(/^# ===== (P\d{3}) =====\s*$/gm)].map(m=>m[1]);
+      const expected=expectedPages.map(p=>pageCode(p.pageNumber));
+      if (JSON.stringify(seen)!==JSON.stringify(expected))
+        fail('batch-prompt-page-order', 'Merged prompt headings do not match the exact batch page order', name);
+    }
+    for (const canonicalPage of expectedPages) {
+      for (const panel of canonicalPage.panels || []) {
+        if (String(panel.actionIntent||'').trim() && !source.includes('ACTION: '+panel.actionIntent))
+          fail('story-action-mismatch', pageCode(canonicalPage.pageNumber)+' is missing canonical story action for panel '+panel.order, name);
+      }
+    }
     if (!combined) {
       if (!source.split(/\r?\n/).some(line => line.trim() === 'Page: ' + code))
         fail('wrong-page-prompt', 'Prompt does not identify ' + code, name);
@@ -84,7 +96,8 @@ export function validateGenerationHandoff({manifest, project, generation, target
         fail('sheet-page-visual-order', 'Page Clean assets differ from manifest or have wrong order');
       if (JSON.stringify(i.pagePromptAssets) !== JSON.stringify(group.map(p=>p.prompt)))
         fail('sheet-page-prompt-order', 'Page prompts differ from manifest or have wrong order');
-      checkPrompt(selected.prompt, null, null, true);
+      checkPrompt(selected.prompt, null, null, true,group.map(item=>pages.find(p=>p.pageNumber===item.pageNumber)));
+
       const review = read(selected.review, 'contact-sheet-review-map');
       if (review) {
         try {
@@ -96,7 +109,7 @@ export function validateGenerationHandoff({manifest, project, generation, target
       for (const [index,p] of group.entries()) {
         const page = pages.find(q=>q.pageNumber===p.pageNumber);
         read(p.cleanBlueprint, 'page-clean-reference',{visual:true});
-        checkPrompt(p.prompt, expectedCodes[index],page?.panels?.length ?? 0);
+        checkPrompt(p.prompt, expectedCodes[index],page?.panels?.length ?? 0,false,[page]);
       }
       if (generation?.layout?.pageCount !== undefined && generation.layout.pageCount !== group.length)
         fail('generation-page-count', 'Generation package layout disagrees with selected batch');
@@ -123,7 +136,7 @@ export function validateGenerationHandoff({manifest, project, generation, target
       const visual = read(primary,'generation-facing-clean-page',{visual:true});
       if (visual && /\.svg$/i.test(primary)) warn('raster-may-be-required','Confirm image tool accepts SVG or rasterize first',primary);
       if (/blueprint|annotated/i.test(primary||'')) fail('annotated-input','Use Clean, not Annotated',primary);
-      checkPrompt(p.prompt,pageCode(pageNumber),page?.panels?.length??0);
+      checkPrompt(p.prompt,pageCode(pageNumber),page?.panels?.length??0,false,[page]);
       if (i.letteringAsset) read(i.letteringAsset,'lettering-overlay');
       if (i.letteringPlan) read(i.letteringPlan,'lettering-plan');
       if (generation?.request?.constraints?.preserveReadingDirection !== project?.meta?.readingDirection)
