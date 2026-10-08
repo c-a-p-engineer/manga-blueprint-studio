@@ -24,6 +24,7 @@ const project={
     {id:'page-2',pageNumber:2,panels:[panel('p3',1,12,'Salt',''),panel('p4',2,272,'', 'トン')]}
   ]
 };
+project.pages[0].panels[0].characters.push({id:'hero-p1',characterId:'hero',name:'主人公',poseId:'standing-neutral',continuityState:{outfit:'ブレザー',condition:'元気'},expression:{type:'smile'},gaze:{target:'friend.face'},supportState:'grounded',motionPhase:'still'});
 let assertions=0;
 function check(ok,msg){if(!ok)throw new Error(msg);assertions++;}
 const clean=renderExecutableNameSvg(project,0,{annotated:false});
@@ -44,8 +45,7 @@ for(let i=0;i<project.pages.length;i++){
 }
 const full=renderReviewFullPageSvg(project,0);
 check(full.includes('data-review-full-page="P001"'),'Full review page index missing');
-for(const snippet of ['秋の学校の教室','セリフ','ガタン','afternoon','重要度','全情報レビュー']){
-  if(snippet==='重要度')continue; // annotated displays other importance metadata, sidebar stays semantic
+for(const snippet of ['秋の学校の教室','セリフ','ガタン','afternoon','ブレザー','元気','friend.face','全情報レビュー']){
   check(full.includes(snippet),'Full review missing '+snippet);
 }
 check(!full.includes('A completely unrelated story'),'Never manufacture alternate plot');
