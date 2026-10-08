@@ -30,6 +30,9 @@ function characterState(c,byId){
   return (c.name||base?.name||'人物')+'〔衣装:'+outfit+' / 状態:'+condition+
     (c.expression?.type?' / 表情:'+c.expression.type:'')+
     (c.poseId?' / ポーズ:'+c.poseId:'')+
+    (c.gaze?.target?' / 視線:'+c.gaze.target:'')+
+    (c.supportState?' / 支持:'+c.supportState:'')+
+    (c.motionPhase?' / 動き:'+c.motionPhase:'')+
     (look?' / 外見:'+look:'')+(props?' / 小物:'+props:'')+'〕';
 }
 function panelMetadata(panel,byId){
@@ -37,14 +40,16 @@ function panelMetadata(panel,byId){
   const entry=(label,txt)=>label+'：'+value(txt);
   return [
     entry('出来事',panel.actionIntent),
+    entry('コマの役割・重要度',[panel.role,panel.importance?.narrative!==undefined?'物語'+panel.importance.narrative:'',panel.importance?.visual!==undefined?'視覚'+panel.importance.visual:'',panel.timing?.hold!==undefined?'間'+panel.timing.hold:''].filter(Boolean).join(' / ')),
     entry('背景',bg.location),
     entry('時間・天候', [bg.timeOfDay,bg.weather].filter(Boolean).join(' / ')),
-    entry('背景の雰囲気', [bg.mood,bg.renderMode,bg.detailLevel].filter(Boolean).join(' / ')),
-    entry('カメラ',[camera.distance,camera.angle,camera.viewpoint].filter(Boolean).join(' / ')),
-    entry('演出',[fx.lineEffect,fx.notes,(panel.direction?.techniques||[]).join(', ')].filter(Boolean).join(' / ')),
+    entry('背景の雰囲気', [bg.mood,bg.renderMode,bg.detailLevel,bg.notes].filter(Boolean).join(' / ')),
+    entry('カメラ',[camera.distance,camera.angle,camera.viewpoint,camera.focus,camera.intent].filter(Boolean).join(' / ')),
+    entry('演出',[fx.lineEffect,fx.strength,fx.notes,(panel.direction?.techniques||[]).join(', ')].filter(Boolean).join(' / ')),
     entry('枠・断ち切り',[style.border,style.bleed,style.breakout].filter(Boolean).join(' / ')),
     entry('注目点', [panel.attention?.primary,panel.attention?.secondary].filter(Boolean).join(' / ')),
     entry('読みの流れ', [flow.entry,flow.exit].filter(Boolean).join(' → ')),
+    entry('動き・細密度',[panel.motionDirection,panel.detailBudget?.background,panel.detailBudget?.crowd].filter(Boolean).join(' / ')),
     entry('登場人物',list(panel.characters,c=>characterState(c,byId))),
     entry('セリフ',list(panel.balloons,b=>b.text)),
     entry('効果音',fx.sfxText||'なし'),
@@ -78,7 +83,7 @@ export function renderReviewFullPageSvg(project,pageIndex=0){
     y+=CARD_H+18;
   }
   const H=Math.ceil(Math.max(TOP+PH+M,y+M));
-  const code=pageCode(page.pageNumber||pageIndex+1),title=value(project.meta?.title);
+  const code=pageCode(page.pageNumber||pageIndex+1),title=value(project.meta?.title)+(page.title?' / '+page.title:'');
   const pageSvg=renderExecutableNameSvg(project,pageIndex,{annotated:true});
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" data-review-full-page="'+code+'">'+
     '<rect width="100%" height="100%" fill="#e8edf5"/>'+
