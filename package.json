@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "validate": "node scripts/validate-ci.mjs",
     "validate:phase1": "node scripts/validate-phase1-toolchain.mjs",
-    "blueprint": "node cli/manga-blueprint.mjs"
+    "blueprint": "node cli/manga-blueprint.mjs",
+    "preflight:generation": "node scripts/preflight-generation.mjs"
   },
   "devDependencies": {
     "@types/node": "22.15.30",
