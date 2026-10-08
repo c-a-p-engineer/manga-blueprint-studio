@@ -14,9 +14,18 @@ function thumbnailWidth(svg,maxWidth){
   return match&&Number(match[1])>limit?limit:null;
 }
 
+const japaneseFonts=['Noto Sans CJK JP','Noto Sans JP','IPAexGothic','IPAGothic','Yu Gothic','Meiryo'];
+export function preferredJapaneseFont(families){
+  return japaneseFonts.find(font=>families.includes(font))||null;
+}
+function installedFamilies(){
+  const result=spawnSync('fc-list',['--format','%{family}\n'],{encoding:'utf8',shell:false});
+  return result.status===0?result.stdout.split(/[\n,]/).map(x=>x.trim()):[];
+}
 function attemptResvg(svg,output,width){
   try{
-    const options={font:{loadSystemFonts:true}};
+    const font=preferredJapaneseFont(installedFamilies());
+    const options={font:{loadSystemFonts:true,...(font?{defaultFontFamily:font}:{})}};
     if(width)options.fitTo={mode:'width',value:width};
     const png=new Resvg(svg,options).render().asPng();
     fs.writeFileSync(output,png);
