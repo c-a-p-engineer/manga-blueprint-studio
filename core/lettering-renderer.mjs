@@ -86,7 +86,7 @@ export function renderLetteringOverlaySvg(project,pageIndex=0){
   const plan=buildLetteringPlan(project,pageIndex),W=project.meta?.pageWidth||1200,H=project.meta?.pageHeight||1697;
   const clips=(project.pages?.[pageIndex]?.panels||[]).map(p=>`<clipPath id="letter-clip-${esc(p.id)}"><rect x="${p.rect.x}" y="${p.rect.y}" width="${p.rect.w}" height="${p.rect.h}"/></clipPath>`).join('');
   const body=plan.entries.map((item)=>{
-    const glyphs=item.glyphs.map((g,i)=>`<text data-glyph-index="${i}" x="${g.x}" y="${g.y}" text-anchor="middle" font-family="sans-serif" font-size="${item.fontSize}" fill="black">${esc(g.char)}</text>`).join('');
+    const glyphs=item.glyphs.map((g,i)=>`<text data-glyph-index="${i}" x="${g.x}" y="${g.y}" text-anchor="middle" font-family="'Noto Sans CJK JP', 'Noto Sans JP', sans-serif" font-size="${item.fontSize}" fill="black">${esc(g.char)}</text>`).join('');
     return`<g data-lettering-kind="${esc(item.kind)}" data-source-id="${esc(item.sourceId)}" data-text="${esc(item.text)}" data-writing-mode="${esc(item.writingMode)}" clip-path="url(#letter-clip-${esc(item.panelId)})">${glyphs}</g>`;
   }).join('');
   return`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${clips}</defs><g id="deterministic-lettering">${body}</g></svg>`;
