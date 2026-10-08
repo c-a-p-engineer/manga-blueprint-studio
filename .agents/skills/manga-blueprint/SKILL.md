@@ -149,17 +149,17 @@ When turning a blueprint into an image-model prompt:
 
 ## Compiled Workspace → image model (strict agent handoff)
 
-For a request such as 「これで画像生成して」 concerning an existing work, apply the **manifest-first compiled-package workflow** in [Prompt and Image Handoff Contract](../../..//docs/PROMPT_HANDOFF.md#llm-execution-of-compiled-name-packages). This is **LLM execution policy**, not a request to add provider credentials or network calls to the compiler.
+For a request such as 「これで画像生成して」 concerning an existing work, apply the **manifest-first compiled-package workflow** in [Prompt and Image Handoff Contract](../../../docs/PROMPT_HANDOFF.md#llm-execution-of-compiled-name-packages). This is **LLM execution policy**, not a request to add provider credentials or network calls to the compiler.
 
-1. Resolve the actual requested work/revision, then read its \`manifest.json\`, \`work.manga.json\`, and matching \`*.generation.json\`. Never invent an unrelated story from previous conversation context.
-2. For 2–8 page *rough preflight*, select its specific Contact Sheet batch/range. For publication-ready output select \`Pxxx.generation.json\` for one page. 8P rough is one sheet; final rendering stays page-scoped.
-3. Check package references, page IDs/count, Clean visual, **complete** generation prompt and required character references. On a local checkout run \`npm run preflight:generation -- <compiled-dir> --contact-sheet [NNN-NNN]\` or \`--page P007\`; if no local runtime is available, perform the equivalent checks via retrieved files. Stop when required inputs are missing or conflict.
+1. Resolve the actual requested work/revision, then read its `manifest.json`, `work.manga.json`, and matching `*.generation.json`. Never invent an unrelated story from previous conversation context.
+2. For 2–8 page *rough preflight*, select its specific Contact Sheet batch/range. For publication-ready output select `Pxxx.generation.json` for one page. 8P rough is one sheet; final rendering stays page-scoped.
+3. Check package references, page IDs/count, Clean visual, **complete** generation prompt and required character references. On a local checkout run `npm run preflight:generation -- <compiled-dir> --contact-sheet [NNN-NNN]` or `--page P007`; if no local runtime is available, perform the equivalent checks via retrieved files. Stop when required inputs are missing or conflict.
 4. Resolve actual Clean SVG/PNG bytes, render SVG as PNG when the image model cannot accept SVG, and **attach the real image** plus the full relevant prompt to the image-model call. A repository path, tool argument claim, or prose-only summary **does not** mean the image was attached. If the image tool cannot take the required visual reference, report the blocked boundary; do not substitute prompt-only generation.
-5. Keep Annotated review out of generation-facing image inputs. Preserve authored story beats, exact page order, character/ref/outfit state, RTL page reading and vertical Japanese writing. Text glyphs come only from \`TEXT TO RENDER\`; deterministic lettering is composited in final production when needed.
+5. Keep Annotated review out of generation-facing image inputs. Preserve authored story beats, exact page order, character/ref/outfit state, RTL page reading and vertical Japanese writing. Text glyphs come only from `TEXT TO RENDER`; deterministic lettering is composited in final production when needed.
 6. Inspect the actual generated image(s) against the canonical page panel count, actions, characters, special creature constraints, text and orientation. Use the existing observation → Structural Evaluator → bounded repair flow; missing visual evidence means **unverified**, not passed. Reject a wrong-story image even if its page grid looks right.
-7. A contact sheet is never final acceptance. Mark failed pages for targeted regeneration; retain provenance and do not put unverified images into \`final/\`.
+7. A contact sheet is never final acceptance. Mark failed pages for targeted regeneration; retain provenance and do not put unverified images into `final/`.
 
-\`manga-generation-handoff-preflight/1\` reports \`prepared-not-attached\` or \`blocked\`, **never** claims model input attachment. The LLM must verify that part at the image-tool boundary. Runbook: \`docs/PROMPT_HANDOFF.md\` owns the detailed contract and refusal/repair conditions.
+`manga-generation-handoff-preflight/1` reports `prepared-not-attached` or `blocked`, **never** claims model input attachment. The LLM must verify that part at the image-tool boundary. Runbook: `docs/PROMPT_HANDOFF.md` owns the detailed contract and refusal/repair conditions.
 
 ## Definition of done
 
