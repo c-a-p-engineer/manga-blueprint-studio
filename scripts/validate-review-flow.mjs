@@ -7,7 +7,7 @@ const p=(id,order,x,y)=>({id,order,rect:{x,y,w:300,h:200},actionIntent:'scene '+
   camera:{distance:'medium'},background:{location:'classroom'},
   importance:{energy:.5},attention:{primary:'hero.head'},
   style:{border:'normal'},effects:{sfxText:''},balloons:[],
-  characters:[{id:id+'-hero',characterId:'hero',name:'hero',x:x+140,y:y+140,scale:1,gaze:{target:'hero.head'},
+  characters:[{id:id+'-hero',characterId:'hero',name:'hero',x:x+140,y:y+140,scale:1,gaze:{target:'hero.chest'},
     renderPose:{joints:{head:{x:x+145,y:y+90},chest:{x:x+145,y:y+125},hip:{x:x+145,y:y+158}}}}]});
 const project={
   meta:{title:'読順と視線',readingDirection:'rtl',pageWidth:780,pageHeight:600,defaultWritingMode:'vertical-rl'},
