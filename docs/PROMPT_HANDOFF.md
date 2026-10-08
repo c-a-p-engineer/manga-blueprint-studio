@@ -552,6 +552,13 @@ Downstream generation must preserve:
 
 The legacy `border=inset` value means only an **Inset-style border / 小窓風枠** and does not establish panel parentage.
 
+
+## Annotated lettering and Full Review output
+
+Headless Annotated review images now include the exact canonical dialogue/SFX Lettering overlay. That review text must **not** make the Annotated file an image-generation reference: the generation-facing spatial authority remains Clean, and only the `TEXT TO RENDER` allowlist is authorized for the final artwork.
+
+An explicit CLI `--review-full` option provides comprehensive human comparison images: `Pxxx.review-full.svg/png` and, with `--contact-sheet`, `contact-sheet.review-full.svg/png`. Review Full composes the Annotated visual with a sidecar catalog of canonical actions, backgrounds, props, characters, resolved clothing/condition, camera, direction and exact lettering. They are review-only; the canonical JSON, manifest and generation prompt stay authoritative. Use the manifest's `reviewFull` roles to locate these files, never supply them in lieu of the Clean image to the model.
+
 ## Headless Contact Sheet preflight
 
 The Blueprint Engine CLI can opt into a provider-neutral batch package:
