@@ -1,12 +1,7 @@
 name: Combat Blueprint Trial
+# This workflow emits a manga Blueprint artifact. Do not run on pushes/PRs.
+# Explicit approval is required before manual workflow_dispatch.
 on:
-  push:
-    branches: [master]
-    paths:
-      - 'examples/combat-1p.md'
-      - 'core/**'
-      - 'cli/**'
-      - '.github/workflows/combat-blueprint-trial.yml'
   workflow_dispatch:
 jobs:
   compile:
