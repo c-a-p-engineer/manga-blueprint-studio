@@ -14,8 +14,10 @@ function check(name,input,opts,expected){
   count++;return result;
 }
 check('rough-verified',good(),{scope:'rough'},'story-consistent');
-check('page-all-panels-required',good(),{scope:'page',pageNumbers:[1]},'unverified');
+const singlePage=good();singlePage.pages=singlePage.pages.filter(p=>p.pageNumber===1);
+check('page-all-panels-required',singlePage,{scope:'page',pageNumbers:[1]},'unverified');
 const complete=good();
+complete.pages=complete.pages.filter(p=>p.pageNumber===1);
 complete.pages[0].anchors.push({panelOrder:2,observedDescription:'SCP-5031は音楽を学ぶ',verdict:'match'});
 check('page-story-complete',complete,{scope:'page',pageNumbers:[1]},'story-consistent');
 const mismatch=good();
