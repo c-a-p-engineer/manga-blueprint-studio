@@ -161,6 +161,11 @@ For a request such as 「これで画像生成して」 concerning an existing w
 
 `manga-generation-handoff-preflight/1` reports `prepared-not-attached` or `blocked`, **never** claims model input attachment. The LLM must verify that part at the image-tool boundary. Runbook: `docs/PROMPT_HANDOFF.md` owns the detailed contract and refusal/repair conditions.
 
+
+## Annotated + Full Review review surfaces
+
+The headless CLI now overlays deterministic dialogue/SFX on the human-facing Annotated SVG/PNG, without altering Clean's generation-facing text safety. If the user asks for an all-information review, compile with `--review-full` (and optionally `--contact-sheet`) to produce full-review page/sheet images with readable sidecar metadata for all authored backgrounds, states, props, scene direction and exact words. Use Full Review to confirm authored intent against generated art, **not** as the default model reference. Missing semantic fields are shown as missing; a review image cannot manufacture detail absent from the canonical project.
+
 ## Definition of done
 
 A blueprint task is done when:
