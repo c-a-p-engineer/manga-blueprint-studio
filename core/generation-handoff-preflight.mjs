@@ -79,8 +79,8 @@ export function validateGenerationHandoff({manifest, project, generation, target
     if (selected) {
       const group = declared.filter(p => p.pageNumber >= selected.startPage && p.pageNumber <= selected.endPage);
       const expectedCodes = group.map(p => pageCode(p.pageNumber));
-      if (selected.pageCount !== group.length || group.length > 8 || !group.length)
-        fail('batch-page-count', 'Batch must cover 1 to 8 existing pages with matching count');
+      if (selected.pageCount !== group.length || group.length > 4 || !group.length)
+        fail('batch-page-count', 'Batch must cover 1 to 4 existing pages with matching count');
       const i = generation?.inputs || {};
       const selectedAsset = selected.png && readAsset(selected.png)?.exists ? selected.png : selected.clean;
       if (i.contactSheetAsset !== selected.clean && i.contactSheetAsset !== selected.png)
