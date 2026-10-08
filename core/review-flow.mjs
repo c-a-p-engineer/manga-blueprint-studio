@@ -27,8 +27,8 @@ export function buildReaderFlowPlan(project,pageIndex=0){
   const nodes=sorted.map(p=>{
     const r=p.rect,margin=Math.min(24,r.w*.08,r.h*.08);
     const y=r.y+clamp(r.h*.72,margin,r.h-margin);
-    const start=point(r.x+r.w*(rtl?.80:.20),y);
-    const end=point(r.x+r.w*(rtl?.20:.80),y);
+    const start=point(r.x+r.w*(rtl ? .80 : .20),y);
+    const end=point(r.x+r.w*(rtl ? .20 : .80),y);
     const rawFocus=attentionPosition(p,p.attention?.primary);
     const focus=rawFocus&&rawFocus.x>=r.x+margin&&rawFocus.x<=r.x+r.w-margin&&rawFocus.y>=r.y+margin&&rawFocus.y<=r.y+r.h-margin?rawFocus:null;
     return{pageNumber:page.pageNumber||pageIndex+1,panelId:p.id,order:p.order,start,end,focus,source:focus?'canonical-attention':'geometry-order-heuristic'};
@@ -49,8 +49,8 @@ export function renderReaderFlowOverlaySvg(project,pageIndex=0,{detail='annotate
       ['M',node.start.x,node.start.y,'Q',via.x,via.y,node.end.x,node.end.y].join(' ')
     ];
     parts.push('<g data-reader-flow-panel="'+esc(node.order)+'" data-reader-flow-source="'+esc(node.source)+'">'+
-      '<path d="'+paths[0]+'" fill="none" stroke="#0891b2" stroke-width="'+(full?5:3)+'" stroke-opacity="'+(full?.85:.58)+'" stroke-dasharray="10 7" marker-end="url(#'+arrowId+')"/>'+
-      '<circle cx="'+node.start.x+'" cy="'+node.start.y+'" r="'+(full?15:12)+'" fill="#fff" fill-opacity=".92" stroke="#0891b2" stroke-width="3"/>'+
+      '<path d="'+paths[0]+'" fill="none" stroke="#0891b2" stroke-width="'+(full ? 5 : 3)+'" stroke-opacity="'+(full ? .85 : .58)+'" stroke-dasharray="10 7" marker-end="url(#'+arrowId+')"/>'+
+      '<circle cx="'+node.start.x+'" cy="'+node.start.y+'" r="'+(full ? 15 : 12)+'" fill="#fff" fill-opacity=".92" stroke="#0891b2" stroke-width="3"/>'+
       '<text x="'+node.start.x+'" y="'+(node.start.y+5)+'" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#075985">'+esc(node.order)+'</text>'+
       (full&&node.focus?'<circle cx="'+node.focus.x+'" cy="'+node.focus.y+'" r="10" fill="none" stroke="#0891b2" stroke-width="2"/>':'')+'</g>');
   }
@@ -59,7 +59,7 @@ export function renderReaderFlowOverlaySvg(project,pageIndex=0,{detail='annotate
     const path=Math.abs(dy)>55
       ?'M '+link.source.x+' '+link.source.y+' C '+link.source.x+' '+(link.source.y+dy*.48)+' '+link.target.x+' '+(link.target.y-dy*.48)+' '+link.target.x+' '+link.target.y
       :'M '+link.source.x+' '+link.source.y+' L '+link.target.x+' '+link.target.y;
-    parts.push('<path data-reader-flow-transition="'+esc(link.from)+'-'+esc(link.to)+'" d="'+path+'" fill="none" stroke="#0891b2" stroke-opacity="'+(full?.84:.5)+'" stroke-width="'+(full?5:3)+'" stroke-dasharray="8 8" marker-end="url(#'+arrowId+')"/>');
+    parts.push('<path data-reader-flow-transition="'+esc(link.from)+'-'+esc(link.to)+'" d="'+path+'" fill="none" stroke="#0891b2" stroke-opacity="'+(full ? .84 : .5)+'" stroke-width="'+(full?5:3)+'" stroke-dasharray="8 8" marker-end="url(#'+arrowId+')"/>');
   }
   return'<g id="reader-flow-guides" data-review="reader-flow" data-estimate="not-eye-tracking">'+defs+parts.join('')+'</g>';
 }
