@@ -24,7 +24,7 @@ export function evaluateNarrativeEvidence(project, observation, {pageNumbers=nul
     const anchors=Array.isArray(o?.anchors)?o.anchors:[];
     const expected=Array.isArray(page.panels)?page.panels:[];
     const expectedOrders=new Set(expected.map(p=>p.order));
-    const mismatch=anchors.filter(a=>a.verdict==='mismatch');
+    const mismatch=anchors.filter(a=>a.verdict==='mismatch'&&typeof a.observedDescription==='string'&&a.observedDescription.trim());
     const invalid=anchors.filter(a=>!expectedOrders.has(a.panelOrder)||!['match','mismatch','uncertain'].includes(a.verdict));
     const noEvidence=anchors.filter(a=>typeof a.observedDescription!=='string'||!a.observedDescription.trim());
     if(invalid.length)fail('anchor-schema','P'+page.pageNumber+' has invalid/unknown panel observations');
