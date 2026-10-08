@@ -67,11 +67,14 @@ const project=compileMangaName(text,compileOptions);
 await fs.mkdir(out,{recursive:true});
 await fs.writeFile(path.join(out,'work.manga.json'),JSON.stringify(project,null,2));
 
+const unplaceableLettering=[];
 const files=['work.manga.json'],raster=[],pageCleanAssets=[],pageBlueprintAssets=[],pageCleanPngAssets=[],pageBlueprintPngAssets=[],pageReviewFullPngAssets=[],pagePromptAssets=[],reviewFullAssetList=[];
 for(let i=0;i<project.pages.length;i++){
   const n=String(i+1).padStart(3,'0');
   const clean='P'+n+'.clean.svg',annotated='P'+n+'.blueprint.svg',prompt='P'+n+'.prompt.md',lettering='P'+n+'.lettering.svg',letteringJson='P'+n+'.lettering.json';
   const promptText=buildExecutablePrompt(project,i),letteringPlan=buildLetteringPlan(project,i);
+  for(const entry of letteringPlan.entries.filter(e=>e.fit==='unplaceable'))
+    unplaceableLettering.push({page:i+1,panelId:entry.panelId,kind:entry.kind,sourceId:entry.sourceId,text:entry.text});
   await fs.writeFile(path.join(out,clean),renderExecutableNameSvg(project,i,{annotated:false}));
   await fs.writeFile(path.join(out,annotated),renderExecutableNameSvg(project,i,{annotated:true}));
   await fs.writeFile(path.join(out,prompt),promptText);
@@ -179,7 +182,7 @@ if(cliOptions.contactSheet){
 const manifest=buildManifest(project,path.basename(input));
 manifest.blueprintRenderer={name:'executable-name-layered',version:3,cleanRole:'generation-facing spatial contract',annotatedRole:'human review only',poseSolver:'deterministic-spatial-v3',compositionSolver:'in-panel-v1'};
 if(cliOptions.reviewFull)manifest.reviewFull={schema:'manga-blueprint-review-full/1',role:'human-review-only',pages:reviewFullAssetList};
-manifest.lettering={schema:'manga-blueprint-lettering-plan/1',strategy:project.meta.letteringStrategy||'overlay-preferred',assets:project.pages.map((_,i)=>{const n=String(i+1).padStart(3,'0');return{page:i+1,svg:'P'+n+'.lettering.svg',plan:'P'+n+'.lettering.json'}})};
+manifest.lettering={schema:'manga-blueprint-lettering-plan/1',strategy:project.meta.letteringStrategy||'overlay-preferred',unplaceable:unplaceableLettering,assets:project.pages.map((_,i)=>{const n=String(i+1).padStart(3,'0');return{page:i+1,svg:'P'+n+'.lettering.svg',plan:'P'+n+'.lettering.json'}})};
 manifest.layoutRecipes={version:1,source:'core/layout-recipes.mjs',pages:project.pages.map((page,index)=>({page:index+1,recipeId:page.layoutDecision?.recipeId||page.layoutDecision?.winner||null,seed:page.layoutDecision?.signals?.seed??0,mutation:page.layoutDecision?.signals?.mutation??0}))};
 manifest.rasterization={mode:'best-effort-local',results:raster};
 manifest.authority.generationInstructions='Pxxx.prompt.md';
@@ -188,5 +191,6 @@ await fs.writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2
 files.push('manifest.json');
 
 console.log('Compiled '+project.pages.length+' page(s) -> '+out);
+if(unplaceableLettering.length)console.warn('Review lettering warning: '+unplaceableLettering.length+' entries did not fit their panel; see manifest.lettering.unplaceable.');
 if(contactSheetManifest)console.log('Contact sheet preflight: '+contactSheetManifest.columns+'x'+contactSheetManifest.rows+(cliOptions.contactColumns?' (override)':' (auto)'));
 for(const f of files)console.log('  '+f);
