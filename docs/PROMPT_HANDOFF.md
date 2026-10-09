@@ -126,6 +126,15 @@ Controls color/render style, line, shading, detail, background finish, palette/t
 
 Only exact strings allowlisted in the generated prompt's renderable-text section may become visible manga lettering.
 
+### Headless CLI PNG bundle (required)
+
+The headless CLI emits both editable SVG and raster PNG for each page:
+`Pxxx.clean.png` (text-free generation spatial authority), `Pxxx.blueprint.png` (Annotated review with dialogue/SFX and guides), `Pxxx.lettering.png` (transparent deterministic text), and `Pxxx.clean-lettered.png` (Clean plus the same exact lettering coordinates for reading-order review). Their matching SVGs remain available; `Pxxx.clean-lettered.svg` is also retained.
+
+Required PNG rasterization failures are fatal. No completed `manifest.json` may be emitted for an incomplete compile. `manifest.rasterization.mode=required-local` and `manifest.pages[].{cleanPng,annotatedPng,letteringPng,cleanLetteredPng}` identify the files; handoff preflight rejects missing or invalid PNGs. The generation package uses **Clean PNG** as its primary image input and exposes clean-lettered PNG as an optional review/reference asset, not a substitute for Clean. Annotated Blueprint is never the default image-generation input.
+
+The lettering PNG is production compositing authority. Even with a lettered Clean review image, the image model may rewrite or move glyphs; use clean without text for generation, preserve balloon regions, and deterministically composite lettering onto accepted art.
+
 ### Deterministic lettering overlay — exact production text
 
 Headless 0.25 packages may additionally include:

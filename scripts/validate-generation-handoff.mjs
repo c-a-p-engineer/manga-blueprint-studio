@@ -59,10 +59,24 @@ function check(name,apply,expectedStatus,expectedCode){
   cases++;
   return result;
 }
+
+function requirePngFixture(f){
+  f.manifest.rasterization={mode:'required-local'};
+  const page=f.manifest.pages[0];
+  Object.assign(page,{cleanPng:'P001.clean.png',annotatedPng:'P001.blueprint.png',letteringPng:'P001.lettering.png',cleanLetteredPng:'P001.clean-lettered.png'});
+  Object.assign(f.pageGeneration.request.inputs,{cleanAsset:page.cleanPng,letteringAsset:page.letteringPng,cleanLetteredAsset:page.cleanLetteredPng});
+  for(const key of ['cleanPng','annotatedPng','letteringPng','cleanLetteredPng'])f.assets[page[key]]={exists:true,validImage:true};
+}
 const ready=check('contact-valid',null,'prepared-not-attached');
 assert(ready.files.some(f=>f.path==='contact-sheet.001-002.clean.svg'));
 assert(ready.warnings.some(w=>w.code==='identity-needs-refinement'));
 check('page-valid',null,'prepared-not-attached');
+check('page-required-png-valid',requirePngFixture,'prepared-not-attached');
+check('page-required-png-missing-clean',f=>{requirePngFixture(f);delete f.assets['P001.clean.png']},'blocked','missing-asset');
+check('page-required-png-missing-blueprint',f=>{requirePngFixture(f);delete f.assets['P001.blueprint.png']},'blocked','missing-asset');
+check('page-required-png-missing-lettering',f=>{requirePngFixture(f);delete f.assets['P001.lettering.png']},'blocked','missing-asset');
+check('page-required-png-missing-clean-lettered',f=>{requirePngFixture(f);delete f.assets['P001.clean-lettered.png']},'blocked','missing-asset');
+check('page-required-png-source-is-svg',f=>{requirePngFixture(f);f.pageGeneration.request.inputs.cleanAsset='P001.clean.svg'},'blocked','required-png-mismatch');
 check('contact-missing-prompt',f=>{delete f.assets['contact-sheet.001-002.prompt.md']},'blocked','missing-asset');
 check('contact-wrong-work',f=>{f.assets['P002.prompt.md'].text=f.assets['P002.prompt.md'].text.replace('Fixed Story — Not Moon/Observatory','Astronomy')},'blocked','wrong-work-prompt');
 check('contact-mismatched-order',f=>{f.generation.inputs.pageCleanAssets.reverse()},'blocked','sheet-page-visual-order');

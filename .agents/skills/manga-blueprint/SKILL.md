@@ -88,8 +88,10 @@ npm run validate
 ## Output authority
 
 - `work.manga.json`: canonical compiled semantic state.
-- `Pxxx.clean.svg/png`: generation-facing spatial contract; no authoring annotations.
-- `Pxxx.blueprint.svg/png`: human-review view; never the default image-model input.
+- `Pxxx.clean.svg/png`: text-free generation-facing spatial contract; mandatory PNG for image-model handoff.
+- `Pxxx.blueprint.svg/png`: human-review view with dialogue/SFX and review annotations; mandatory PNG, never the default image-model input.
+- `Pxxx.clean-lettered.svg/png`: Clean plus deterministic lettering at identical glyph positions, for human readability review; mandatory PNG.
+- `Pxxx.lettering.svg/png` + `.lettering.json`: exact transparent lettering overlay and placement plan; mandatory PNG.
 - `Pxxx.prompt.md`: semantic rendering brief and exact visible-text rules.
 - `manifest.json`: read-first package/provenance information.
 - Optional Contact Sheet mode: `contact-sheet.clean.svg/png`, `contact-sheet.blueprint.svg/png`, `contact-sheet.prompt.md`, `contact-sheet.review.json`, `contact-sheet.generation.json` for batch preflight only. Contact Sheet PNGs are assembled from the already-rasterized per-page PNGs; Clean remains generation-facing and Blueprint remains human-review only. The default layout is page-count-aware: 2P→2×1, 3–4P→2×2, 5–8P→multiple ≤4P sheets; avoid manual column overrides unless there is a concrete reason.

@@ -64,6 +64,7 @@ export function validateGenerationHandoff({manifest, project, generation, target
     if (pages[i].id !== declared[i].pageId || pages[i].pageNumber !== declared[i].pageNumber)
       fail('page-identity-mismatch', 'Page identity/order disagree at index ' + i);
   }
+  const pngRequired = manifest?.rasterization?.mode === 'required-local';
   const title = safeTitle(project?.meta?.title);
   if (!title) fail('missing-work-title', 'Canonical project title is missing');
   if (!['rtl','ltr'].includes(project?.meta?.readingDirection)) fail('reading-direction', 'Canonical reading direction is invalid');
@@ -82,7 +83,9 @@ export function validateGenerationHandoff({manifest, project, generation, target
       if (selected.pageCount !== group.length || group.length > 4 || !group.length)
         fail('batch-page-count', 'Batch must cover 1 to 4 existing pages with matching count');
       const i = generation?.inputs || {};
-      const selectedAsset = selected.png && readAsset(selected.png)?.exists ? selected.png : selected.clean;
+      const selectedAsset = pngRequired ? selected.png : (selected.png && readAsset(selected.png)?.exists ? selected.png : selected.clean);
+      if (pngRequired && i.contactSheetAsset !== selected.png)
+        fail('required-png-mismatch', 'Generation must use the required Clean Contact Sheet PNG', i.contactSheetAsset);
       if (i.contactSheetAsset !== selected.clean && i.contactSheetAsset !== selected.png)
         fail('sheet-spatial-mismatch', 'Generation package points outside manifest Clean sheet', i.contactSheetAsset);
       const visual = read(selectedAsset, 'generation-facing-clean-contact-sheet', {visual:true});
@@ -109,6 +112,7 @@ export function validateGenerationHandoff({manifest, project, generation, target
       for (const [index,p] of group.entries()) {
         const page = pages.find(q=>q.pageNumber===p.pageNumber);
         read(p.cleanBlueprint, 'page-clean-reference',{visual:true});
+        if(pngRequired)read(p.cleanPng, 'page-clean-required-png',{visual:true});
         checkPrompt(p.prompt, expectedCodes[index],page?.panels?.length ?? 0,false,[page]);
       }
       if (generation?.layout?.pageCount !== undefined && generation.layout.pageCount !== group.length)
@@ -131,13 +135,23 @@ export function validateGenerationHandoff({manifest, project, generation, target
       if (i.cleanAsset !== p.cleanBlueprint && i.cleanAsset !== p.cleanBlueprint?.replace(/\.svg$/,'.png'))
         fail('page-clean-mismatch', 'Generation request clean asset differs from manifest',i.cleanAsset);
       if (i.prompt !== p.prompt) fail('page-prompt-mismatch', 'Generation request prompt differs from manifest',i.prompt);
-      const preferredPng = p.cleanBlueprint?.replace(/\.svg$/,'.png');
-      const primary = preferredPng && readAsset(preferredPng)?.exists ? preferredPng : i.cleanAsset;
+      if(pngRequired){
+        if(i.cleanAsset !== p.cleanPng)fail('required-png-mismatch','Generation must use the canonical Clean PNG',i.cleanAsset);
+        if(i.letteringAsset !== p.letteringPng)fail('lettering-png-mismatch','Generation must reference the canonical lettering PNG',i.letteringAsset);
+        if(i.cleanLetteredAsset !== p.cleanLetteredPng)fail('clean-lettered-png-mismatch','Generation must reference the canonical clean-lettered PNG',i.cleanLetteredAsset);
+        for(const [key,role] of [['cleanPng','required-clean-png'],['annotatedPng','required-blueprint-png'],['letteringPng','required-lettering-png'],['cleanLetteredPng','required-clean-lettered-png']]){
+          const asset=p[key];
+          if(!/\.png$/i.test(asset||''))fail('invalid-required-png','Required PNG path is missing or invalid: '+key,asset);
+          read(asset,role,{visual:true});
+        }
+      }
+      const preferredPng = p.cleanPng || p.cleanBlueprint?.replace(/\.svg$/,'.png');
+      const primary = pngRequired ? preferredPng : (preferredPng && readAsset(preferredPng)?.exists ? preferredPng : i.cleanAsset);
       const visual = read(primary,'generation-facing-clean-page',{visual:true});
       if (visual && /\.svg$/i.test(primary)) warn('raster-may-be-required','Confirm image tool accepts SVG or rasterize first',primary);
       if (/blueprint|annotated/i.test(primary||'')) fail('annotated-input','Use Clean, not Annotated',primary);
       checkPrompt(p.prompt,pageCode(pageNumber),page?.panels?.length??0,false,[page]);
-      if (i.letteringAsset) read(i.letteringAsset,'lettering-overlay');
+      if (i.letteringAsset) read(i.letteringAsset,'lettering-overlay',{visual:true});
       if (i.letteringPlan) read(i.letteringPlan,'lettering-plan');
       if (generation?.request?.constraints?.preserveReadingDirection !== project?.meta?.readingDirection)
         fail('reading-mismatch','Page generation request disagrees with canonical reading direction');

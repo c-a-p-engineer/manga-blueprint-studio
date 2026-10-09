@@ -4,6 +4,7 @@ import path from'node:path';
 import{buildManifest}from'../core/blueprint-engine.mjs';
 import{compileMangaName}from'../core/manga-grammar.mjs';
 import{renderExecutableNameSvg}from'../core/blueprint-renderer.mjs';
+import{composeCleanLetteredSvg}from'../core/clean-lettered.mjs';
 import{rasterizeSvg}from'../core/svg-rasterizer.mjs';
 import{buildExecutablePrompt}from'../core/generation-brief.mjs';
 import{buildPortableGenerationPackage}from'../core/generation-adapter.mjs';
@@ -72,47 +73,61 @@ if(cliOptions.layoutSeed!==undefined)compileOptions.layoutSeed=cliOptions.layout
 if(cliOptions.layoutMutation!==undefined)compileOptions.layoutMutation=cliOptions.layoutMutation;
 
 const project=compileMangaName(text,compileOptions);
+// Headless production uses text-free art with deterministic lettering applied separately.
+project.meta.letteringStrategy='overlay-only';
 await fs.mkdir(out,{recursive:true});
 await fs.writeFile(path.join(out,'work.manga.json'),JSON.stringify(project,null,2));
 
 const unplaceableLettering=[];
 const files=['work.manga.json'],raster=[],pageCleanAssets=[],pageBlueprintAssets=[],pageCleanPngAssets=[],pageBlueprintPngAssets=[],pageReviewFullPngAssets=[],pagePromptAssets=[],reviewFullAssetList=[];
+// An incomplete recompile must not leave a previously successful handoff manifest.
+await fs.rm(path.join(out,'manifest.json'),{force:true});
+const rasterRequired=(svg,png,options={})=>{
+  const result=rasterizeSvg(path.join(out,svg),path.join(out,png),options);
+  raster.push({source:svg,output:result.ok?png:null,...result});
+  if(!result.ok)throw new Error('Required PNG rasterization failed for '+svg+' -> '+png+': '+(result.reason||result.engine));
+  files.push(png);
+  return png;
+};
 for(let i=0;i<project.pages.length;i++){
   const n=String(i+1).padStart(3,'0');
-  const clean='P'+n+'.clean.svg',annotated='P'+n+'.blueprint.svg',prompt='P'+n+'.prompt.md',lettering='P'+n+'.lettering.svg',letteringJson='P'+n+'.lettering.json';
+  const prefix='P'+n;
+  const clean=prefix+'.clean.svg',annotated=prefix+'.blueprint.svg',prompt=prefix+'.prompt.md';
+  const lettering=prefix+'.lettering.svg',letteringJson=prefix+'.lettering.json',cleanLettered=prefix+'.clean-lettered.svg';
+  const cleanPng=prefix+'.clean.png',annotatedPng=prefix+'.blueprint.png',letteringPng=prefix+'.lettering.png',cleanLetteredPng=prefix+'.clean-lettered.png';
   const promptText=buildExecutablePrompt(project,i),letteringPlan=buildLetteringPlan(project,i);
   for(const entry of letteringPlan.entries.filter(e=>e.fit==='unplaceable'))
     unplaceableLettering.push({page:i+1,panelId:entry.panelId,kind:entry.kind,sourceId:entry.sourceId,text:entry.text});
-  await fs.writeFile(path.join(out,clean),renderExecutableNameSvg(project,i,{annotated:false}));
+  const cleanSvg=renderExecutableNameSvg(project,i,{annotated:false});
+  const letteringSvg=renderLetteringOverlaySvg(project,i);
+  await fs.writeFile(path.join(out,clean),cleanSvg);
   await fs.writeFile(path.join(out,annotated),renderExecutableNameSvg(project,i,{annotated:true}));
   await fs.writeFile(path.join(out,prompt),promptText);
-  await fs.writeFile(path.join(out,lettering),renderLetteringOverlaySvg(project,i));
+  await fs.writeFile(path.join(out,lettering),letteringSvg);
   await fs.writeFile(path.join(out,letteringJson),JSON.stringify(letteringPlan,null,2));
-  const pkg=buildPortableGenerationPackage({project,pageIndex:i,cleanAsset:clean,prompt,referenceAssets:[],letteringAsset:lettering,letteringPlan:letteringJson});
-  await fs.writeFile(path.join(out,'P'+n+'.generation.json'),JSON.stringify(pkg,null,2));
-  files.push(clean,annotated,prompt,lettering,letteringJson,'P'+n+'.generation.json');
+  await fs.writeFile(path.join(out,cleanLettered),composeCleanLetteredSvg(cleanSvg,letteringSvg));
+  files.push(clean,annotated,prompt,lettering,letteringJson,cleanLettered);
+  rasterRequired(clean,cleanPng);
+  rasterRequired(annotated,annotatedPng);
+  rasterRequired(lettering,letteringPng);
+  rasterRequired(cleanLettered,cleanLetteredPng);
+  // A generation package is only emitted after its required PNGs exist.
+  const pkg=buildPortableGenerationPackage({project,pageIndex:i,cleanAsset:cleanPng,prompt,referenceAssets:[],letteringAsset:letteringPng,letteringPlan:letteringJson,cleanLetteredAsset:cleanLetteredPng});
+  await fs.writeFile(path.join(out,prefix+'.generation.json'),JSON.stringify(pkg,null,2));
+  files.push(prefix+'.generation.json');
   pageCleanAssets.push(clean);
   pageBlueprintAssets.push(annotated);
   pagePromptAssets.push(prompt);
-  for(const [kind,svg] of [['clean',clean],['blueprint',annotated]]){
-    const png=svg.replace(/\.svg$/,'.png'),r=rasterizeSvg(path.join(out,svg),path.join(out,png));
-    raster.push({source:svg,output:r.ok?png:null,...r});
-    if(kind==='clean')pageCleanPngAssets.push(r.ok?png:null);
-    else pageBlueprintPngAssets.push(r.ok?png:null);
-    if(r.ok)files.push(png);
-  }
+  pageCleanPngAssets.push(cleanPng);
+  pageBlueprintPngAssets.push(annotatedPng);
   if(cliOptions.reviewFull){
     const reviewFull='P'+n+'.review-full.svg',reviewFullPng='P'+n+'.review-full.png';
     await fs.writeFile(path.join(out,reviewFull),renderReviewFullPageSvg(project,i));
     files.push(reviewFull);
     reviewFullAssetList.push({page:i+1,svg:reviewFull,png:null});
-    const renderResult=rasterizeSvg(path.join(out,reviewFull),path.join(out,reviewFullPng),{maxWidth:1200});
-    raster.push({source:reviewFull,output:renderResult.ok?reviewFullPng:null,...renderResult});
-    pageReviewFullPngAssets.push(renderResult.ok?reviewFullPng:null);
-    if(renderResult.ok){
-      files.push(reviewFullPng);
-      reviewFullAssetList[reviewFullAssetList.length-1].png=reviewFullPng;
-    }
+    rasterRequired(reviewFull,reviewFullPng,{maxWidth:1200});
+    pageReviewFullPngAssets.push(reviewFullPng);
+    reviewFullAssetList[reviewFullAssetList.length-1].png=reviewFullPng;
   }
 }
 
@@ -158,14 +173,14 @@ if(cliOptions.contactSheet){
 
     raster.push({source:'P'+String(batch.startPage).padStart(3,'0')+'-P'+String(batch.endPage).padStart(3,'0')+'.clean.png',output:cleanMontage.ok?assets.cleanPng:null,kind:'contact-sheet-png-montage',range,...cleanMontage});
     raster.push({source:'P'+String(batch.startPage).padStart(3,'0')+'-P'+String(batch.endPage).padStart(3,'0')+'.blueprint.png',output:blueprintMontage.ok?assets.blueprintPng:null,kind:'contact-sheet-png-montage',range,...blueprintMontage});
-    if(cleanMontage.ok)files.push(assets.cleanPng);
-    if(blueprintMontage.ok)files.push(assets.blueprintPng);
+    if(!cleanMontage.ok||!blueprintMontage.ok)throw new Error('Required Contact Sheet PNG composition failed for '+range+': '+(cleanMontage.reason||blueprintMontage.reason||'unknown'));
+    files.push(assets.cleanPng,assets.blueprintPng);
 
     const generation=buildContactSheetGenerationPackage({
       project:batchProject,
       cleanAssets:batchCleanAssets,
       promptAssets:batchPromptAssets,
-      contactSheetAsset:cleanMontage.ok?assets.cleanPng:assets.cleanSvg,
+      contactSheetAsset:assets.cleanPng,
       promptAsset:assets.prompt,
       reviewAsset:assets.review,
       referenceAssets:[],
@@ -186,8 +201,9 @@ if(cliOptions.contactSheet){
         ?composeContactSheetPng(pngs.map(name=>path.join(out,name)),path.join(out,fullPng),montageOptions)
         :{ok:false,engine:'none',reason:'Missing Full Review page PNG for '+range};
       raster.push({source:'Pxxx.review-full.png',output:montage.ok?fullPng:null,kind:'review-full-png-montage',range,...montage});
-      if(montage.ok)files.push(fullPng);
-      reviewFullSheet={svg:fullSvg,png:montage.ok?fullPng:null,role:'human-review-only'};
+      if(!montage.ok)throw new Error('Required Full Review Contact Sheet PNG composition failed for '+range+': '+(montage.reason||'unknown'));
+      files.push(fullPng);
+      reviewFullSheet={svg:fullSvg,png:fullPng,role:'human-review-only'};
     }
 
     batchManifests.push({
@@ -202,8 +218,8 @@ if(cliOptions.contactSheet){
       prompt:assets.prompt,
       review:assets.review,
       generation:assets.generation,
-      png:cleanMontage.ok?assets.cleanPng:null,
-      blueprintPng:blueprintMontage.ok?assets.blueprintPng:null,
+      png:assets.cleanPng,
+      blueprintPng:assets.blueprintPng,
       ...(reviewFullSheet?{reviewFull:reviewFullSheet}:{}),
       pngComposition:'page-png-montage'
     });
@@ -223,9 +239,12 @@ if(cliOptions.contactSheet){
 const manifest=buildManifest(project,path.basename(input));
 manifest.blueprintRenderer={name:'executable-name-layered',version:3,cleanRole:'generation-facing spatial contract',annotatedRole:'human review only',poseSolver:'deterministic-spatial-v3',compositionSolver:'in-panel-v1'};
 if(cliOptions.reviewFull)manifest.reviewFull={schema:'manga-blueprint-review-full/1',role:'human-review-only',pages:reviewFullAssetList};
-manifest.lettering={schema:'manga-blueprint-lettering-plan/1',strategy:project.meta.letteringStrategy||'overlay-preferred',unplaceable:unplaceableLettering,assets:project.pages.map((_,i)=>{const n=String(i+1).padStart(3,'0');return{page:i+1,svg:'P'+n+'.lettering.svg',plan:'P'+n+'.lettering.json'}})};
+manifest.lettering={schema:'manga-blueprint-lettering-plan/1',strategy:project.meta.letteringStrategy||'overlay-preferred',unplaceable:unplaceableLettering,assets:project.pages.map((_,i)=>{const n='P'+String(i+1).padStart(3,'0');return{page:i+1,svg:n+'.lettering.svg',png:n+'.lettering.png',plan:n+'.lettering.json'}})};
+manifest.pages.forEach((item,i)=>{const n='P'+String(i+1).padStart(3,'0');Object.assign(item,{cleanPng:n+'.clean.png',annotatedPng:n+'.blueprint.png',letteringPng:n+'.lettering.png',cleanLetteredSvg:n+'.clean-lettered.svg',cleanLetteredPng:n+'.clean-lettered.png'});});
 manifest.layoutRecipes={version:1,source:'core/layout-recipes.mjs',pages:project.pages.map((page,index)=>({page:index+1,recipeId:page.layoutDecision?.recipeId||page.layoutDecision?.winner||null,seed:page.layoutDecision?.signals?.seed??0,mutation:page.layoutDecision?.signals?.mutation??0}))};
-manifest.rasterization={mode:'best-effort-local',results:raster};
+manifest.rasterization={mode:'required-local',results:raster};
+manifest.authority.spatial='Pxxx.clean.png';
+manifest.authority.lettering='Pxxx.lettering.png + Pxxx.lettering.json';
 manifest.authority.generationInstructions='Pxxx.prompt.md';
 if(contactSheetManifest)manifest.contactSheet=contactSheetManifest;
 await fs.writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2));

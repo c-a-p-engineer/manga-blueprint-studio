@@ -16,7 +16,8 @@ export function createGenerationRequest({
   referenceAssets=[],
   repairContext=null,
   letteringAsset=null,
-  letteringPlan=null
+  letteringPlan=null,
+  cleanLetteredAsset=null
 }){
   const page=project.pages[pageIndex];
   if(!page)throw new Error('Unknown page');
@@ -34,7 +35,8 @@ export function createGenerationRequest({
       prompt,
       references:referenceAssets.map(r=>({referenceKey:r.referenceKey,asset:r.asset,role:r.role||'identity'})),
       ...(letteringAsset?{letteringAsset}:{}),
-      ...(letteringPlan?{letteringPlan}:{})
+      ...(letteringPlan?{letteringPlan}:{}),
+      ...(cleanLetteredAsset?{cleanLetteredAsset}:{})
     },
     constraints:{
       preservePanelGeometry:true,
@@ -73,10 +75,11 @@ export function buildPortableGenerationPackage({
   referenceAssets=[],
   repairContext=null,
   letteringAsset=null,
-  letteringPlan=null
+  letteringPlan=null,
+  cleanLetteredAsset=null
 }){
   const bindings=validateReferenceBindings(project,referenceAssets);
-  const request=createGenerationRequest({project,pageIndex,cleanAsset,prompt,referenceAssets,repairContext,letteringAsset,letteringPlan});
+  const request=createGenerationRequest({project,pageIndex,cleanAsset,prompt,referenceAssets,repairContext,letteringAsset,letteringPlan,cleanLetteredAsset});
   return{
     schema:'manga-generation-package/1',
     request,

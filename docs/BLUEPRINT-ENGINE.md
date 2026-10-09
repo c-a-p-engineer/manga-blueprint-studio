@@ -17,7 +17,7 @@ human natural language
   -> manga-blueprint/0.2
   -> layered executable-name renderer
   -> clean visual + annotated visual + executable prompt + manifest
-  -> optional local SVG -> PNG rasterization
+  -> required local SVG -> PNG rasterization (Clean, Blueprint, lettering, clean-lettered)
 ```
 
 The Web editor remains optional. Its role is visual refinement of the same canonical project state, not ownership of the automation path. The public `/layout-catalog.html` and editor Recipe controls use the same `core/layout-recipes.mjs` definitions as the CLI/solver.
