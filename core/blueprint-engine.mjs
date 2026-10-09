@@ -14,7 +14,7 @@ function emptyBeat(action = '') {
 }
 
 function emptyPage() {
-  return { title: '', directives: { layout: 'auto', 'layout-seed': '', 'layout-mutation': '', background: '', time: '' }, beats: [] };
+  return { title: '', directives: { layout: 'auto', 'layout-seed': '', 'layout-mutation': '', 'page-title': '', background: '', time: '' }, beats: [] };
 }
 
 export function parseName(text) {
@@ -30,7 +30,7 @@ export function parseName(text) {
     if (!line || line.startsWith('<!--')) continue;
     const pm = line.match(/^#{1,3}\s*(?:page|p|ページ)\s*(\d+)?\s*[:：-]?\s*(.*)$/i);
     if (pm) { flushPage(); page.title = pm[2] || ''; continue; }
-    const directive = line.match(/^@(layout|layout-seed|layout-mutation|background|time)\s*[:：]\s*(.+)$/i);
+    const directive = line.match(/^@(layout|layout-seed|layout-mutation|page-title|background|time)\s*[:：]\s*(.+)$/i);
     if (directive) { page.directives[directive[1].toLowerCase()] = directive[2].trim(); continue; }
     const bm = line.match(/^(?:[-*]\s*)?(?:panel|p|コマ)\s*\d+\s*[:：-]\s*(.+)$/i);
     if (bm) { flushBeat(); beat = emptyBeat(bm[1]); continue; }
@@ -144,7 +144,7 @@ export function compileName(text, options = {}) {
   const pages = parsed.map((src, pi) => {
     const rects = layout(src.beats.length, src.beats, src.directives.layout);
     return {
-      id: id('page', `${workId}:${pi}`), pageNumber: pi + 1, order: pi + 1, title: src.title,
+      id: id('page', `${workId}:${pi}`), pageNumber: pi + 1, order: pi + 1, title: src.title, visibleTitle: src.directives['page-title'] || '',
       panels: src.beats.map((b, i) => {
         const rect = rects[i];
         const cast = b.cast.length ? b.cast : [...new Set(b.dialogue.map((d) => d.speaker).filter(Boolean))].map((token) => ({ token, slot: 'center' }));

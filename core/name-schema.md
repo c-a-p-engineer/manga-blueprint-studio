@@ -25,9 +25,12 @@ The AI describes **manga intent**. It should not calculate IDs, joint coordinate
 ```md
 # Page 1: title
 @layout: auto|vertical|grid|hero-bottom|hero-top
+@page-title: optional visible title in the top gutter
 @background: classroom
 @time: day
 ```
+
+Page headings (`# Page 1: ...`) are metadata, not rendered text. Explicit `@page-title: 世界征服、初戦敗退。` places a title in deterministic Lettering and Annotated review, not text-free Clean.
 
 `@layout` is a bounded hint, not raw geometry. `auto` lets the compiler choose from the shared Layout Recipe Bank. A Recipe ID such as `hero-bottom`, `dialogue-stagger`, or `action-step` may also be supplied directly.
 
@@ -82,7 +85,7 @@ Supported semantic fields:
 - `視線出口:` / `exit:` — coarse panel-exit target/direction used to connect to the next panel.
 - `強調:` / `emphasis:` — legacy shorthand `normal | strong | climax`; the expression grammar also uses it as a bounded importance hint.
 - `コマサイズ:` / `size:` — `auto | small | medium | large | dominant | hero`; explicit human/AI override when size itself is authored intent.
-- `境界:` / `shape:` / `コマ形:` — `rectangle | diagonal-left | diagonal-right | trapezoid-left | trapezoid-right`.
+- `境界:` / `shape:` / `コマ形:` — `rectangle | diagonal-left | diagonal-right | diagonal-right-strong | trapezoid-left | trapezoid-right`.
 - `インセット:` / `inset:` — parent panel plus anchor/size, e.g. `parent panel 1 top-left small`.
 - `断ち切り:` / `bleed:` — page-edge relation: `none | top | right | bottom | left | all`.
 - `ブチ抜き:` / `breakout:` — frame breakout intent: `none | character | foreground | cross-panel`.

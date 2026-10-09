@@ -20,6 +20,8 @@ human natural language
   -> required local SVG -> PNG rasterization (Clean, Blueprint, lettering, clean-lettered)
 ```
 
+An explicit `@page-title:` places a page title in the top gutter through deterministic Lettering/Annotated only, not text-free Clean. `diagonal-right-strong` increases a single right-side frame slant while retaining normal defaults elsewhere.
+
 The Web editor remains optional. Its role is visual refinement of the same canonical project state, not ownership of the automation path. The public `/layout-catalog.html` and editor Recipe controls use the same `core/layout-recipes.mjs` definitions as the CLI/solver.
 
 ## Input

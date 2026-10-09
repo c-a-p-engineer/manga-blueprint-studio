@@ -14,12 +14,13 @@ function characterStateLines(project,c){
   return lines;
 }
 export function buildExecutablePrompt(project,pageIndex=0){
-  const page=project.pages[pageIndex],text=page.panels.flatMap(p=>[...p.balloons.map(b=>b.text),...(p.effects.sfxText?[p.effects.sfxText]:[])]);
+  const page=project.pages[pageIndex],text=[...(page.visibleTitle?[page.visibleTitle]:[]),...page.panels.flatMap(p=>[...p.balloons.map(b=>b.text),...(p.effects.sfxText?[p.effects.sfxText]:[])])];
   const lettering=project.meta?.letteringStrategy||'overlay-preferred';
   const lines=[
     '# Executable Manga Generation Brief',
     `Work: ${project.meta.title}`,
     `Page: P${String(page.pageNumber).padStart(3,'0')}`,
+    ...(page.visibleTitle?[`VISIBLE PAGE TITLE: ${q(page.visibleTitle)} — top gutter, post-render overlay only.`]:[]),
     `Reading: ${project.meta.readingDirection}`,
     `Writing: ${project.meta.defaultWritingMode||'vertical-rl'}`,
     `Lettering strategy: ${lettering}`,

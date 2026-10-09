@@ -1022,6 +1022,9 @@
         "title": {
           "type": "string"
         },
+        "visibleTitle": {
+          "type": "string"
+        },
         "pageNumber": {
           "type": "integer",
           "minimum": 1

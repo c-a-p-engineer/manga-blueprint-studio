@@ -62,6 +62,12 @@ export function buildLetteringPlan(project,pageIndex=0){
   const page=project.pages?.[pageIndex];
   if(!page)throw new Error(`Unknown page index ${pageIndex}`);
   const entries=[];
+  const title=String(page.visibleTitle||'').trim();
+  if(title){
+    const width=project.meta?.pageWidth||1200,fontSize=26,characters=chars(title);
+    const glyphs=characters.map((char,i)=>({char,x:width/2+(i-(characters.length-1)/2)*fontSize*1.05,y:39}));
+    entries.push({kind:'title',sourceId:page.id+':title',text:title,writingMode:'horizontal-tb',region:{x:0,y:5,w:width,h:43},glyphs,fontSize,fit:'fitted',panelId:null});
+  }
   for(const panel of[...(page.panels||[])].sort((a,b)=>(a.order||0)-(b.order||0))){
     for(const balloon of panel.balloons||[]){
       if(!String(balloon.text||''))continue;
@@ -87,7 +93,7 @@ export function renderLetteringOverlaySvg(project,pageIndex=0){
   const clips=(project.pages?.[pageIndex]?.panels||[]).map(p=>`<clipPath id="letter-clip-${esc(p.id)}"><rect x="${p.rect.x}" y="${p.rect.y}" width="${p.rect.w}" height="${p.rect.h}"/></clipPath>`).join('');
   const body=plan.entries.map((item)=>{
     const glyphs=item.glyphs.map((g,i)=>`<text data-glyph-index="${i}" x="${g.x}" y="${g.y}" text-anchor="middle" font-family="sans-serif" font-size="${item.fontSize}" fill="black">${esc(g.char)}</text>`).join('');
-    return`<g data-lettering-kind="${esc(item.kind)}" data-source-id="${esc(item.sourceId)}" data-text="${esc(item.text)}" data-writing-mode="${esc(item.writingMode)}" clip-path="url(#letter-clip-${esc(item.panelId)})">${glyphs}</g>`;
+    return`<g data-lettering-kind="${esc(item.kind)}" data-source-id="${esc(item.sourceId)}" data-text="${esc(item.text)}" data-writing-mode="${esc(item.writingMode)}" ${item.panelId?`clip-path="url(#letter-clip-${esc(item.panelId)})"`:''}>${glyphs}</g>`;
   }).join('');
   return`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${clips}</defs><g id="deterministic-lettering">${body}</g></svg>`;
 }
