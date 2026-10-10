@@ -22,6 +22,27 @@ human natural language
 
 The Web editor remains optional. Its role is visual refinement of the same canonical project state, not ownership of the automation path. The public `/layout-catalog.html` and editor Recipe controls use the same `core/layout-recipes.mjs` definitions as the CLI/solver.
 
+## Incremental compilation and PNG refresh
+
+The regular CLI already emits SVG and PNG in **the same compile run**. No separate conversion command is needed for ordinary Name DSL compilation:
+
+```bash
+npm run blueprint -- <name.md> <output-dir>
+```
+
+When a ChatGPT/JavaScript host changes compiled project geometry without rerunning the full headless CLI, it must re-render the matching SVG/prompt and then refresh the raster handoff package:
+
+```bash
+npm run blueprint:rasterize -- <compiled-dir>
+# or target one page
+npm run blueprint:rasterize -- <compiled-dir> --page P001
+npm run preflight:generation -- <compiled-dir> --page P001
+```
+
+The refresh checks project/page IDs, panel clip IDs and dimensions, rasterizes Clean/Blueprint/Lettering/Clean-Lettered from canonical SVGs, and refreshes generation package plus provenance. Matching PNGs are reused using source SVG hashes; old PNGs from different geometry must not be reused.
+
+Node 22+ with npm ci supplies the primary @resvg/resvg-js backend. An already-installed ImageMagick (magick) or librsvg (rsvg-convert) permits lightweight local rasterization without node_modules. One raster backend remains necessary. The page-focused command does not refresh Contact Sheet montages; recompile Contact Sheets from the current sources.
+
 ## Input
 
 See [`../core/name-schema.md`](../core/name-schema.md). The AI-facing DSL expresses story beats and manga intent rather than coordinates. Current semantics include importance/hold, attention, reading flow, cast, pose, gaze, depth, support, motion phase, body/prop contact, camera, background, visible text/effects, irregular panel boundaries and one-level insets.
