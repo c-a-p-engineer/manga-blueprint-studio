@@ -85,6 +85,8 @@ npm run build
 npm run validate
 ```
 
+When a local incremental SVG rerender bypasses the full headless CLI, immediately run `npm run blueprint:rasterize -- <compiled-dir>` (or `--page P001`) and then page preflight. Ordinary `npm run blueprint -- <name> <out>` already emits matching SVG and PNG together. Do not reuse old preview PNGs or treat a path as an attached generation image.
+
 ## Output authority
 
 - `work.manga.json`: canonical compiled semantic state.
