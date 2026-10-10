@@ -16,7 +16,7 @@ try{
   write(code+'.generation.json',{request:{pageId:'page-1',inputs:{cleanAsset:code+'.clean.png',prompt:code+'.prompt.md',references:[],letteringAsset:code+'.lettering.png',letteringPlan:code+'.lettering.json',cleanLetteredAsset:code+'.clean-lettered.png'}},ready:false});
   write(code+'.lettering.json',{pageId:'page-1',entries:[]});
   write(code+'.prompt.md','## Panel 1\nExample');
-  for(const part of ['clean','blueprint','lettering','clean-lettered'])write(code+'.'+part+'.svg',svg);
+  for(const part of ['clean','blueprint','lettering','clean-lettered'])write(code+'.'+part+'.svg',part==='lettering' ? '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="180"><text x="6" y="60">Text</text></svg>' : svg);
   let result=run();
   assert.equal(result.status,0,result.stderr||result.stdout);
   assert.equal(load('manifest.json').rasterization.status,'complete');
@@ -25,6 +25,7 @@ try{
     const png=fs.readFileSync(path.join(dir,code+'.'+part+'.png'));
     assert.equal(png.readUInt32BE(16),120);
     assert.equal(png.readUInt32BE(20),180);
+    if(part==='lettering')assert([4,6].includes(png[25]),'Lettering PNG must preserve alpha transparency');
   }
   result=run();
   assert.equal(result.status,0,result.stderr||result.stdout);
