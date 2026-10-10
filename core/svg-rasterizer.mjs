@@ -1,6 +1,14 @@
 import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
-import {Resvg} from '@resvg/resvg-js';
+import {createRequire} from 'node:module';
+
+// Keep the native rasterizer optional. Hosts with ImageMagick/librsvg can
+// rasterize compiled SVGs locally without a node_modules installation.
+const require=createRequire(import.meta.url);
+let Resvg=null;
+try{({Resvg}=require('@resvg/resvg-js'));}catch(error){
+  if(error?.code!=='MODULE_NOT_FOUND'&&error?.code!=='ERR_DLOPEN_FAILED')throw error;
+}
 
 function attempt(command,args){
   const r=spawnSync(command,args,{stdio:'ignore',shell:false});
@@ -23,6 +31,7 @@ function installedFamilies(){
   return result.status===0?result.stdout.split(/[\n,]/).map(x=>x.trim()):[];
 }
 function attemptResvg(svg,output,width){
+  if(!Resvg)return false;
   try{
     const font=preferredJapaneseFont(installedFamilies());
     const options={font:{loadSystemFonts:true,...(font?{defaultFontFamily:font}:{})}};
@@ -50,6 +59,6 @@ export function rasterizeSvg(input,output,{maxWidth=null}={}){
   return{
     ok:false,
     engine:'none',
-    reason:'SVG rasterization failed with resvg-js and no ImageMagick/librsvg fallback succeeded.'
+    reason:'SVG rasterization failed: install @resvg/resvg-js, ImageMagick, or librsvg.'
   };
 }
