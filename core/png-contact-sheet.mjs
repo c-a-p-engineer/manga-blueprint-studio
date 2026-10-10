@@ -1,6 +1,12 @@
 import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
-import {Resvg} from '@resvg/resvg-js';
+import {createRequire} from 'node:module';
+
+const require=createRequire(import.meta.url);
+let Resvg=null;
+try{({Resvg}=require('@resvg/resvg-js'));}catch(error){
+  if(error?.code!=='MODULE_NOT_FOUND'&&error?.code!=='ERR_DLOPEN_FAILED')throw error;
+}
 
 function attempt(command,args){
   const result=spawnSync(command,args,{stdio:'ignore',shell:false});
@@ -49,6 +55,7 @@ export function buildContactSheetMontageSvg(inputs,{columns=4,rows=null,gap=24,b
 }
 
 function attemptResvgMontage(inputs,output,options){
+  if(!Resvg)return false;
   try{
     const svg=buildContactSheetMontageSvg(inputs,options);
     const png=new Resvg(svg,{font:{loadSystemFonts:true}}).render().asPng();
