@@ -64,6 +64,21 @@ try {
     if (actualIds.length !== expectedIds.length || actualIds.some((id, j) => id !== expectedIds[j].replace(/^panel-/, ''))) {
       throw new Error(p + ': SVG panel clips do not match canonical project IDs/order');
     }
+    // Prevent stale SVG geometry being reused when panel IDs have not changed.
+    for (const panel of page.panels) {
+      const clip = cleanSvg.match(new RegExp('<clipPath id="clip-' + panel.id + '">\\s*<polygon points="([^"]+)"'));
+      if (!clip) throw new Error(p + ': missing panel polygon for ' + panel.id);
+      const points = clip[1].trim().split(/\s+/).map(pair => pair.split(',').map(Number));
+      const r = panel.rect;
+      const expected = panel.shape?.kind === 'quad' && Array.isArray(panel.shape.points)
+        ? panel.shape.points
+        : [{x:r.x,y:r.y},{x:r.x+r.w,y:r.y},{x:r.x+r.w,y:r.y+r.h},{x:r.x,y:r.y+r.h}];
+      if (points.length !== expected.length || points.some((pair,k) =>
+        !Number.isFinite(pair[0]) || !Number.isFinite(pair[1]) ||
+        Math.abs(pair[0]-expected[k].x)>0.05 || Math.abs(pair[1]-expected[k].y)>0.05)) {
+        throw new Error(p + ': stale SVG geometry for ' + panel.id);
+      }
+    }
     const dims = {width:project.meta.pageWidth, height:project.meta.pageHeight};
     if (svgSize(cleanSvg).width !== dims.width || svgSize(cleanSvg).height !== dims.height) {
       throw new Error(p + ': SVG dimensions differ from work.manga.json');
