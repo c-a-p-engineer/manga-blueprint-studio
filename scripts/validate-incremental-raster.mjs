@@ -11,7 +11,7 @@ const code='P001';
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="120" height="180"><defs><clipPath id="clip-panel-1"><polygon points="5,5 115,5 115,170 5,170"/></clipPath></defs><rect width="120" height="180" fill="white"/><rect x="5" y="5" width="110" height="165" fill="none" stroke="black"/></svg>';
 const run=()=>spawnSync(process.execPath,['cli/rasterize-existing.mjs',dir],{encoding:'utf8'});
 try{
-  write('work.manga.json',{meta:{pageWidth:120,pageHeight:180,readingDirection:'rtl',defaultWritingMode:'vertical-rl',letteringStrategy:'overlay-only'},characterLibrary:[],pages:[{id:'page-1',pageNumber:1,panels:[{id:'panel-1',order:1}]}]});
+  write('work.manga.json',{meta:{pageWidth:120,pageHeight:180,readingDirection:'rtl',defaultWritingMode:'vertical-rl',letteringStrategy:'overlay-only'},characterLibrary:[],pages:[{id:'page-1',pageNumber:1,panels:[{id:'panel-1',order:1,rect:{x:5,y:5,w:110,h:165}}]}]});
   write('manifest.json',{project:'work.manga.json',pages:[{pageId:'page-1',pageNumber:1}],rasterization:{mode:'required-local',status:'pending',results:[]}});
   write(code+'.generation.json',{request:{pageId:'page-1',inputs:{cleanAsset:code+'.clean.png',prompt:code+'.prompt.md',references:[],letteringAsset:code+'.lettering.png',letteringPlan:code+'.lettering.json',cleanLetteredAsset:code+'.clean-lettered.png'}},ready:false});
   write(code+'.lettering.json',{pageId:'page-1',entries:[]});
