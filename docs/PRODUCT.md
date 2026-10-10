@@ -65,7 +65,7 @@ Example:
 強調: climax
 ```
 
-The compiler owns the initial geometry and IDs. The resulting `.manga.json` can then be refined by an AI agent or imported into the Web editor.
+The compiler owns the initial geometry and IDs. Optional Name DSL `境界連動: paired` lets a diagonal panel align its facing edge with an eligible horizontal sibling so the white gutter remains constant. It is opt-in, preserves the base layout recipe, records diagnostics for unresolved pairs, and never auto-slants a neighboring panel under the default `independent` mode. The resulting `.manga.json` can then be refined by an AI agent or imported into the Web editor.
 
 ### Headless package authority split
 

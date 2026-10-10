@@ -178,7 +178,9 @@
             "diagonal-right",
             "trapezoid-left",
             "trapezoid-right",
-            "custom"
+            "custom",
+            "diagonal-left-strong",
+            "diagonal-right-strong"
           ]
         },
         "points": {
@@ -1004,6 +1006,34 @@
         },
         "assistSeed": {
           "type": "string"
+        },
+        "frameCoupling": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "paired",
+                "paired-neighbor"
+              ]
+            },
+            "neighborPanelId": {
+              "type": "string"
+            },
+            "sourcePanelId": {
+              "type": "string"
+            },
+            "side": {
+              "enum": [
+                "left",
+                "right"
+              ]
+            },
+            "gutter": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "additionalProperties": true
         }
       },
       "additionalProperties": true

@@ -55,6 +55,7 @@ Deterministic nearby variants can be shared with:
 強調: strong
 コマサイズ: dominant
 境界: diagonal-right
+境界連動: paired
 カメラ: close low-angle
 ポーズ: girl> lean-forward reaching-right-hand
 ポーズ: boy> recoil
@@ -82,7 +83,8 @@ Supported semantic fields:
 - `視線出口:` / `exit:` — coarse panel-exit target/direction used to connect to the next panel.
 - `強調:` / `emphasis:` — legacy shorthand `normal | strong | climax`; the expression grammar also uses it as a bounded importance hint.
 - `コマサイズ:` / `size:` — `auto | small | medium | large | dominant | hero`; explicit human/AI override when size itself is authored intent.
-- `境界:` / `shape:` / `コマ形:` — `rectangle | diagonal-left | diagonal-right | trapezoid-left | trapezoid-right`.
+- `境界:` / `shape:` / `コマ形:` — `rectangle | diagonal-left | diagonal-right | diagonal-left-strong | diagonal-right-strong | trapezoid-left | trapezoid-right`.
+- `境界連動:` / `boundary coupling:` — `independent` (default, existing behavior) or `paired` (explicitly couple one eligible adjacent panel border and preserve a constant white gutter). This is a post-Base-Recipe modifier. An unavailable/locked sibling records an unresolved diagnostic; it does not silently move a panel. `stack-adjust`, zero gutter and bleed are **not** implemented as aliases.
 - `インセット:` / `inset:` — parent panel plus anchor/size, e.g. `parent panel 1 top-left small`.
 - `断ち切り:` / `bleed:` — page-edge relation: `none | top | right | bottom | left | all`.
 - `ブチ抜き:` / `breakout:` — frame breakout intent: `none | character | foreground | cross-panel`.

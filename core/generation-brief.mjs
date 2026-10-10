@@ -50,6 +50,7 @@ export function buildExecutablePrompt(project,pageIndex=0){
     if(p.flow?.entry||p.flow?.exit)lines.push(`READING FLOW: ${p.flow?.entry||'auto'} -> ${p.flow?.exit||'auto'}`);
     const frame=[];
     if(p.shape?.preset)frame.push(`shape=${p.shape.preset}`);
+    if(p.frameCoupling)frame.push(`gutter-coupling=${p.frameCoupling.mode}; side=${p.frameCoupling.side}; gutter=${p.frameCoupling.gutter}; paired-panel=${p.frameCoupling.neighborPanelId||p.frameCoupling.sourcePanelId}`);
     if(p.inset?.kind)frame.push(`inset=${p.inset.kind}:${p.inset.anchor||'auto'}:${p.inset.size||'auto'}`);
     if(p.style?.bleed&&p.style.bleed!=='none')frame.push(`bleed=${p.style.bleed}`);
     if(p.style?.breakout&&p.style.breakout!=='none')frame.push(`breakout=${p.style.breakout}`);
