@@ -53,7 +53,7 @@ export function rasterizeSvg(input,output,{maxWidth=null}={}){
     :['magick','rsvg-convert','convert'];
   for(const command of commands){
     const args=command==='rsvg-convert'?(width?['-w',String(width),'-o',output,input]:['-o',output,input]):
-      width?[input,'-resize',String(width)+'x',output]:[input,output];
+      width?['-background','none',input,'-resize',String(width)+'x',output]:['-background','none',input,output];
     if(attempt(command,args))return{ok:true,engine:command,...(width?{maxWidth:width}:{})};
   }
   return{
