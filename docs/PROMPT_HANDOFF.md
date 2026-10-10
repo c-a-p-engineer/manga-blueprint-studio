@@ -126,6 +126,9 @@ Controls color/render style, line, shading, detail, background finish, palette/t
 
 Only exact strings allowlisted in the generated prompt's renderable-text section may become visible manga lettering.
 
+
+**Incremental SVG updates:** The ordinary headless CLI produces required SVG and PNG together. If an incremental geometry/rerender pass bypasses that CLI, use `npm run blueprint:rasterize -- <compiled-dir>` and `npm run preflight:generation -- <compiled-dir> --page P001` before image-model handoff. Never use stale PNGs, manually flip `ready:true`, or equate `prepared-not-attached` with actual visual attachment. A successful raster refresh records SVG hashes and can use an existing ImageMagick/librsvg installation without npm install. After changed geometry, Contact Sheet PNGs require fresh full compilation.
+
 ### Headless CLI PNG bundle (required)
 
 The headless CLI emits both editable SVG and raster PNG for each page:
