@@ -62,7 +62,11 @@ export function createGenerationResult(request,{provider='external',model=null,o
 }
 
 export function validateReferenceBindings(project,assets=[]){
-  const keys=new Set(assets.map(a=>a.referenceKey));
+  // Style/layout-only images cannot fulfill a required character identity sheet.
+  // An omitted role retains legacy identity behavior for existing callers.
+  const identityAssets=assets.filter(a=>a && typeof a.asset==='string' && a.asset.trim()
+    && (a.role==null || a.role==='identity' || a.role==='character-identity'));
+  const keys=new Set(identityAssets.map(a=>a.referenceKey).filter(Boolean));
   const required=[...new Set((project.characterLibrary||[]).filter(c=>c.identityMode==='sheet').map(c=>c.referenceKey).filter(Boolean))];
   return{required,missing:required.filter(k=>!keys.has(k)),bound:required.filter(k=>keys.has(k))};
 }

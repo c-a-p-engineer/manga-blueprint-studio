@@ -30,6 +30,10 @@ export function buildExecutablePrompt(project,pageIndex=0){
     '- Preserve panel geometry, character placement, solved pose silhouette, weapon/contact location and reading flow.',
     '- Do not reproduce labels from the annotated blueprint.',
     '- Pxxx.lettering.svg/json is the deterministic lettering authority when present.',
+    '- Character Sheet / authored appearance guidance sets named-character facial and body identity. Attach required identity images as actual image inputs, not just filenames.',
+    '- A style-only reference defines line, palette, shading and finish ONLY; never copy its face, hair, eyes, body, clothing, pose or cast into another character.',
+    '- A pose or spatial reference guides position/contact ONLY; it cannot replace character identity.',
+    '- Canonical scene and continuity state controls current outfit/condition; do not borrow them from unrelated sample art.',
     lettering==='overlay-only'
       ?'- Do not draw dialogue/SFX glyphs into generated art; leave authored lettering regions clear for overlay.'
       :'- If the model renders text, only exact allowlisted strings are permitted; deterministic overlay may replace model text.',

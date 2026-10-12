@@ -122,6 +122,12 @@ Controls finished character identity according to each reusable character's iden
 
 Controls color/render style, line, shading, detail, background finish, palette/tone, and additional finish guidance. It does not replace panel geometry or character identity.
 
+### Reference-role isolation at the provider boundary
+
+Reference images are role-scoped. The provider-neutral `referenceAssets[].role` accepts `identity` (legacy default) / `character-identity` for a required Character Sheet; `style`, `spatial-layout`, `pose`, and other non-identity roles cannot satisfy required character identity bindings. A binding also requires a non-empty asset path. `validateReferenceBindings` reports package binding readiness only: it does **not** attest that the image model received image bytes.
+
+When a reference is approved **only** for color/shading, do not inherit that image's face, hair, body type, outfit, pose or cast. Named-character identity comes from its actual Character Sheet / authored appearance; outfit and condition come from resolved continuity state. Spatial layout belongs to Clean. Inspection of the resulting image remains mandatory for final acceptance.
+
 ### `TEXT TO RENDER` — visible text authority
 
 Only exact strings allowlisted in the generated prompt's renderable-text section may become visible manga lettering.
