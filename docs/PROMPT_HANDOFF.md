@@ -141,6 +141,18 @@ Required PNG rasterization failures are fatal. No completed `manifest.json` may 
 
 The lettering PNG is production compositing authority. Even with a lettered Clean review image, the image model may rewrite or move glyphs; use clean without text for generation, preserve balloon regions, and deterministically composite lettering onto accepted art.
 
+### Speech attribution and reading-order handoff (EP004 regression)
+
+The page generation brief emits a numbered `SPEECH` record for **each authored dialogue balloon**, in the existing canonical balloon sequence. Each record includes the exact text, `speakerId`, the matching in-panel cast name when resolvable, original balloon center, and a tail-target instruction. This is **execution guidance**—not replacement dialogue, a new geometry owner, or a guarantee that an image model drew the tail correctly.
+
+- Two consecutive authored utterances from one character **remain attributed to that character**, even if a silent listener appears closer to the second balloon. Do not infer the speaker from proximity alone.
+- When a `speakerId` cannot be matched to an in-panel character, keep the authored identifier and mark it unresolved; do **not** silently assign it to an unrelated visible character. Offscreen/narration is not forced to an in-panel speaker.
+- The deterministic `Pxxx.lettering.json` dialogue entries also carry `speakerId` and 1-based `speechOrder` metadata. They preserve source meaning without changing glyph positions, writing mode, or `manga-blueprint/0.2`.
+- Validate the **rendered image** independently: Japanese RTL panel flow, balloon reading sequence, tail/speaker correspondence, final punchline order and exact glyphs. These prompt and metadata contracts cannot themselves prove image-model compliance.
+- For exact Japanese proper nouns, titles or dialogue that the image model cannot render reliably, use `overlay-only` (or replace model glyphs with the deterministic lettering overlay) and compare final visible text with the canonical source. Do not accept an image-model approximation of a source term merely because the prompt spelled it correctly.
+
+Regression source: `scripts/validate-production-regressions.mjs` (SCPと一服 EP004: two lines by 七星 in the introduction; `今読め。` → `えー。` in the final beat).
+
 ### Balloon speaker and tail-target fidelity
 
 Each authored dialogue balloon already has a canonical `speakerId` in `work.manga.json`. The per-page `Pxxx.prompt.md` now includes one `BALLOON N` line per dialogue balloon, preserving the exact text, speaker ID/name, position and instruction to attach a speech tail to **that speaker**, not merely the closest face. Multiple consecutive utterances from the same character remain separate balloons owned by that same character. These `BALLOON N` metadata lines are generation instructions, **not visible text**.
