@@ -66,7 +66,7 @@ export function buildLetteringPlan(project,pageIndex=0){
     for(const balloon of panel.balloons||[]){
       if(!String(balloon.text||''))continue;
       const region=balloonRegion(balloon,panel),fontSize=clamp(Number(balloon.size||80)*.24,16,36);
-      entries.push({...entry(balloon.text,effectiveMode(project,balloon.writingMode),region,'dialogue',balloon.id,fontSize),panelId:panel.id});
+      entries.push({...entry(balloon.text,effectiveMode(project,balloon.writingMode),region,'dialogue',balloon.id,fontSize),panelId:panel.id,speakerId:balloon.speakerId||''});
     }
     if(String(panel.effects?.sfxText||'')){
       const r=panel.rect,fontSize=clamp(Math.min(r.w,r.h)*.08,22,54);
@@ -87,7 +87,7 @@ export function renderLetteringOverlaySvg(project,pageIndex=0){
   const clips=(project.pages?.[pageIndex]?.panels||[]).map(p=>`<clipPath id="letter-clip-${esc(p.id)}"><rect x="${p.rect.x}" y="${p.rect.y}" width="${p.rect.w}" height="${p.rect.h}"/></clipPath>`).join('');
   const body=plan.entries.map((item)=>{
     const glyphs=item.glyphs.map((g,i)=>`<text data-glyph-index="${i}" x="${g.x}" y="${g.y}" text-anchor="middle" font-family="sans-serif" font-size="${item.fontSize}" fill="black">${esc(g.char)}</text>`).join('');
-    return`<g data-lettering-kind="${esc(item.kind)}" data-source-id="${esc(item.sourceId)}" data-text="${esc(item.text)}" data-writing-mode="${esc(item.writingMode)}" clip-path="url(#letter-clip-${esc(item.panelId)})">${glyphs}</g>`;
+    return`<g data-lettering-kind="${esc(item.kind)}" data-source-id="${esc(item.sourceId)}" data-speaker-id="${esc(item.speakerId||'')}" data-text="${esc(item.text)}" data-writing-mode="${esc(item.writingMode)}" clip-path="url(#letter-clip-${esc(item.panelId)})">${glyphs}</g>`;
   }).join('');
   return`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${clips}</defs><g id="deterministic-lettering">${body}</g></svg>`;
 }
