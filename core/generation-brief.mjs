@@ -72,7 +72,8 @@ export function buildExecutablePrompt(project,pageIndex=0){
       const speakerId=balloon.speakerId||'';
       const name=speakerName(project,p,speakerId);
       const hasTail=['speech','shout','whisper','thought'].includes(balloon.type);
-      lines.push(`BALLOON ${index+1}: text=${q(balloon.text)}; speaker=${q(name)}; speakerId=${q(speakerId)}; center=(${Math.round(balloon.x)},${Math.round(balloon.y)}); ${hasTail?(speakerId?'tail must point to that speaker, not the listener':'speaker unresolved: do not invent a tail target'):'no in-panel speaker tail required'}; preserve this balloon order in ${project.meta.readingDirection||'rtl'} reading.`);
+      const inPanel=(p.characters||[]).some(c=>c.characterId===speakerId||c.id===speakerId);
+      lines.push(`BALLOON ${index+1}: text=${q(balloon.text)}; speaker=${q(name)}; speakerId=${q(speakerId)}; center=(${Math.round(balloon.x)},${Math.round(balloon.y)}); ${hasTail?(speakerId&&inPanel?'tail must point to that speaker, not the listener':'speaker not resolved in this panel: preserve speakerId; do not invent a tail to a listener'):'no in-panel speaker tail required'}; preserve this balloon order in ${project.meta.readingDirection||'rtl'} reading.`);
     }
     for(const c of p.characters)lines.push(...characterStateLines(project,c));
     if(p.detailBudget)lines.push(`DETAIL/SALIENCE: crowd=${p.detailBudget.crowd||'low'}; background=${p.detailBudget.background||'medium'}; characters=${Object.entries(p.detailBudget.characters||{}).map(([k,v])=>`${k}:${v}`).join(', ')||'derived'}`);
