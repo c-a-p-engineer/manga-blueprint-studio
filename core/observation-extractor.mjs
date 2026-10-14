@@ -66,6 +66,10 @@ function normalizePanel(page,rawPanel,index,map){
     writingMode:entry.writingMode||null,
     rect:map.rect(entry.rect)||undefined,
     confidence:confidence(entry.confidence),
+    // Optional independently observed speaker and balloon-tail targets.
+    // These must come from the rendered image, never the expected Blueprint.
+    ...(typeof entry.speakerId==='string'&&entry.speakerId.trim()?{speakerId:entry.speakerId.trim()}:{}),
+    ...(typeof entry.tailTargetId==='string'&&entry.tailTargetId.trim()?{tailTargetId:entry.tailTargetId.trim()}:{}),
     index:li
   }));
   return{
@@ -91,6 +95,7 @@ function expectedTextEntries(project,page){
         panelId:panel.id,
         kind:'dialogue',
         text:value,
+        speakerId:balloon.speakerId||'',
         writingMode:balloon.writingMode&&balloon.writingMode!=='inherit'?balloon.writingMode:defaultMode
       });
     }
@@ -157,7 +162,11 @@ function computeCoverage(project,page,observedPage,raw,observables){
   }
   const expectedContacts=(page.panels||[]).reduce((n,p)=>n+(p.renderContacts?.length||0),0);
   const observedContacts=(observedPage.panels||[]).reduce((n,p)=>n+(p.renderContacts?.length||0),0);
-  const expectedText=expectedTextEntries(project,page).length,observedText=observedTextEntries(observedPage).filter(x=>x.text).length;
+  const expectedEntries=expectedTextEntries(project,page),observedEntries=observedTextEntries(observedPage);
+  const expectedText=expectedEntries.length,observedText=observedEntries.filter(x=>x.text).length;
+  const expectedSpoken=expectedEntries.filter(x=>x.kind==='dialogue'&&x.speakerId).length;
+  // A speaker/tail is covered only when both are independently visible/reported.
+  const observedSpoken=observedEntries.filter(x=>x.kind==='dialogue'&&x.speakerId&&x.tailTargetId).length;
   const byObservable={
     'panel-geometry':ratio(observedPanels,expectedPanels),
     'character-occupancy':ratio(observedCharacters,expectedCharacters),
@@ -165,7 +174,8 @@ function computeCoverage(project,page,observedPage,raw,observables){
     'contacts':ratio(observedContacts,expectedContacts),
     'reading-direction':raw.readingDirection?1:0,
     'writing-mode':raw.defaultWritingMode?1:0,
-    'visible-text':ratio(observedText,expectedText)
+    'visible-text':ratio(observedText,expectedText),
+    'balloon-speaker':ratio(observedSpoken,expectedSpoken)
   };
   const active=observables.map(x=>byObservable[x]).filter(x=>x!=null);
   return{
@@ -177,7 +187,7 @@ function computeCoverage(project,page,observedPage,raw,observables){
       expectedCharacters,observedCharacters,
       expectedPose,observedPose,
       expectedContacts,observedContacts,
-      expectedText,observedText
+      expectedText,observedText,expectedSpoken,observedSpoken
     }
   };
 }
@@ -284,6 +294,16 @@ export function createObservationDiagnostics(project,normalized,{pageIndex=0}={}
       'visible-text-mismatch','error',`page:${page.id}`,
       {expected:e.text,observed:o.text,index:i},
       'render-exact-text-or-typeset'
+    );
+    if(e&&o&&e.kind==='dialogue'&&e.speakerId&&o.speakerId&&e.speakerId!==o.speakerId)push(
+      'balloon-speaker-mismatch','error',`panel:${e.panelId}`,
+      {text:e.text,expectedSpeakerId:e.speakerId,observedSpeakerId:o.speakerId,index:i},
+      'restore-balloon-speaker'
+    );
+    if(e&&o&&e.kind==='dialogue'&&e.speakerId&&o.tailTargetId&&e.speakerId!==o.tailTargetId)push(
+      'balloon-tail-target-mismatch','error',`panel:${e.panelId}`,
+      {text:e.text,expectedSpeakerId:e.speakerId,observedTailTargetId:o.tailTargetId,index:i},
+      'point-balloon-tail-to-speaker'
     );
     if(e&&o&&o.writingMode&&e.writingMode!==o.writingMode)push(
       'lettering-writing-mode-drift','error',`page:${page.id}`,
