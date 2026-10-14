@@ -1,20 +1,4 @@
 const q=v=>JSON.stringify(String(v));
-const speakerIdentity=(panel,balloon)=>{
-  const id=String(balloon.speakerId??'').trim();
-  const character=(panel.characters||[]).find(c=>[c.id,c.characterId,c.name,c.referenceKey].some(v=>v!=null&&String(v)===id));
-  if(character)return {label:character.name||id,known:true};
-  return {label:id||'(unspecified)',known:false};
-};
-const speechBindingLines=panel=>(panel.balloons||[]).filter(b=>String(b.text||'')).map((balloon,index)=>{
-  const {label,known}=speakerIdentity(panel,balloon);
-  const point=Number.isFinite(Number(balloon.x))&&Number.isFinite(Number(balloon.y))
-    ?`center=(${Math.round(Number(balloon.x))},${Math.round(Number(balloon.y))})`
-    :'center=(unspecified)';
-  const source=known?'tail points to this cast character'
-    :balloon.type==='offscreen'||balloon.type==='narration'?'offscreen/narration; do not invent an in-panel speaker'
-    :'unresolved cast binding; do not assign to another visible person';
-  return `SPEECH ${index+1}: speaker=${q(label)}; speakerId=${q(balloon.speakerId??'')}; type=${balloon.type||'speech'}; ${point}; ${source}; EXACT TEXT=${q(balloon.text)}`;
-});
 const baseFor=(project,c)=>(project.characterLibrary||[]).find(x=>x.characterId===c.characterId||x.referenceKey&&x.referenceKey===c.referenceKey)||null;
 const speakerName=(project,panel,speakerId)=>{
   if(!speakerId)return'(no in-panel speaker)';
@@ -51,7 +35,7 @@ export function buildExecutablePrompt(project,pageIndex=0){
     '- Preserve panel geometry, character placement, solved pose silhouette, weapon/contact location and reading flow.',
     '- Do not reproduce labels from the annotated blueprint.',
     '- Pxxx.lettering.svg/json is the deterministic lettering authority when present.',
-    '- The numbered SPEECH entries below preserve the authored balloon sequence and speakerId. Every speaking balloon must belong to its stated speaker, not a nearby silent character; do not swap speech tails or reverse dialogue to fit the artwork.',
+    '- The numbered BALLOON entries below preserve the authored balloon sequence and speakerId. Do not swap speech tails or reverse dialogue to fit the artwork.',
     '- Character Sheet / authored appearance guidance sets named-character facial and body identity. Attach required identity images as actual image inputs, not just filenames.',
     '- A style-only reference defines line, palette, shading and finish ONLY; never copy its face, hair, eyes, body, clothing, pose or cast into another character.',
     '- A pose or spatial reference guides position/contact ONLY; it cannot replace character identity.',
@@ -96,7 +80,6 @@ export function buildExecutablePrompt(project,pageIndex=0){
     if(p.compositionPlan?.negativeSpace)lines.push(`NEGATIVE SPACE: preserve derived region x=${Math.round(p.compositionPlan.negativeSpace.x)}, y=${Math.round(p.compositionPlan.negativeSpace.y)}, w=${Math.round(p.compositionPlan.negativeSpace.w)}, h=${Math.round(p.compositionPlan.negativeSpace.h)}`);
     if(p.continuity?.break)lines.push(`CONTINUITY: intentional break/cut — ${p.continuity.reason||'authored'}`);
     for(const x of p.interactions||[])lines.push(`CONTACT: ${x.intent||`${x.source?.character}.${x.source?.part} > ${x.target?.character}.${x.target?.part}`}`);
-    lines.push(...speechBindingLines(p));
     lines.push(`EFFECT: ${p.effects.lineEffect}${p.effects.sfxText?`; SFX ${q(p.effects.sfxText)}`:''}`,'');
   }
   const continuity=(project.meta?.continuityGraph?.issues||[]).filter(issue=>{
