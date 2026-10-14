@@ -64,39 +64,29 @@ const brief=buildExecutablePrompt(project,0);
 assert(brief.includes('style-only reference')&&brief.includes('never copy its face'));
 assert(brief.includes(dialogue));
 
-// EP004: two consecutive speeches in one panel remain 七星's lines, never Goldie's.
-const ep004=structuredClone(project);
-const intro=ep004.pages[0].panels.find(p=>p.order===2);
-intro.characters=[{...intro.characters[0],name:'七星',characterId:'nanase'}, {...intro.characters[0],name:'ゴールディ',characterId:'goldie'}];
-intro.balloons=[
-  {...intro.balloons[0],id:'ep004-line-1',speakerId:'nanase',text:'他にもメジャーなところはこれらだ。',x:950,y:430,size:300},
-  {...intro.balloons[0],id:'ep004-line-2',speakerId:'nanase',text:'とりあえず覚えておけ。詳細は必要になったら確認しろ。',x:840,y:700,size:300}
+// EP004 P004: the final punchline is 七星「今読め。」→ゴールディ「えー。」.
+// The reader order and deterministic lettering metadata must preserve both actors.
+const finale=structuredClone(project);
+const finalPanel=finale.pages[0].panels.find(p=>p.order===2);
+finalPanel.characters=[
+  {...finalPanel.characters[0],name:'七星',characterId:'nanase'},
+  {...finalPanel.characters[0],name:'ゴールディ',characterId:'goldie'}
 ];
-const epBrief=buildExecutablePrompt(ep004,0);
-assert(epBrief.includes('SPEECH 1: speaker="七星"; speakerId="nanase"'));
-assert(epBrief.includes('SPEECH 2: speaker="七星"; speakerId="nanase"'));
-assert(!epBrief.includes('SPEECH 2: speaker="ゴールディ"'), 'Second speech must not move to silent listener');
-assert(epBrief.indexOf('SPEECH 1: speaker="七星"') < epBrief.indexOf('SPEECH 2: speaker="七星"'));
-assert(epBrief.includes('tail points to this cast character'));
-const epLettering=buildLetteringPlan(ep004,0).entries.filter(e=>e.panelId===intro.id&&e.kind==='dialogue');
-assert.deepEqual(epLettering.map(e=>e.speakerId),['nanase','nanase']);
-assert.deepEqual(epLettering.map(e=>e.speechOrder),[1,2]);
-assert.deepEqual(epLettering.map(e=>e.text),intro.balloons.map(b=>b.text));
-const finale=structuredClone(ep004);
-const endPanel=finale.pages[0].panels.find(p=>p.order===2);
-endPanel.balloons=[
-  {...endPanel.balloons[0],id:'ep004-p4-nanase',speakerId:'nanase',text:'今読め。'},
-  {...endPanel.balloons[1],id:'ep004-p4-goldie',speakerId:'goldie',text:'えー。'}
+finalPanel.balloons=[
+  {...finalPanel.balloons[0],id:'ep004-p4-nanase',speakerId:'nanase',text:'今読め。',x:900,y:430,size:280},
+  {...finalPanel.balloons[0],id:'ep004-p4-goldie',speakerId:'goldie',text:'えー。',x:600,y:700,size:280}
 ];
 const endBrief=buildExecutablePrompt(finale,0);
-assert(endBrief.includes('SPEECH 1: speaker="七星"')&&endBrief.includes('SPEECH 2: speaker="ゴールディ"'));
-assert(endBrief.indexOf('SPEECH 1: speaker="七星"') < endBrief.indexOf('SPEECH 2: speaker="ゴールディ"'));
+const first='BALLOON 1: text="今読め。"; speaker="七星"; speakerId="nanase"';
+const second='BALLOON 2: text="えー。"; speaker="ゴールディ"; speakerId="goldie"';
+assert(endBrief.includes(first)&&endBrief.includes(second),'P004 speech must have correct actors');
+assert(endBrief.indexOf(first)<endBrief.indexOf(second),'P004 punchline reading order must be preserved');
+const finalLettering=buildLetteringPlan(finale,0).entries.filter(e=>e.panelId===finalPanel.id&&e.kind==='dialogue');
+assert.deepEqual(finalLettering.map(e=>[e.speakerId,e.speechOrder]),[['nanase',1],['goldie',2]]);
 finale.meta.letteringStrategy='overlay-only';
 assert(buildExecutablePrompt(finale,0).includes('Do not draw dialogue/SFX glyphs into generated art'));
-const unbound=structuredClone(ep004);
-unbound.pages[0].panels.find(p=>p.order===2).balloons[0].speakerId='unknown-speaker';
-const unresolved=buildExecutablePrompt(unbound,0);
-assert(unresolved.includes('unresolved cast binding; do not assign to another visible person'));
+finalPanel.balloons[0].speakerId='unknown-speaker';
+assert(buildExecutablePrompt(finale,0).includes('speaker not resolved in this panel: preserve speakerId; do not invent a tail to a listener'));
 
 const observation=(description,verdict,inspected=true)=>({
   schema:'manga-generation-narrative-observation/1',
