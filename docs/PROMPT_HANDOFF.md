@@ -141,6 +141,18 @@ Required PNG rasterization failures are fatal. No completed `manifest.json` may 
 
 The lettering PNG is production compositing authority. Even with a lettered Clean review image, the image model may rewrite or move glyphs; use clean without text for generation, preserve balloon regions, and deterministically composite lettering onto accepted art.
 
+### Balloon speaker and tail-target fidelity
+
+Each authored dialogue balloon already has a canonical `speakerId` in `work.manga.json`. The per-page `Pxxx.prompt.md` now includes one `BALLOON N` line per dialogue balloon, preserving the exact text, speaker ID/name, position and instruction to attach a speech tail to **that speaker**, not merely the closest face. Multiple consecutive utterances from the same character remain separate balloons owned by that same character. These `BALLOON N` metadata lines are generation instructions, **not visible text**.
+
+`Pxxx.lettering.json` and the matching transparent SVG carry `speakerId` as review metadata for dialogue entries. The existing deterministic overlay still controls **the actual text glyphs**; annotating speaker identity does not magically draw or verify an anatomical balloon tail.
+
+When independent rendered-image observation can report `lettering[].speakerId` and `lettering[].tailTargetId` (using the canonical character IDs exposed as candidate identities in the observation request), the evaluator reports `balloon-speaker-mismatch` and `balloon-tail-target-mismatch` separately. Never fill missing observed values from the expected Blueprint. Observed speaker/tail fields are optional to preserve older observation adapters. An explicit evaluation request for `balloon-speaker` treats absent independent speaker-and-tail evidence as **review/incomplete**, not as confirmed success. Ordinary text and layout evaluation still operates without that optional observation.
+
+For exact Japanese lettering, `overlay-only` keeps model-generated glyphs out of the artwork and composites the authored overlay at finalization. `overlay-preferred` remains the backward-compatible default, but model-rendered text is only a preview and **must not be treated as spelling-verified**. The current lettering overlay covers authored balloons and SFX, **not arbitrary text drawn into props, logos, or dossier cards**. To guarantee a dossier label such as 「酩酊街」, encode it as an authored renderable lettering element or handle it in a separate verified typesetting pass; do not claim a prompt alone guarantees exact generated Kanji.
+
+Regression coverage: `scripts/validate-balloon-speaker-handoff.mjs` checks two consecutive balloons spoken by one person (based on SCPと一服 EP004 P002), a wrong speaker, a wrong tail target, absent independent visual evidence, and a mistranscribed named Japanese entity.
+
 ### Deterministic lettering overlay — exact production text
 
 Headless 0.25 packages may additionally include:
