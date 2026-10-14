@@ -1,4 +1,5 @@
 import{createObservationRequest,evaluateObservedGeneration}from'../core/observation-extractor.mjs';
+import{createImageObservation,evaluateGeneratedImage}from'../core/image-observation-adapter.mjs';
 
 const expected={
   format:'manga-blueprint/0.2',
@@ -25,7 +26,7 @@ const expected={
             joints:{head:{x:750,y:220},chest:{x:750,y:300}}
           }
         }],
-        balloons:[{id:'b1',text:'了解',x:850,y:100,size:80,writingMode:'inherit'}],
+        balloons:[{id:'b1',text:'了解',speakerId:'hero',x:850,y:100,size:80,writingMode:'inherit'}],
         effects:{sfxText:''}
       },
       {
@@ -98,5 +99,34 @@ const unidentified=evaluateObservedGeneration(expected,{
 });
 if(unidentified.coverage.byObservable['character-occupancy']!==0)throw Error('unidentified character must not count as observed identity');
 if(!unidentified.diagnostics.some(x=>x.code==='character-missing')||unidentified.verdict!=='drift')throw Error('unidentified character must remain a cast drift');
+
+// EP004 regression: the image-adapter must not drop observed balloon tails or speaker IDs.
+// A clear contradictory tail is a diagnostic, but an absent observation is not fabricated.
+const observedImage=createImageObservation({
+  asset:'rendered-ep004.png',width:1000,height:1000,
+  readingDirection:'rtl',defaultWritingMode:'vertical-rl',
+  panels:[
+    {panelId:'panel-1',order:1,rect:{x:500,y:0,w:500,h:500},
+      characters:[{characterId:'hero',referenceKey:'hero',anchor:{x:750,y:400},occupancy:{x:700,y:200,w:100,h:200}}],
+      lettering:[{kind:'dialogue',text:'了解',writingMode:'vertical-rl',speakerId:'wrong-character',tailTargetId:'wrong-character'}]
+    },
+    {panelId:'panel-2',order:2,rect:{x:0,y:0,w:500,h:500},
+      lettering:[{kind:'sfx',text:'ドン',writingMode:'vertical-rl'}]
+    }
+  ]
+});
+if(observedImage.panels[0].lettering[0].tailTargetId!=='wrong-character')throw Error('Image adapter erased visual tail evidence');
+const imageDiagnostics=evaluateGeneratedImage(expected,observedImage).diagnostics.map(x=>x.code);
+for(const code of ['balloon-speaker-mismatch','balloon-tail-target-mismatch'])
+  if(!imageDiagnostics.includes(code))throw Error(`EP004 image review missing ${code}`);
+const unobservedImage=createImageObservation({
+  asset:'unobserved.png',width:1000,height:1000,
+  panels:[{panelId:'panel-1',rect:{x:500,y:0,w:500,h:500},
+    lettering:[{kind:'dialogue',text:'了解'}]},
+    {panelId:'panel-2',rect:{x:0,y:0,w:500,h:500},lettering:[{kind:'sfx',text:'ドン'}]}]
+});
+const noTail=evaluateGeneratedImage(expected,unobservedImage).diagnostics.map(x=>x.code);
+if(noTail.includes('balloon-tail-target-mismatch')||noTail.includes('balloon-speaker-mismatch'))
+  throw Error('Missing image evidence must not be treated as an observed bad tail');
 
 console.log('Observation extraction validation passed',ok.structural.result.score.toFixed(3),ok.coverage.overall.toFixed(3));
