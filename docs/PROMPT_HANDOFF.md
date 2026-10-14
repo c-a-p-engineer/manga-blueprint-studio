@@ -143,7 +143,7 @@ The lettering PNG is production compositing authority. Even with a lettered Clea
 
 ### Speech attribution and reading-order handoff (EP004 regression)
 
-The page generation brief emits a numbered `SPEECH` record for **each authored dialogue balloon**, in the existing canonical balloon sequence. Each record includes the exact text, `speakerId`, the matching in-panel cast name when resolvable, original balloon center, and a tail-target instruction. This is **execution guidance**—not replacement dialogue, a new geometry owner, or a guarantee that an image model drew the tail correctly.
+The page generation brief emits a numbered `BALLOON` record for **each authored dialogue balloon**, in the existing canonical balloon sequence. Each record includes the exact text, `speakerId`, the matching in-panel cast name when resolvable, original balloon center, and a tail-target instruction. This is **execution guidance**—not replacement dialogue, a new geometry owner, or a guarantee that an image model drew the tail correctly.
 
 - Two consecutive authored utterances from one character **remain attributed to that character**, even if a silent listener appears closer to the second balloon. Do not infer the speaker from proximity alone.
 - When a `speakerId` cannot be matched to an in-panel character, keep the authored identifier and mark it unresolved; do **not** silently assign it to an unrelated visible character. Offscreen/narration is not forced to an in-panel speaker.
