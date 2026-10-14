@@ -1,5 +1,10 @@
 const q=v=>JSON.stringify(String(v));
 const baseFor=(project,c)=>(project.characterLibrary||[]).find(x=>x.characterId===c.characterId||x.referenceKey&&x.referenceKey===c.referenceKey)||null;
+const speakerName=(project,panel,speakerId)=>{
+  if(!speakerId)return'(no in-panel speaker)';
+  const cast=(panel.characters||[]).find(c=>c.characterId===speakerId||c.id===speakerId);
+  return cast?.name||(project.characterLibrary||[]).find(c=>c.characterId===speakerId)?.name||'(speaker unresolved)';
+};
 function characterStateLines(project,c){
   const base=baseFor(project,c),appearance=base?.appearance||{},state=c.continuityState||{},outfit=state.outfit||appearance.outfit||'',lines=[];
   const identity=[appearance.hair&&`hair=${q(appearance.hair)}`,appearance.eyes&&`eyes=${q(appearance.eyes)}`,appearance.features&&`features=${q(appearance.features)}`].filter(Boolean);
@@ -60,6 +65,14 @@ export function buildExecutablePrompt(project,pageIndex=0){
     if(p.style?.breakout&&p.style.breakout!=='none')frame.push(`breakout=${p.style.breakout}`);
     if(frame.length)lines.push(`FRAME DIRECTION: ${frame.join('; ')}`);
     lines.push(`CAST: ${p.characters.map(c=>`${c.name} [pose=${c.poseId}; expression=${c.expression.type}; gaze=${c.gaze?.target||'auto'}; support=${c.supportState}; motion=${c.motionPhase}; depth=${c.depthOrder??0}; detail=${c.detailLevel||'medium'}]`).join(', ')||'(none)'}`);
+    // Per-balloon speaker/tail mapping is a generation constraint, not visible manga text.
+    // Do not infer the speaker from the balloon's proximity to another character.
+    for(const [index,balloon] of (p.balloons||[]).entries()){
+      const speakerId=balloon.speakerId||'';
+      const name=speakerName(project,p,speakerId);
+      const hasTail=['speech','shout','whisper','thought'].includes(balloon.type);
+      lines.push(`BALLOON ${index+1}: text=${q(balloon.text)}; speaker=${q(name)}; speakerId=${q(speakerId)}; center=(${Math.round(balloon.x)},${Math.round(balloon.y)}); ${hasTail?(speakerId?'tail must point to that speaker, not the listener':'speaker unresolved: do not invent a tail target'):'no in-panel speaker tail required'}; preserve this balloon order in ${project.meta.readingDirection||'rtl'} reading.`);
+    }
     for(const c of p.characters)lines.push(...characterStateLines(project,c));
     if(p.detailBudget)lines.push(`DETAIL/SALIENCE: crowd=${p.detailBudget.crowd||'low'}; background=${p.detailBudget.background||'medium'}; characters=${Object.entries(p.detailBudget.characters||{}).map(([k,v])=>`${k}:${v}`).join(', ')||'derived'}`);
     if(['low','silhouette','none'].includes(p.detailBudget?.crowd))lines.push('CROWD RULE: background extras are simplified; omit eye detail and nonessential facial features.');
