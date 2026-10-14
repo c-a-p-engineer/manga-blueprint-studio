@@ -63,10 +63,10 @@ export function buildLetteringPlan(project,pageIndex=0){
   if(!page)throw new Error(`Unknown page index ${pageIndex}`);
   const entries=[];
   for(const panel of[...(page.panels||[])].sort((a,b)=>(a.order||0)-(b.order||0))){
-    for(const balloon of panel.balloons||[]){
+    for(const [index,balloon] of (panel.balloons||[]).entries()){
       if(!String(balloon.text||''))continue;
       const region=balloonRegion(balloon,panel),fontSize=clamp(Number(balloon.size||80)*.24,16,36);
-      entries.push({...entry(balloon.text,effectiveMode(project,balloon.writingMode),region,'dialogue',balloon.id,fontSize),panelId:panel.id,speakerId:balloon.speakerId||''});
+      entries.push({...entry(balloon.text,effectiveMode(project,balloon.writingMode),region,'dialogue',balloon.id,fontSize),panelId:panel.id,speakerId:balloon.speakerId||'',speechOrder:index+1});
     }
     if(String(panel.effects?.sfxText||'')){
       const r=panel.rect,fontSize=clamp(Math.min(r.w,r.h)*.08,22,54);
