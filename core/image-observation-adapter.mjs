@@ -47,6 +47,9 @@ function normalizeLettering(entry,index){
     writingMode:entry.writingMode||null,
     ...(rect?{rect}:{}),
     ...(confidence(entry.confidence)!=null?{confidence:confidence(entry.confidence)}:{}),
+    // Preserve only speaker/tail targets actually observed in the rendered image.
+    ...(typeof entry.speakerId==='string'&&entry.speakerId.trim()?{speakerId:entry.speakerId.trim()}:{}),
+    ...(typeof entry.tailTargetId==='string'&&entry.tailTargetId.trim()?{tailTargetId:entry.tailTargetId.trim()}:{}),
     observationIndex:index
   };
 }
